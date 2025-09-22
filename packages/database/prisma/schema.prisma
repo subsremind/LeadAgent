@@ -204,85 +204,6 @@ model AiChat {
   updatedAt      DateTime      @updatedAt
 }
 
-model Category {
-  id        String       @id  @default(cuid())
-  name      String
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  subscriptions Subscription[]
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String?
-  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("category")
-}
-
-
-enum CycleType {
-  Daily
-  Weekly
-  Monthly
-  Yearly
-}
-
-model Tag {
-  id        String       @id @default(cuid())
-  name      String
-  createdAt DateTime      @default(now())
-  subscriptions Subscription[]    @relation("SubscriptionTags")
-  subscriptionTags SubscriptionTag[]
-
-  @@map("tag")
-}
-
-model SubscriptionTag {
-  id             String       @id @default(cuid())
-  subscriptionId String
-  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  tagId          String
-  tag            Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  createdAt DateTime      @default(now())
-
-
-  @@unique([subscriptionId, tagId])
-  @@map("subscription_tag")
-}
-
-
-
-model Subscription {
-  id                 String       @id @default(cuid())
-  company            String
-  description        String?
-  frequency          Int
-  value              Decimal? @db.Decimal(10, 2)
-  currency           String   @db.VarChar(3)
-  cycle              CycleType
-  type               String   @db.VarChar(30)
-  recurring          Boolean @default(true)
-  nextPaymentDate  DateTime?
-  contractExpiry    DateTime?
-  urlLink           String
-  paymentMethod     String? @db.VarChar(30)
-  categoryId         String?
-  category           Category?      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  tags        Tag[]               @relation("SubscriptionTags")
-  subscriptionTags SubscriptionTag[]
-  notes              String?
-  notesIncluded     Boolean @default(false)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String?
-  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscriptionAlerts SubscriptionAlert[]
-  subscriptionAlertRecords SubscriptionAlertRecord[]
-
-  @@map("subscription")
-}
-
 model EditHistory {
   id         String   @id @default(cuid())
   tableName  String
@@ -296,35 +217,56 @@ model EditHistory {
   @@map("edit_history")
 }
 
-model SubscriptionAlert {
-  id             String       @id @default(cuid())
-  subscriptionId String
-  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  intervalValue  Int
-  intervalUnit   String
-  onField        String
-  contact        String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+model Category {
+  id        String       @id  @default(cuid())
+  name      String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  businessId  String?
+  businessType String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId         String?
   user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscriptionAlertRecords SubscriptionAlertRecord[]
 
-  @@map("subscription_alert")
+  @@index([businessId, businessType])
+  @@map("category")
 }
 
-model SubscriptionAlertRecord {
-  id                  String            @id @default(cuid())
-  subscriptionId      String
-  subscription        Subscription      @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  subscriptionAlertId String
-  subscriptionAlert   SubscriptionAlert @relation(fields: [subscriptionAlertId], references: [id], onDelete: Cascade)
-  contract            String
-  content             String
-  status              String
-  createdAt           DateTime          @default(now())
+// 定义Reddit帖子模型，包含向量字段用于AI处理
+model RedditPost {
+  // 主键，自增ID
+  id Int @id @default(autoincrement())
+  categoryId         String?
+  category           Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  // Reddit平台的原生ID（通常是字符串格式）
+  redditId String @unique
+  title         String   // 帖子标题
+  selftext      String?  // 正文内容（可能为空）
+  url           String?  // 外部链接或帖子 URL
+  permalink     String?  // 相对链接
+  author        String?  // 发帖人
+  subreddit     String?  // 所属 subreddit
+  ups           Int      @default(0)  // 点赞数
+  downs         Int      @default(0)  // 点踩数
+  score         Int      @default(0)  // 综合得分
+  numComments   Int      @default(0)  // 评论数，Prisma推荐使用驼峰命名
+  createdUtc    BigInt?  // 发帖时间（Unix 时间戳），Prisma推荐使用驼峰命名
+  postHint      String?  // 帖子类型提示
+  
+  // 向量字段，用于存储文本嵌入向量
+  // 长度可以根据实际使用的嵌入模型调整（如OpenAI的ada-002是1536维）
+  embedding Float[] @db.Vector(1536)
+  
+  // 记录创建时间（本地数据库记录）
+  recordCreatedAt DateTime @default(now())
+  // 记录最后更新时间（本地数据库记录）
+  recordUpdatedAt DateTime @updatedAt
 
-  @@map("subscription_alert_record")
+  @@map("reddit_post")
 }
+
+
 
 
