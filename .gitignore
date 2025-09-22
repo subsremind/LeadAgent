@@ -22,7 +22,6 @@ build/
 # misc
 .DS_Store
 *.pem
-logs
 *.log
 lerna-debug.log*
 .grunt
