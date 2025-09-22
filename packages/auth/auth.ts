@@ -5,7 +5,7 @@ import { logger } from "@repo/logs";
 import { sendEmail } from "@repo/mail";
 import { getBaseUrl } from "@repo/utils";
 import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import {
 	admin,
 	createAuthMiddleware,
@@ -19,6 +19,7 @@ import { parse as parseCookies } from "cookie";
 import { updateSeatsInOrganizationSubscription } from "./lib/organization";
 import { getUserByEmail } from "./lib/user";
 import { invitationOnlyPlugin } from "./plugins/invitation-only";
+import * as schema from "@repo/database/drizzle/schema";
 
 const getLocaleFromRequest = (request?: Request) => {
 	const cookies = parseCookies(request?.headers.get("cookie") ?? "");
@@ -33,8 +34,9 @@ const appUrl = getBaseUrl();
 export const auth = betterAuth({
 	baseURL: appUrl,
 	trustedOrigins: [appUrl],
-	database: prismaAdapter(db, {
-		provider: "postgresql",
+	database: drizzleAdapter(db, {
+		provider: "pg",
+		schema: schema,
 	}),
 	session: {
 		expiresIn: config.auth.sessionCookieMaxAge,

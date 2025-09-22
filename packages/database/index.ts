@@ -1,12 +1,12 @@
-export { PrismaClient } from "@prisma/client";
+// export * from "./drizzle";
 export * from "./src/client";
-export * from "./src/zod";
+export * from "./drizzle/zod";
 
-declare global {
-	namespace PrismaJson {
-		type AIChatMessages = Array<{
-			role: "user" | "assistant";
-			content: string;
-		}>;
-	}
-}
+// declare global {
+// 	namespace PrismaJson {
+// 		type AIChatMessages = Array<{
+// 			role: "user" | "assistant";
+// 			content: string;
+// 		}>;
+// 	}
+// }

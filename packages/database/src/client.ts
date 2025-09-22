@@ -1,18 +1,10 @@
-import { PrismaClient } from "@prisma/client";
-
-const prismaClientSingleton = () => {
-	return new PrismaClient();
-};
-
-declare global {
-	var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
+import { drizzle } from "drizzle-orm/node-postgres";
+// import * as schema from "./schema/postgres";
+ 
+const databaseUrl = process.env.DATABASE_URL as string;
+ 
+if (!databaseUrl) {
+	throw new Error("DATABASE_URL is not set");
 }
-
-// biome-ignore lint/suspicious/noRedeclare: <explanation>
-const prisma = globalThis.prisma ?? prismaClientSingleton();
-
-if (process.env.NODE_ENV !== "production") {
-	globalThis.prisma = prisma;
-}
-
-export { prisma as db };
+ 
+export const db = drizzle(databaseUrl);
