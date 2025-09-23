@@ -190,7 +190,9 @@
 	"common": {
 		"confirmation": {
 			"cancel": "Cancel",
-			"confirm": "Confirm"
+			"confirm": "Confirm",
+			"delete": "Delete",
+			"save": "Save"
 		},
 		"actions": {
 			"new": "New",
@@ -847,7 +849,8 @@
 			"prompt": "Prompt",
 			"path": "Path",
 			"setup": "Agent Setup",
-			"generate": "Generate the Agent"
+			"generate": "Generate the Agent",
+			"generateFailed": "Failed to generate prompt"
 		}
 		
 	}

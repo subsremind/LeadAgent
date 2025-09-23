@@ -26,13 +26,16 @@ import {
 	CardTitle,
   } from "@ui/components/card"
 import { Badge } from "@ui/components/badge"
+import { Link } from "@ui/components/link";
 import {
 	BellPlus,
 	EditIcon,
 	MoreVerticalIcon,
 	PlusIcon,
 	Trash2Icon,
-	BadgeCheckIcon
+	BadgeCheckIcon,
+	ArrowBigDown,
+	ArrowBigUp,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -45,9 +48,7 @@ export function LeadAgentList({
 }: { categoryId?: string; organizationId?: string }) {
 	const t = useTranslations();
 	const queryClient = useQueryClient();
-	const [alertOpen, setAlertOpen] = useState<boolean>(false);
 	const [editOpen, setEditOpen] = useState<boolean>(false);
-	const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
 	const [subscription, setSubscription] = useState<any | null>(null);
 
 	const onEditSuccess = (open: boolean, isReload: boolean) => {
@@ -109,21 +110,20 @@ export function LeadAgentList({
 					{t("common.loading")}
 				</div>
 			) : (
-				data.map((item) => (
+				data.map((item: any) => (
 					<Card key={item.id} className="mb-2">
 						<CardHeader>
-							<CardTitle>{item.title}</CardTitle>
+							<CardTitle>
+							<Link href={`/lead-agent/${item.id}`}>{item.title}</Link>
+							</CardTitle>
 							<CardDescription className="mb-2 overflow-hidden text-ellipsis whitespace-nowrap">{item.selftext}</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<p>Card Content</p>
+							<p>{item.category}</p>
 						</CardContent>
 						<CardFooter>
-						<Badge
-							variant="secondary"
-							className="bg-blue-500 text-white dark:bg-blue-600"
-							>
-							<BadgeCheckIcon />
+						<Badge>
+							<ArrowBigDown />
 							Verified
 							</Badge>
 							<Badge className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums">
@@ -131,8 +131,8 @@ export function LeadAgentList({
 							</Badge>
 							<Badge
 							className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums"
-							variant="destructive"
 							>
+								<ArrowBigUp />
 							99
 							</Badge>
 						</CardFooter>
@@ -146,17 +146,7 @@ export function LeadAgentList({
 				subscription={subscription}
 				onSuccess={onEditSuccess}
 			/>
-			/* 
-			<AlertSubscriptionDialog
-				open={alertOpen}
-				subscriptionId={subscription?.id}
-				onOpen={onAlertOpenChange}
-			/>
-			<DeleteSubscriptionDialog
-				open={deleteOpen}
-				subscriptionId={subscription?.id}
-				onSuccess={onDeleteSuccess}
-			/> */}
+			}
 		</div>
 	);
 }

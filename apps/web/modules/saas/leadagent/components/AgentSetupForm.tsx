@@ -15,6 +15,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@ui/components/form";
+import { Bot } from "lucide-react";
 import { Input } from "@ui/components/input";
 import {
 	Popover,
@@ -35,6 +36,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useState } from "react";
 
 const formSchema = z.object({
 	description: z.string().optional(),
@@ -59,6 +61,7 @@ export function AgentSetupForm({
 	const t = useTranslations();
 
 	const { user } = useSession();
+	const [isGenerating, setIsGenerating] = useState(false);
 
 	// const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
 	// 	queryKey: ["subscription-categories-select", organizationId],
@@ -109,6 +112,32 @@ export function AgentSetupForm({
 					tags: [],
 				},
 	});
+
+	async function handleGeneratePrompt() {
+		try {
+			const response = await fetch("/api/leadAgent/generate-prompt", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					prompt: form.getValues("prompt"),
+					organizationId,
+				}),
+			});
+			if (!response.ok) {
+				throw new Error(await response.text());
+			}
+			const data = await response.json();
+			form.setValue("path", data.path);
+		} catch (error) {
+			if (error instanceof Error) {
+				toast.error(error.message || t("leadAgent.form.generateFailed"));
+			} else {
+				toast.error(t("leadAgent.form.generateFailed"));	
+			}
+		}
+	}
 
 	const onSubmit = form.handleSubmit(async (data) => {
 		try {
@@ -170,10 +199,17 @@ export function AgentSetupForm({
 					<Button
 						variant="primary"
 						type="submit"
-						loading={form.formState.isSubmitting}
+						loading={isGenerating}
 						className="flex items-center space-x-2"
+						onClick={() => {
+							setIsGenerating(true);
+							handleGeneratePrompt().finally(() => {
+								setIsGenerating(false);
+							});
+							form.setValue("prompt", "");
+						}}
 					>
-						{t("leadAgent.form.generate")}
+						<Bot />{t("leadAgent.form.generate")}
 					</Button>
 				</div>
 
@@ -225,7 +261,7 @@ export function AgentSetupForm({
 						loading={form.formState.isSubmitting}
 						className="flex items-center space-x-2"
 					>
-						{t("common.confirmation.confirm")}
+						{t("common.confirmation.save")}
 					</Button>
 				</div>
 			</form>

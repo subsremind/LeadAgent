@@ -45,3 +45,6 @@ eslint-config-custom
 tsconfig
 tailwind
 utils
+
+**Create admin user**
+`pnpm --filter scripts create:user`
