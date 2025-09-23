@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { SubscriptionSidebar } from "./components/SubscriptionSidebar";
-import { SubscriptionTable } from "./components/SubscriptionTable";
+import { LeadAgentTable } from "./components/LeadAgentTable";
+import { CategoryCheckBox } from "./components/CategoryCheckBox";
 
-export function SubscriptionPage({
+export function LeadAgentPage({
 	organizationId,
 }: {
 	organizationId?: string;
@@ -15,16 +15,16 @@ export function SubscriptionPage({
 	return (
 		<div className="flex h-full w-full">
 			<div className="w-1/4 border-r p-4">
-				<SubscriptionSidebar
+				<CategoryCheckBox
 					onCategorySelect={(id) => setSelectedCategoryId(id === null ? undefined : id)}
 					organizationId={organizationId}
 				/>
 			</div>
 			<div className="w-3/4 overflow-auto">
-				<SubscriptionTable
+				{/* <LeadAgentTable
 					categoryId={selectedCategoryId}
 					organizationId={organizationId}
-				/>
+				/> */}
 			</div>
 		</div>
 	);

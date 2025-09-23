@@ -1,5 +1,6 @@
 import { pgTable, pgEnum, serial, text, integer, bigint, boolean, timestamp, jsonb, vector, unique, index, foreignKey } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
+import { platform } from 'os';
 
 // 1. 枚举
 export const purchaseTypeEnum = pgEnum('purchase_type', ['SUBSCRIPTION', 'ONE_TIME']);
@@ -190,12 +191,12 @@ export const editHistory = pgTable('edit_history', {
 export const category = pgTable('category', {
   id: text('id').primaryKey().default(sql`gen_random_uuid()`),
   name: text('name').notNull(),
+  path: text('path').notNull(),
+  platform: text('platform').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-  businessId: text('business_id'),
-  businessType: text('business_type'),
 }, t => [
-  index('category_biz_idx').on(t.businessId, t.businessType),
+  index('category_platform_idx').on(t.platform),
 ]);
 
 // 14. RedditPost（含 1536 维向量）

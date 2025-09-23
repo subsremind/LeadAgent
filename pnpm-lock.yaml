@@ -402,6 +402,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      drizzle-orm:
+        specifier: ^0.44.5
+        version: 0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(@types/pg@8.15.5)(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3))
       hono:
         specifier: ^4.7.2
         version: 4.7.2
@@ -491,21 +494,21 @@ importers:
       '@repo/config':
         specifier: workspace:*
         version: link:../../config
+      '@types/pg':
+        specifier: ^8.15.5
+        version: 8.15.5
       decimal.js:
         specifier: ^10.5.0
         version: 10.5.0
       drizzle-orm:
         specifier: ^0.44.5
-        version: 0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3))
+        version: 0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(@types/pg@8.15.5)(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3))
       pg:
         specifier: ^8.16.3
         version: 8.16.3
       pgvector:
         specifier: ^0.2.1
         version: 0.2.1
-      postgres:
-        specifier: ^3.4.7
-        version: 3.4.7
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -527,7 +530,7 @@ importers:
         version: 0.31.4
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3)))(zod@3.24.2)
+        version: 0.8.3(drizzle-orm@0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(@types/pg@8.15.5)(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3)))(zod@3.24.2)
 
   packages/i18n:
     dependencies:
@@ -3912,6 +3915,9 @@ packages:
 
   '@types/nprogress@0.2.3':
     resolution: {integrity: sha512-k7kRA033QNtC+gLc4VPlfnue58CM1iQLgn1IMAU8VPHGOj7oIHPp9UlhedEnD/Gl8evoCjwkZjlBORtZ3JByUA==}
+
+  '@types/pg@8.15.5':
+    resolution: {integrity: sha512-LF7lF6zWEKxuT3/OR8wAZGzkg4ENGXFNyiV/JeOt9z5B+0ZVwbql9McqX5c/WStFq1GaGso7H1AzP/qSzmlCKQ==}
 
   '@types/react-dom@19.0.0':
     resolution: {integrity: sha512-1KfiQKsH1o00p9m5ag12axHQSb3FOU9H20UTrujVSkNhuCrRHiQWFqgEnTNK5ZNfnzZv8UWrnXVqCmCF9fgY3w==}
@@ -9950,6 +9956,12 @@ snapshots:
 
   '@types/nprogress@0.2.3': {}
 
+  '@types/pg@8.15.5':
+    dependencies:
+      '@types/node': 22.13.5
+      pg-protocol: 1.10.3
+      pg-types: 2.2.0
+
   '@types/react-dom@19.0.0':
     dependencies:
       '@types/react': 19.0.0
@@ -10404,18 +10416,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3)):
+  drizzle-orm@0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(@types/pg@8.15.5)(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3)):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@prisma/client': 6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3)
+      '@types/pg': 8.15.5
       kysely: 0.27.5
       pg: 8.16.3
       postgres: 3.4.7
       prisma: 6.3.1(typescript@5.7.3)
 
-  drizzle-zod@0.8.3(drizzle-orm@0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3)))(zod@3.24.2):
+  drizzle-zod@0.8.3(drizzle-orm@0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(@types/pg@8.15.5)(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3)))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3))
+      drizzle-orm: 0.44.5(@opentelemetry/api@1.9.0)(@prisma/client@6.3.1(prisma@6.3.1(typescript@5.7.3))(typescript@5.7.3))(@types/pg@8.15.5)(kysely@0.27.5)(pg@8.16.3)(postgres@3.4.7)(prisma@6.3.1(typescript@5.7.3))
       zod: 3.24.2
 
   dunder-proto@1.0.1:
@@ -12444,7 +12457,8 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
-  postgres@3.4.7: {}
+  postgres@3.4.7:
+    optional: true
 
   prettier@3.4.2: {}
 

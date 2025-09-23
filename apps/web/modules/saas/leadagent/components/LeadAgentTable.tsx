@@ -39,7 +39,7 @@ import { AlertSubscriptionDialog } from "./AlertSubscriptionDialog";
 import { DeleteSubscriptionDialog } from "./DeleteSubscriptionDialog";
 import { EditSubscriptionDialog } from "./EditSubscriptionDialog";
 
-export function SubscriptionTable({
+export function LeadAgentTable({
 	categoryId,
 	organizationId,
 }: { categoryId?: string; organizationId?: string }) {
@@ -98,11 +98,11 @@ export function SubscriptionTable({
 	const columns: ColumnDef<any>[] = [
 		{
 			accessorKey: "company",
-			header: t("subscription.table.columns.company"),
+			header: t("leadAgent.table.columns.company"),
 		},
 		{
 			accessorKey: "value",
-			header: t("subscription.table.columns.amount"),
+			header: t("leadAgent.table.columns.amount"),
 			cell: ({ row }) => (
 				<span>
 					{row.original.value
@@ -116,7 +116,7 @@ export function SubscriptionTable({
 		},
 		{
 			accessorKey: "cycle",
-			header: t("subscription.table.columns.billingCycle"),
+			header: t("leadAgent.table.columns.billingCycle"),
 			cell: ({ row }) => (
 				<span>
 					{row.original.frequency} {row.original.cycle}
@@ -191,7 +191,7 @@ export function SubscriptionTable({
 	return (
 		<div className="p-6">
 			<div className="flex justify-between items-center mb-4">
-				<h2 className="text-xl font-bold">{t("subscription.table.title")}</h2>
+				<h2 className="text-xl font-bold">{t("leadAgent.table.title")}</h2>
 				<Button
 					variant="ghost"
 					onClick={() => {
@@ -252,7 +252,7 @@ export function SubscriptionTable({
 					</TableBody>
 				</Table>
 			)}
-			<EditSubscriptionDialog
+			{/* <EditSubscriptionDialog
 				open={editOpen}
 				categoryId={categoryId}
 				organizationId={organizationId}
@@ -268,7 +268,7 @@ export function SubscriptionTable({
 				open={deleteOpen}
 				subscriptionId={subscription?.id}
 				onSuccess={onDeleteSuccess}
-			/>
+			/> */}
 		</div>
 	);
 }

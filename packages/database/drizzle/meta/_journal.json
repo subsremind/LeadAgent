@@ -8,6 +8,13 @@
       "when": 1758534000878,
       "tag": "0000_chilly_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758615088248,
+      "tag": "0001_powerful_mephistopheles",
+      "breakpoints": true
     }
   ]
 }

@@ -9,8 +9,8 @@ import { utcnow } from "@repo/utils";
 import { authMiddleware } from "../../middleware/auth";
 import { SubscriptionCreateInput, SubscriptionUpdateInput } from "./types";
 
-export const subscriptionRouter = new Hono()
-	.basePath("/subscription")
+export const leadAgentRouter = new Hono()
+	.basePath("/lead-agent")
 	.use(authMiddleware)
 	.get(
 		"/",
@@ -23,8 +23,8 @@ export const subscriptionRouter = new Hono()
 			}),
 		),
 		describeRoute({
-			summary: "Get all subscriptions",
-			tags: ["Subscription"],
+			summary: "Get all lead-agent",
+			tags: ["LeadAgent"],
 		}),
 		async (c) => {
 			const { query, categoryId, organizationId } = c.req.valid("query");

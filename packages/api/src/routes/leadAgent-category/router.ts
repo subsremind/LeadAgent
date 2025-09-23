@@ -5,21 +5,21 @@ import { validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { authMiddleware } from "../../middleware/auth";
 import { verifyOrganizationMembership } from "../organizations/lib/membership";
-
+import { desc, asc } from 'drizzle-orm';
 import {
 	CategoryCreateInput,
 	CategorySchema,
 	CategoryUpdateInput,
 } from "./types";
 
-export const subscriptionCategoryRouter = new Hono()
-	.basePath("/subscription-categories")
+export const leadAgentCategoryRouter = new Hono()
+	.basePath("/leadAgent-categories")
 	.use(authMiddleware)
 	.get(
 		"/",
 		describeRoute({
-			summary: "Get all subscription categories",
-			tags: ["SubscriptionCategory"],
+			summary: "Get all leadAgent categories",
+			tags: ["LeadAgentCategory"],	
 		}),
 		validator(
 			"query",
@@ -27,33 +27,26 @@ export const subscriptionCategoryRouter = new Hono()
 		),
 		async (c) => {
 			const query = c.req.valid("query") || {};
-			const categories = await db.category.findMany({
-				select: {
+			const categories = await db.query.category.findMany({
+				columns: {
 					id: true,
 					name: true,
-					organizationId: true,
-					userId: true,
-					_count: { select: { subscriptions: true } },
+					path: true,
+					platform: true,
 					createdAt: true,
 					updatedAt: true,
 				},
-				orderBy: { name: "asc" },
-				where: query?.organizationId
-					? {
-							organizationId: query.organizationId,
-						}
-					: {
-							userId: c.get("user").id,
-							organizationId: null,
-						},
+				// orderBy: [asc(category.id)]
+				
 			});
 
-			return c.json(
-				categories.map((category) => ({
-					...category,
-					subscriptionCount: category._count?.subscriptions || 0,
-				})),
-			);
+			// return c.json(
+			// 	categories.map((category) => ({
+			// 		...category,
+			// 		subscriptionCount: category._count?.subscriptions || 0,
+			// 	})),
+			// );
+			return c.json(categories);
 		},
 	)
 	.get(

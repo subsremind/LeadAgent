@@ -17,8 +17,8 @@ import { newsletterRouter } from "./routes/newsletter";
 import { organizationsRouter } from "./routes/organizations/router";
 import { paymentsRouter } from "./routes/payments/router";
 import { subscriptionAlertRouter } from "./routes/subscription-alert/router";
-import { subscriptionCategoryRouter } from "./routes/subscription-category/router";
-import { subscriptionRouter } from "./routes/subscription/router";
+import { leadAgentCategoryRouter } from "./routes/leadAgent-category/router";
+import { leadAgentRouter } from "./routes/leadagent/router";
 import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
 import { scheduler } from "@repo/scheduler";
@@ -40,8 +40,8 @@ const appRouter = app
 	.route("/", organizationsRouter)
 	.route("/", adminRouter)
 	.route("/", healthRouter)
-	.route("/", subscriptionRouter)
-	.route("/", subscriptionCategoryRouter)
+	.route("/", leadAgentRouter)
+	.route("/", leadAgentCategoryRouter)
 	.route("/", subscriptionAlertRouter);
 
 app.get(
@@ -90,7 +90,7 @@ scheduler.schedule({
 	id: "alert-task",
 	cronExpression: "0 0 1/1 * * *",
 	task: async () => {
-		sendSubscriptionAlerts();
+		// sendSubscriptionAlerts();
 	},
 });
 

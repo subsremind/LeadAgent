@@ -1,11 +1,11 @@
 {
 	"dependencies": {
 		"@repo/config": "workspace:*",
+		"@types/pg": "^8.15.5",
 		"decimal.js": "^10.5.0",
 		"drizzle-orm": "^0.44.5",
 		"pg": "^8.16.3",
 		"pgvector": "^0.2.1",
-		"postgres": "^3.4.7",
 		"zod": "^3.24.2"
 	},
 	"devDependencies": {

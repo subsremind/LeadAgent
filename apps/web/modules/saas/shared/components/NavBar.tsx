@@ -46,12 +46,12 @@ export function NavBar() {
 			isActive: pathname.includes("/chatbot"),
 		},
 		{
-			label: t("app.menu.subscription"),
+			label: t("app.menu.leadAgent"),
 			href: activeOrganization
-				? `/app/${activeOrganization.slug}/subscription`
-				: "/app/subscription",
+				? `/app/${activeOrganization.slug}/leadagent`
+				: "/app/leadagent",
 			icon: SettingsIcon,
-			isActive: pathname.includes("/subscription"),
+			isActive: pathname.includes("/leadagent"),
 		},
 		...(activeOrganization
 			? [
