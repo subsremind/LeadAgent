@@ -7,9 +7,9 @@ import {
 	DialogTitle,
 } from "@ui/components/dialog";
 import { useTranslations } from "next-intl";
-import { SubscriptionForm } from "./SubscriptionForm";
+import { AgentSetupForm } from "./AgentSetupForm";
 
-export function EditSubscriptionDialog({
+export function AgentSetupDialog({
 	open,
 	categoryId,
 	organizationId,
@@ -37,12 +37,10 @@ export function EditSubscriptionDialog({
 			>
 				<DialogHeader>
 					<DialogTitle>
-						{subscription
-							? t("common.actions.edit")
-							: t("common.actions.new")}
+						{t("leadAgent.form.setup")}
 					</DialogTitle>
 				</DialogHeader>
-				<SubscriptionForm
+				<AgentSetupForm
 					subscription={subscription}
 					categoryId={categoryId}
 					organizationId={organizationId}

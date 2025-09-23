@@ -8,6 +8,8 @@ import { verifyOrganizationMembership } from "../organizations/lib/membership";
 import { utcnow } from "@repo/utils";
 import { authMiddleware } from "../../middleware/auth";
 import { SubscriptionCreateInput, SubscriptionUpdateInput } from "./types";
+import { desc, eq } from "drizzle-orm";
+import { redditPost } from "@repo/database/drizzle/schema";
 
 export const leadAgentRouter = new Hono()
 	.basePath("/lead-agent")
@@ -29,44 +31,30 @@ export const leadAgentRouter = new Hono()
 		async (c) => {
 			const { query, categoryId, organizationId } = c.req.valid("query");
 
-			const subscriptions = await db.subscription.findMany({
-				where: {
-					company: { contains: query, mode: "insensitive" },
-					...(categoryId ? { categoryId } : {}),
-					...(organizationId
-						? { organizationId }
-						: {
-								userId: c.get("user").id,
-								organizationId: null,
-							}),
-				},
-				orderBy: { createdAt: "desc" },
+			const posts = await db.query.redditPost.findMany({
+				orderBy: [desc("createAt")],
 			});
 
-			return c.json(subscriptions);
+			return c.json(posts);
 		},
 	)
 	.get(
 		"/:id",
 		describeRoute({
-			summary: "Get subscription by ID",
-			tags: ["Subscription"],
+			summary: "Get reddit post by ID",
+			tags: ["RedditPost"],
 		}),
 		async (c) => {
 			const id = c.req.param("id");
-			const subscription = await db.subscription.findUnique({
-				where: { id },
-				include: {
-					category: true,
-					tags: true,
-				},
+			const record = await db.query.redditPost.findMany({
+				where: eq(redditPost.id, id)
 			});
 
-			if (!subscription) {
-				return c.json({ error: "Subscription not found" }, 404);
+			if (!record) {
+				return c.json({ error: "Reddit post not found" }, 404);
 			}
 
-			return c.json(subscription);
+			return c.json(record);
 		},
 	)
 	.post(
@@ -83,7 +71,7 @@ export const leadAgentRouter = new Hono()
 		}),
 		async (c) => {
 			const { organizationId } = c.req.valid("query");
-			const count = await db.subscription.count({
+			const count = await db.query.redditPost.count({
 				where: {
 					...(organizationId
 						? { organizationId }

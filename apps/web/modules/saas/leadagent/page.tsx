@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LeadAgentTable } from "./components/LeadAgentTable";
+import { LeadAgentList } from "./components/LeadAgentList";
 import { CategoryCheckBox } from "./components/CategoryCheckBox";
 
 export function LeadAgentPage({
@@ -21,10 +21,10 @@ export function LeadAgentPage({
 				/>
 			</div>
 			<div className="w-3/4 overflow-auto">
-				{/* <LeadAgentTable
+				<LeadAgentList
 					categoryId={selectedCategoryId}
 					organizationId={organizationId}
-				/> */}
+				/>
 			</div>
 		</div>
 	);

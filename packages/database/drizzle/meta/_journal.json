@@ -15,6 +15,13 @@
       "when": 1758615088248,
       "tag": "0001_powerful_mephistopheles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1758621973609,
+      "tag": "0002_elite_taskmaster",
+      "breakpoints": true
     }
   ]
 }

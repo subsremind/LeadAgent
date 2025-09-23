@@ -224,24 +224,17 @@ export function CategoryCheckBox({
 		<div className="@container">
 			<Card>
 				<CardHeader>
-					<CardTitle>Card Title</CardTitle>
-					<CardDescription>Card Description</CardDescription>
+					<CardDescription>Project</CardDescription>
 				</CardHeader>
 				<CardContent>
 				<div className="flex flex-col gap-6">
-				{categoriesWithAll.map((category) => (
 					<div className="flex items-center gap-3">
-						<Checkbox id={category.id} />
-						<Label htmlFor={category.id}>{category.platform}</Label>
+						<Checkbox id="reddit" />
+						<Label htmlFor="reddit">Reddit</Label>
 					</div>
-				))}
 					
 				</div>
-				
 				</CardContent>
-				<CardFooter>
-					<p>Card Footer</p>
-				</CardFooter>
 			</Card>
 			<Dialog
 				open={!!editingCategory}

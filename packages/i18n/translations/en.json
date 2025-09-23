@@ -833,22 +833,21 @@
 			"deleteConfirmMessage": "Are you sure you want to delete this category?",
 			"duplicate": "Category name already exists"
 		},
-
-		"table": {
-			"title": "Subscription Management",
-			"columns": {
-				"company": "Company",
-				"amount": "Amount",
-				"billingCycle": "Billing Cycle",
-				"nextPaymentDate": "Next Payment Date",
-				"paymentMethod": "Payment Method"
-			},
+		"list": {
+			"title": "Resource List",
 			"actions": {
 				"alert": "Alert",
 				"edit": "Edit",
 				"delete": "Delete"
 			},
 			"empty": "No data available"
+		},
+		"form": {
+			"description": "Description",
+			"prompt": "Prompt",
+			"path": "Path",
+			"setup": "Agent Setup",
+			"generate": "Generate the Agent"
 		}
 		
 	}
