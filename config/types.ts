@@ -82,4 +82,8 @@ export type Config = {
 			};
 		};
 	};
+	syncPost:{
+		enabled: boolean;
+		cronExpression: string;
+	};
 };

@@ -23,7 +23,8 @@ import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
 import { scheduler } from "@repo/scheduler";
 import { sendSubscriptionAlerts } from "./lib/alert-send";
-
+import { getRedditPost } from "./lib/get-post";
+import { config } from "@repo/config";
 export const app = new Hono().basePath("/api");
 
 app.use(loggerMiddleware);
@@ -91,6 +92,14 @@ scheduler.schedule({
 	cronExpression: "0 0 1/1 * * *",
 	task: async () => {
 		// sendSubscriptionAlerts();
+	},
+});
+
+scheduler.schedule({
+	id: "get-reddit-post",
+	cronExpression: "*/15 * * * * *", //,config.syncPost.cronExpression,
+	task: async () => {
+		getRedditPost();
 	},
 });
 
