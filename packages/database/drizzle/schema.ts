@@ -216,7 +216,7 @@ export const redditPost = pgTable('reddit_post', {
   numComments: integer('num_comments').default(0).notNull(),
   createdUtc: bigint('created_utc', { mode: 'number' }),
   // 向量列
-  embedding: vector('embedding', { dimensions: 3072 }).notNull(),
+  embedding: vector('embedding', { dimensions: 1536 }).notNull(),
   recordCreatedAt: timestamp('record_created_at', { withTimezone: true }).defaultNow().notNull(),
   recordUpdatedAt: timestamp('record_updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, t => [
