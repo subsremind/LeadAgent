@@ -19,8 +19,7 @@ export async function getRedditPost() {
 			logger.info(`sync post is disabled`);
 			return;
 		}
-		
-		const sortType = "top";
+		const sortType = "new";
 		const channelList = await db
 			.selectDistinctOn([category.path], {
 			id: category.id,
@@ -38,6 +37,10 @@ export async function getRedditPost() {
 				
 				for (const post of posts) {
 					try {
+						const isExist = await db.select({ id: redditPost.id }).from(redditPost).where(eq(redditPost.redditId, post.id));
+						if (isExist.length > 0) {
+							continue;
+						}
 						const text = `${post.title}, ${post.selftext ?? ""}`;
 						const tokenCount = countTokens(text);						
 						if (tokenCount > MAX_TOKENS) {
@@ -150,7 +153,7 @@ type RedditPost = {
 	score: number;
 	num_comments: number;
 	created_utc: number;
-  };
+};
 
 function extractPosts(json: any): RedditPost[] {
 	return json.data.children.map((c: any) => {
