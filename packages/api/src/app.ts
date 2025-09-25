@@ -16,13 +16,12 @@ import { healthRouter } from "./routes/health";
 import { newsletterRouter } from "./routes/newsletter";
 import { organizationsRouter } from "./routes/organizations/router";
 import { paymentsRouter } from "./routes/payments/router";
-import { subscriptionAlertRouter } from "./routes/subscription-alert/router";
 import { leadAgentCategoryRouter } from "./routes/leadAgent-category/router";
 import { leadAgentRouter } from "./routes/leadagent/router";
+import { agentSettingRouter } from "./routes/agent-setting/router";
 import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
 import { scheduler } from "@repo/scheduler";
-import { sendSubscriptionAlerts } from "./lib/alert-send";
 import { getRedditPost } from "./lib/get-post";
 import { config } from "@repo/config";
 export const app = new Hono().basePath("/api");
@@ -43,7 +42,7 @@ const appRouter = app
 	.route("/", healthRouter)
 	.route("/", leadAgentRouter)
 	.route("/", leadAgentCategoryRouter)
-	.route("/", subscriptionAlertRouter);
+	.route("/", agentSettingRouter);
 
 app.get(
 	"/app-openapi",

@@ -40,88 +40,51 @@ import { useState } from "react";
 
 const formSchema = z.object({
 	description: z.string().optional(),
-	prompt: z.number().min(1, "Prompt must be at least 1"),
-	path: z.string().optional(),
+	query: z.string().min(1, "Query must be at least 1"),
+	subreddit: z.string().optional(),
 	organizationId: z.string().nullable().default(null).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export function AgentSetupForm({
-	subscription,
-	categoryId,
+	agentSetting,
 	organizationId,
 	onSuccess,
 }: {
-	subscription?: any;
+	agentSetting?: any;
 	categoryId?: string;
 	organizationId?: string;
 	onSuccess: (open: boolean, isReload: boolean) => void;
 }) {
 	const t = useTranslations();
-
 	const { user } = useSession();
-	const [isGenerating, setIsGenerating] = useState(false);
 
-	// const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
-	// 	queryKey: ["subscription-categories-select", organizationId],
-	// 	queryFn: async () => {
-	// 		const url = organizationId
-	// 			? `/api/subscription-categories/select?organizationId=${organizationId}`
-	// 			: "/api/subscription-categories/select";
-	// 		const response = await fetch(url);
-	// 		if (!response.ok) {
-	// 			throw new Error("Failed to fetch categories");
-	// 		}
-	// 		return await response.json();
-	// 	},
-	// });
+	const [isGenerating, setIsGenerating] = useState(false);
+	
 
 	const form = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
-		defaultValues: subscription
+		defaultValues: agentSetting
 			? {
-					...subscription,
-					value: subscription.value ? Number(subscription.value) : 0,
-					frequency: subscription.frequency
-						? Number(subscription.frequency)
-						: 1,
-					nextPaymentDate: subscription.nextPaymentDate
-						? new Date(subscription.nextPaymentDate).toISOString()
-						: undefined,
-					contractExpiry: subscription.contractExpiry
-						? new Date(subscription.contractExpiry).toISOString()
-						: undefined,
+					...agentSetting
 				}
 			: {
-					company: "",
 					description: "",
-					frequency: 1,
-					value: 0,
-					currency: "USD",
-					cycle: "Monthly",
-					type: "Subscription",
-					recurring: true,
-					nextPaymentDate: undefined,
-					contractExpiry: undefined,
-					urlLink: "",
-					paymentMethod: "",
-					categoryId: categoryId,
-					notes: "",
-					notesIncluded: false,
-					tags: [],
+					subreddit: "",
+					query: "",
 				},
 	});
 
 	async function handleGeneratePrompt() {
 		try {
-			const response = await fetch("/api/leadAgent/generate-prompt", {
+			const response = await fetch("/api/agent-setting/generate-prompt", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					prompt: form.getValues("prompt"),
+					description: form.getValues("description"),
 					organizationId,
 				}),
 			});
@@ -129,7 +92,8 @@ export function AgentSetupForm({
 				throw new Error(await response.text());
 			}
 			const data = await response.json();
-			form.setValue("path", data.path);
+			form.setValue("query", data.query);
+			form.setValue("subreddit", data.subreddit);
 		} catch (error) {
 			if (error instanceof Error) {
 				toast.error(error.message || t("leadAgent.form.generateFailed"));
@@ -141,16 +105,10 @@ export function AgentSetupForm({
 
 	const onSubmit = form.handleSubmit(async (data) => {
 		try {
-			// if (data.categoryId === "none" || data.categoryId === "") {
-			// 	data.categoryId = null;
-			// }
-			// if (data.paymentMethod === "none" || data.paymentMethod === "") {
-			// 	data.paymentMethod = null;
-			// }
-			const url = subscription
-				? `/api/subscription/${subscription.id}`
-				: "/api/subscription";
-			const method = subscription ? "PUT" : "POST";
+			const url = agentSetting
+				? `/api/agent-setting/${agentSetting.id}`
+				: "/api/agent-setting";
+			const method = agentSetting ? "PUT" : "POST";
 
 			const response = await fetch(url, {
 				method,
@@ -160,14 +118,15 @@ export function AgentSetupForm({
 				body: JSON.stringify({
 					...data,
 					organizationId,
+					userId: user?.id || null,
 				}),
 			});
 
 			if (!response.ok) {
 				throw new Error(
-					subscription
-						? "Failed to update subscription"
-						: "Failed to create subscription",
+					agentSetting
+						? "Failed to update agent-setting"
+						: "Failed to create agent-setting",
 				);
 			}
 
@@ -206,7 +165,8 @@ export function AgentSetupForm({
 							handleGeneratePrompt().finally(() => {
 								setIsGenerating(false);
 							});
-							form.setValue("prompt", "");
+							form.setValue("query", "");
+							form.setValue("subreddit", "");
 						}}
 					>
 						<Bot />{t("leadAgent.form.generate")}
@@ -215,10 +175,10 @@ export function AgentSetupForm({
 
 				<FormField
 					control={form.control}
-					name="path"
+					name="subreddit"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>{t("leadAgent.form.path")}</FormLabel>
+							<FormLabel>{t("leadAgent.form.subreddit")}</FormLabel>
 							<FormControl>
 								<Textarea {...field} />
 							</FormControl>
@@ -229,10 +189,10 @@ export function AgentSetupForm({
 
 				<FormField
 					control={form.control}
-					name="prompt"
+					name="query"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>{t("leadAgent.form.prompt")}</FormLabel>
+							<FormLabel>{t("leadAgent.form.query")}</FormLabel>
 							<FormControl>
 								<Textarea className="min-h-[300px]" {...field} />
 							</FormControl>

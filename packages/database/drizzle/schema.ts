@@ -214,7 +214,7 @@ export const redditPost = pgTable('reddit_post', {
   downs: integer('downs').default(0).notNull(),
   score: integer('score').default(0).notNull(),
   numComments: integer('num_comments').default(0).notNull(),
-  createdUtc: bigint('created_utc', { mode: 'number' }),
+  createdUtc: timestamp('created_utc', { withTimezone: true }),
   // 向量列
   embedding: vector('embedding', { dimensions: 1536 }).notNull(),
   recordCreatedAt: timestamp('record_created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -224,6 +224,26 @@ export const redditPost = pgTable('reddit_post', {
   foreignKey({ columns: [t.categoryId], foreignColumns: [category.id], name: 'redditpost_category_fk' })
     .onDelete('set null'),
 ]);
+
+// 15. AgentSetting
+export const agentSetting = pgTable('agent_setting', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  description: text('description').notNull(),
+  subreddit: text('subreddit'),
+  query: text('query').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, t => [
+  unique('agent_setting_query_unique').on(t.query),
+  foreignKey({ columns: [t.userId], foreignColumns: [user.id], name: 'agent_setting_user_fk' })
+    .onDelete('cascade'),
+]);
+
+// 16. AgentSetting
+export const agentSettingRelations = relations(agentSetting, ({ one }) => ({
+  user: one(user, { fields: [agentSetting.userId], references: [user.id] }),
+}));
 
 /* -------------------------------------------------
  * Relations（可选，但强烈推荐，语法与 Prisma 类似）

@@ -842,15 +842,16 @@
 				"edit": "Edit",
 				"delete": "Delete"
 			},
-			"empty": "No data available"
+			"empty": "No data available",
+			"agentSetting": "Agent Setting"
 		},
 		"form": {
 			"description": "Description",
-			"prompt": "Prompt",
-			"path": "Path",
 			"setup": "Agent Setup",
 			"generate": "Generate the Agent",
-			"generateFailed": "Failed to generate prompt"
+			"generateFailed": "Failed to generate prompt",
+			"query": "Query keywords",
+			"subreddit": "Subreddit"
 		}
 		
 	}

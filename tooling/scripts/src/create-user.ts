@@ -1,6 +1,8 @@
 import { auth } from "@repo/auth";
 import { db } from "@repo/database";
+import { account, user } from "@repo/database/drizzle/schema";
 import { logger } from "@repo/logs";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 async function main() {
@@ -29,19 +31,16 @@ async function main() {
 	const hashedPassword = await authContext.password.hash(adminPassword);
 
 	// check if user exists
-	const user = await db.user.findUnique({
-		where: {
-			email,
-		},
+	const existingUser = await db.query.user.findFirst({
+		where: eq(user.email, email),
 	});
 
-	if (user) {
+	if (existingUser) {
 		logger.error("User with this email already exists!");
 		return;
 	}
 
-	const adminUser = await db.user.create({
-		data: {
+	const adminUser = await db.insert(user).values({
 			id: nanoid(),
 			email,
 			name,
@@ -50,26 +49,19 @@ async function main() {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			onboardingComplete: true,
-		},
-		include: {
-			accounts: true,
-		},
-	});
+		}
+	).returning({ insertedId: user.id });
 	if (
-		!adminUser?.accounts.some(
-			(account) => account.providerId === "credential",
-		)
+		adminUser
 	) {
-		await db.account.create({
-			data: {
+		await db.insert(account).values({
 				id: nanoid(),
-				userId: adminUser.id,
-				accountId: adminUser.id,
+				userId: adminUser[0].insertedId,
+				accountId: adminUser[0].insertedId,
 				providerId: "credential",
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				password: hashedPassword,
-			},
 		});
 	}
 

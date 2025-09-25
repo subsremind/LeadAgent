@@ -29,6 +29,20 @@
       "when": 1758697626250,
       "tag": "0003_great_clint_barton",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1758719094456,
+      "tag": "0004_round_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1758770381446,
+      "tag": "0005_nostalgic_ezekiel_stane",
+      "breakpoints": true
     }
   ]
 }

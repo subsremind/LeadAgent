@@ -8,8 +8,9 @@ import { verifyOrganizationMembership } from "../organizations/lib/membership";
 import { utcnow } from "@repo/utils";
 import { authMiddleware } from "../../middleware/auth";
 import { SubscriptionCreateInput, SubscriptionUpdateInput } from "./types";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { redditPost } from "@repo/database/drizzle/schema";
+import { openaiService, promptLeadAgentSubreddit, promptLeadAgentQuery} from "@repo/ai";
 
 export const leadAgentRouter = new Hono()
 	.basePath("/lead-agent")
@@ -19,9 +20,11 @@ export const leadAgentRouter = new Hono()
 		validator(
 			"query",
 			z.object({
-				query: z.string().optional(),
+				query: z.string().nonempty("Query is required"),
 				categoryId: z.string().optional(),
 				organizationId: z.string().optional(),
+				page: z.string().optional(),
+				pageSize: z.string().optional(),
 			}),
 		),
 		describeRoute({
@@ -29,13 +32,34 @@ export const leadAgentRouter = new Hono()
 			tags: ["LeadAgent"],
 		}),
 		async (c) => {
-			const { query, categoryId, organizationId } = c.req.valid("query");
+			const { query, categoryId, organizationId, page, pageSize } = c.req.valid("query");
+			const pageNum = parseInt(page || "1");
+			const pageSizeNum = parseInt(pageSize || "10");
+			const offset = (pageNum - 1) * pageSizeNum;
 
-			const posts = await db.query.redditPost.findMany({
-				orderBy: [desc("createAt")],
+			// 查询当前页数据
+			let records;
+			let total;
+
+			// 1. 生成查询文本的向量表示
+			const embedding = await openaiService.generateQueryEmbedding(query);
+
+			// 2. 使用pgvector进行向量搜索
+			records = await db.query.redditPost.findMany({
+				orderBy: [sql`${redditPost.embedding} <-> ${sql.raw(JSON.stringify(embedding))}`], // 余弦相似度排序
+				limit: pageSizeNum,
+				offset,
 			});
 
-			return c.json(posts);
+			// 单独查询总记录数
+			total = await db.$count(redditPost, {
+				where: categoryId ? eq(redditPost.categoryId, categoryId) : undefined
+			});
+
+			return c.json({
+				records,
+				total,
+			});
 		},
 	)
 	.get(

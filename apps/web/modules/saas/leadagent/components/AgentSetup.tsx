@@ -13,13 +13,13 @@ export function AgentSetupDialog({
 	open,
 	categoryId,
 	organizationId,
-	subscription,
+	agentSetting,
 	onSuccess,
 }: {
 	open: boolean;
 	categoryId?: string;
 	organizationId?: string;
-	subscription?: any;
+	agentSetting?: any;
 	onSuccess: (open: boolean, isReload: boolean) => void;
 }) {
 	const t = useTranslations();
@@ -41,7 +41,7 @@ export function AgentSetupDialog({
 					</DialogTitle>
 				</DialogHeader>
 				<AgentSetupForm
-					subscription={subscription}
+					agentSetting={agentSetting}
 					categoryId={categoryId}
 					organizationId={organizationId}
 					onSuccess={onSuccess}

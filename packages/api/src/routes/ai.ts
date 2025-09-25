@@ -43,7 +43,7 @@ export const aiRouter = new Hono()
 		),
 		async (c) => {
 			const query = c.req.valid("query");
-			const chats = await db.aiChat.findMany({
+			const chats = await db.query.aiChat.findMany({
 				where: query?.organizationId
 					? {
 							organizationId: query.organizationId,
@@ -77,7 +77,7 @@ export const aiRouter = new Hono()
 		async (c) => {
 			const { id } = c.req.param();
 
-			const chat = await db.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findUnique({ where: { id } });
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -127,7 +127,7 @@ export const aiRouter = new Hono()
 				await verifyOrganizationMembership(organizationId, user.id);
 			}
 
-			const chat = await db.aiChat.create({
+			const chat = await db.query.aiChat.create({
 				data: {
 					title: title,
 					organizationId,
@@ -161,7 +161,7 @@ export const aiRouter = new Hono()
 			const { title } = c.req.valid("json");
 			const user = c.get("user");
 
-			const chat = await db.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findUnique({ where: { id } });
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -176,7 +176,7 @@ export const aiRouter = new Hono()
 				throw new HTTPException(403, { message: "Forbidden" });
 			}
 
-			const updatedChat = await db.aiChat.update({
+			const updatedChat = await db.query.aiChat.update({
 				where: { id },
 				data: { title },
 			});
@@ -199,7 +199,7 @@ export const aiRouter = new Hono()
 		async (c) => {
 			const { id } = c.req.param();
 			const user = c.get("user");
-			const chat = await db.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findUnique({ where: { id } });
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -214,7 +214,7 @@ export const aiRouter = new Hono()
 				throw new HTTPException(403, { message: "Forbidden" });
 			}
 
-			await db.aiChat.delete({ where: { id } });
+			await db.query.aiChat.delete({ where: { id } });
 
 			return c.body(null, 204);
 		},
@@ -249,7 +249,7 @@ export const aiRouter = new Hono()
 			const { messages } = c.req.valid("json");
 			const user = c.get("user");
 
-			const chat = await db.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findUnique({ where: { id } });
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -268,7 +268,7 @@ export const aiRouter = new Hono()
 				model: textModel,
 				messages,
 				async onFinish({ text }) {
-					await db.aiChat.update({
+					await db.query.aiChat.update({
 						where: { id },
 						data: {
 							messages: [

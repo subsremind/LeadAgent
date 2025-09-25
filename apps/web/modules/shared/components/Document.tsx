@@ -5,7 +5,7 @@ import { Toaster } from "@ui/components/toast";
 import { cn } from "@ui/lib";
 import { Provider as JotaiProvider } from "jotai";
 import { ThemeProvider } from "next-themes";
-import { Poppins } from "next/font/google";
+import { Poppins } from "@shared/lib/font";
 import NextTopLoader from "nextjs-toploader";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { PropsWithChildren } from "react";
@@ -20,8 +20,23 @@ export function Document({
 	children,
 	locale,
 }: PropsWithChildren<{ locale: string }>) {
+	// 预加载本地字体CSS
+	if (typeof window !== 'undefined') {
+		const link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = '/fonts/poppins/poppins.css';
+		link.crossOrigin = 'anonymous';
+		if (!document.head.querySelector('link[href="/fonts/poppins/poppins.css"]')) {
+			document.head.appendChild(link);
+		}
+	}
+
 	return (
 		<html lang={locale} suppressHydrationWarning>
+			<head>
+				{/* 确保字体CSS在服务器端也被加载 */}
+				<link rel="stylesheet" href="/fonts/poppins/poppins.css" crossOrigin="anonymous" />
+			</head>
 			<body
 				className={cn(
 					"min-h-screen bg-background font-sans text-foreground antialiased",
