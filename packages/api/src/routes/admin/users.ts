@@ -1,4 +1,5 @@
 import { db } from "@repo/database";
+import { user } from "@repo/database/drizzle/schema";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
@@ -25,15 +26,14 @@ export const userRouter = new Hono()
 		async (c) => {
 			const { query, limit, offset } = c.req.valid("query");
 
-			const users = await db.user.findMany({
-				where: {
-					name: { contains: query, mode: "insensitive" },
-				},
-				take: limit,
-				skip: offset,
+			const users = await db.query.user.findMany({
+				where: (u, { ilike }) =>
+					query && query.trim() ? ilike(u.name, `%${query}%`) : undefined,
+				limit,
+				offset,
 			});
 
-			const total = await db.user.count();
+			const total = await db.$count(user);
 
 			return c.json({ users, total });
 		},

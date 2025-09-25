@@ -57,8 +57,8 @@ export const auth = betterAuth({
 					return;
 				}
 
-				const invitation = await db.invitation.findUnique({
-					where: { id: invitationId },
+				const invitation = await db.query.invitation.findFirst({
+					where: (invitation, { eq }) => eq(invitation.id, invitationId),
 				});
 
 				if (!invitation) {

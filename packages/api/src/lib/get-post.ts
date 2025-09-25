@@ -67,9 +67,9 @@ async function fetchRedditPosts(subreddit: string, sortType: string, limit = 1) 
 	while (remainingLimit > 0) {
 		await new Promise(resolve => setTimeout(resolve, 2000));
 		const batchSize = Math.min(remainingLimit, 100);
-		const url = `https://www.reddit.com/${subreddit}/${sortType}.json?t=all&limit=${batchSize}${after ? `&after=${after}` : ''}`;
+		const url: string = `https://www.reddit.com/${subreddit}/${sortType}.json?t=all&limit=${batchSize}${after ? `&after=${after}` : ''}`;
 		try {
-			const res = await fetch(url, {
+			const res: Response = await fetch(url, {
 				headers: { "User-Agent": "reddit-embeddings-script" },
 			});			
 			if (!res.ok) {
