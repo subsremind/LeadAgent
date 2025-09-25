@@ -109,27 +109,19 @@ export const paymentsRouter = new Hono()
 					: undefined;
 
 			const organization = organizationId
-				? await db.organization.findUnique({
-						where: {
-							id: organizationId,
-						},
-						include: {
-							_count: {
-								select: {
-									members: true,
-								},
-							},
-						},
+				? await db.query.organization.findFirst({
+						where: (org, { eq }) => eq(org.id, organizationId),
+						with: { members: true },
 					})
 				: undefined;
 
-			if (organization === null) {
+			if (!organization) {
 				throw new HTTPException(404);
 			}
 
 			const seats =
 				organization && price && "seatBased" in price && price.seatBased
-					? organization._count.members
+					? organization.members.length
 					: undefined;
 
 			try {
@@ -183,11 +175,11 @@ export const paymentsRouter = new Hono()
 			const { purchaseId, redirectUrl } = c.req.valid("query");
 			const user = c.get("user");
 
-			const purchase = await db.purchase.findUnique({
-				where: {
-					id: purchaseId,
-				},
-			});
+			const purchase = purchaseId
+				? await db.query.purchase.findFirst({
+						where: (p, { eq }) => eq(p.id, purchaseId),
+					})
+				: null;
 
 			if (!purchase) {
 				throw new HTTPException(403);

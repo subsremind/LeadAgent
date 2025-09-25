@@ -1,19 +1,21 @@
 import { db } from "@repo/database";
+import { organization, user } from "@repo/database/drizzle/schema";
+import { eq } from "drizzle-orm";
 
 export async function setCustomerIdToEntity(
 	customerId: string,
 	{ organizationId, userId }: { organizationId?: string; userId?: string },
 ) {
 	if (organizationId) {
-		await db.organization.update({
-			where: { id: organizationId },
-			data: { paymentsCustomerId: customerId },
-		});
+		await db
+			.update(organization)
+			.set({ paymentsCustomerId: customerId })
+			.where(eq(organization.id, organizationId));
 	} else if (userId) {
-		await db.user.update({
-			where: { id: userId },
-			data: { paymentsCustomerId: customerId },
-		});
+		await db
+			.update(user)
+			.set({ paymentsCustomerId: customerId })
+			.where(eq(user.id, userId));
 	}
 }
 
@@ -23,8 +25,8 @@ export const getCustomerIdFromEntity = async (
 	if ("organizationId" in props) {
 		return (
 			(
-				await db.organization.findUnique({
-					where: { id: props.organizationId },
+				await db.query.organization.findFirst({
+					where: (org, { eq }) => eq(org.id, props.organizationId),
 				})
 			)?.paymentsCustomerId ?? null
 		);
@@ -32,8 +34,8 @@ export const getCustomerIdFromEntity = async (
 
 	return (
 		(
-			await db.user.findUnique({
-				where: { id: props.userId },
+			await db.query.user.findFirst({
+				where: (u, { eq }) => eq(u.id, (props as { userId: string }).userId),
 			})
 		)?.paymentsCustomerId ?? null
 	);
