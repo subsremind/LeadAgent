@@ -8,9 +8,9 @@ import { verifyOrganizationMembership } from "../organizations/lib/membership";
 import { utcnow } from "@repo/utils";
 import { authMiddleware } from "../../middleware/auth";
 import { SubscriptionCreateInput, SubscriptionUpdateInput } from "./types";
-import { desc, eq, sql } from "drizzle-orm";
-import { redditPost } from "@repo/database/drizzle/schema";
-import { openaiService, promptLeadAgentSubreddit, promptLeadAgentQuery} from "@repo/ai";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { category, redditPost } from "@repo/database/drizzle/schema";
+import { openaiService } from "@repo/ai";
 
 export const leadAgentRouter = new Hono()
 	.basePath("/lead-agent")
@@ -32,7 +32,7 @@ export const leadAgentRouter = new Hono()
 			tags: ["LeadAgent"],
 		}),
 		async (c) => {
-			const { query, categoryId, organizationId, page, pageSize } = c.req.valid("query");
+			const { query, categoryId, embedding, organizationId, page, pageSize } = c.req.valid("query");
 			const pageNum = parseInt(page || "1");
 			const pageSizeNum = parseInt(pageSize || "10");
 			const offset = (pageNum - 1) * pageSizeNum;
@@ -42,7 +42,7 @@ export const leadAgentRouter = new Hono()
 			let total;
 
 			// 1. 生成查询文本的向量表示
-			const embedding = await openaiService.generateQueryEmbedding(query);
+			// const embedding = await openaiService.generateQueryEmbedding(query);
 
 			// 2. 使用pgvector进行向量搜索
 			records = await db.query.redditPost.findMany({
@@ -68,6 +68,8 @@ export const leadAgentRouter = new Hono()
 			"json",
 			z.object({
 				query: z.string().nonempty("Query is required"),
+				embedding: z.array(z.number()),
+				subreddit: z.string(),
 				categoryId: z.string().optional(),
 				organizationId: z.string().optional(),
 				page: z.number().default(1),
@@ -79,16 +81,31 @@ export const leadAgentRouter = new Hono()
 			tags: ["LeadAgent"],
 		}),
 		async (c) => {
-			const { query, categoryId, organizationId, page, pageSize } = c.req.valid("json");
+			const { query, subreddit, embedding, categoryId, organizationId, page, pageSize } = c.req.valid("json");
+			const subredditArr = subreddit.split(',');
+			const categoryIds = await db.select().from(category).where(inArray(category.path, subredditArr.map(subreddit => subreddit.trim())))
+			if (!categoryIds.length) {
+				return c.json({ error: "Subreddit not found" }, 404);
+			}
+
+			const categoryArray = categoryIds.map((item) => item.id);
+
 			const offset = (page - 1) * pageSize;	
 
 			// 查询当前页数据
 			let records;
 			let total;
 
-			// 1. 生成查询文本的向量表示
-			const embedding = await openaiService.generateQueryEmbedding(query);
+			// 检查 embedding 参数是否存在
+			if (!embedding || !Array.isArray(embedding)) {
+				return c.json({
+					records: [],
+					total: 0,
+				});
+			}
 
+			// 1. 生成查询文本的向量表示
+			// const embedding = await openaiService.generateQueryEmbedding(query);
 			// 2. 使用pgvector进行向量搜索
 			records = await db.query.redditPost.findMany({
 				columns: {
@@ -107,16 +124,19 @@ export const leadAgentRouter = new Hono()
 					numComments: true,
 					createdUtc: true,
 				},
-				where: sql`${redditPost.embedding} <=> ARRAY[${sql.raw(embedding.join(', '))}]::vector > 0.5`,
+				where: and(
+					inArray(redditPost.categoryId, categoryArray), 
+					sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < 0.7`
+				),
 				orderBy: [
-					desc(redditPost.createdUtc)], // 余弦相似度排序
-				// orderBy: [desc(redditPost.createdUtc)],
+					desc(redditPost.createdUtc)], 
 				limit: pageSize,
 				offset,
 			});
-
-			// 单独查询总记录数
-			total = await db.$count(redditPost,sql`${redditPost.embedding} <=> ARRAY[${sql.raw(embedding.join(', '))}]::vector > 0.5`);
+			total = await db.$count(redditPost, and(
+				inArray(redditPost.categoryId, categoryArray),
+				sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < 0.7`
+			));
 
 			return c.json({
 				records,

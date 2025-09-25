@@ -121,21 +121,20 @@ export const agentSettingRouter = new Hono()
 				const rawData = c.req.valid("json");
 				const user = c.get("user");
 				rawData.userId = user.id;
+				const embedding = await openaiService.generateQueryEmbedding(rawData.query);
+				rawData.embedding = embedding;
 
 				const agentSettingRecord = await db.insert(agentSetting).values(rawData);
 
 				const subreddit = rawData.subreddit;
 				const subredditArray = subreddit?.split(',') || [];
 				// 检查category 中是否有subredditArray的数据。 如果没有，则插入一条记录
-				const categoryRecords = await db.query.category.findMany({
-					where: inArray(category.path, subredditArray)
-				});
-				// 排除已经存在的category
-				const existingCategoryNames = categoryRecords?.map(category => category.name) || [];
-				const newSubredditArray = subredditArray.filter(subreddit => !existingCategoryNames.includes(subreddit)).map(subreddit => ({
-					name: subreddit,
-					userId: user.id,
-					path: subreddit,
+				const categoryRecords = await db.query.category.findMany();
+				// 排除已经存在的category, 首尾去空格
+				const existingCategoryPaths = categoryRecords?.map(category => category.path.trim()) || [];
+				const newSubredditArray = subredditArray.filter(subreddit => !existingCategoryPaths.includes(subreddit.trim())).map(subreddit => ({
+					name: subreddit.trim(),
+					path: subreddit.trim(),
 					platform: 'reddit',
 				}));
 
@@ -212,6 +211,8 @@ export const agentSettingRouter = new Hono()
 				const id = c.req.param("id");
 				const rawData = c.req.valid("json");
 				const user = c.get("user");
+				const embedding = await openaiService.generateQueryEmbedding(rawData.query);
+				rawData.embedding = embedding;
 
 				const existing = await db.query.agentSetting.findFirst({
 					where: eq(agentSetting.id, id),
@@ -229,14 +230,12 @@ export const agentSettingRouter = new Hono()
 				const subreddit = rawData.subreddit;
 				const subredditArray = subreddit?.split(',') || [];
 				// 检查category 中是否有subredditArray的数据。 如果没有，则插入一条记录
-				const categoryRecords = await db.query.category.findMany({
-					where: inArray(category.path, subredditArray)
-				});
-				// 排除已经存在的category
-				const existingCategoryNames = categoryRecords?.map(category => category.name) || [];
-				const newSubredditArray = subredditArray.filter(subreddit => !existingCategoryNames.includes(subreddit)).map(subreddit => ({
-					name: subreddit,
-					path: subreddit,
+				const categoryRecords = await db.query.category.findMany();
+				// 排除已经存在的category, 首尾去空格
+				const existingCategoryPaths = categoryRecords?.map(category => category.path.trim()) || [];
+				const newSubredditArray = subredditArray.filter(subreddit => !existingCategoryPaths.includes(subreddit.trim())).map(subreddit => ({
+					name: subreddit.trim(),
+					path: subreddit.trim(),
 					platform: 'reddit',
 				}));
 

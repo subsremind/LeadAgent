@@ -152,7 +152,7 @@ export function UserMenu({ showUserName }: { showUserName?: boolean }) {
 					</Link>
 				</DropdownMenuItem>
 
-				<DropdownMenuItem asChild>
+				{/* <DropdownMenuItem asChild>
 					<a
 						href="https://docs.supastarter.dev"
 						target="_blank"
@@ -161,7 +161,7 @@ export function UserMenu({ showUserName }: { showUserName?: boolean }) {
 						<BookIcon className="mr-2 size-4" />
 						{t("app.userMenu.documentation")}
 					</a>
-				</DropdownMenuItem>
+				</DropdownMenuItem> */}
 
 				<DropdownMenuItem asChild>
 					<Link href="/">

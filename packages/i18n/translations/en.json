@@ -848,7 +848,7 @@
 			"setQuery": "Set Query"
 		},
 		"form": {
-			"description": "Description",
+			"description": "Description of product or service",
 			"setup": "Agent Setup",
 			"generate": "Generate the Agent",
 			"generateFailed": "Failed to generate prompt",

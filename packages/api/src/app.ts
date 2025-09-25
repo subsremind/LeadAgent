@@ -32,13 +32,13 @@ app.use(corsMiddleware);
 const appRouter = app
 	.route("/", authRouter)
 	.route("/", webhooksRouter)
-	// .route("/", aiRouter)
-	// .route("/", uploadsRouter)
-	// .route("/", paymentsRouter)
-	// .route("/", contactRouter)
-	// .route("/", newsletterRouter)
-	// .route("/", organizationsRouter)
-	// .route("/", adminRouter)
+	.route("/", aiRouter)
+	.route("/", uploadsRouter)
+	.route("/", paymentsRouter)
+	.route("/", contactRouter)
+	.route("/", newsletterRouter)
+	.route("/", organizationsRouter)
+	.route("/", adminRouter)
 	.route("/", healthRouter)
 	.route("/", leadAgentRouter)
 	.route("/", leadAgentCategoryRouter)
@@ -96,7 +96,7 @@ scheduler.schedule({
 
 scheduler.schedule({
 	id: "get-reddit-post",
-	cronExpression: "*/15 * * * * *", //,config.syncPost.cronExpression,
+	cronExpression: "1 1 * * * *", //,config.syncPost.cronExpression,
 	task: async () => {
 		getRedditPost();
 	},

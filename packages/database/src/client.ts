@@ -14,9 +14,8 @@ const queryClient = postgres(process.env.DATABASE_URL, {
   });
  
 // 在开发环境启用SQL日志记录
-const isDev = process.env.NODE_ENV === 'development';
 
 export const db = drizzle(queryClient, {
   schema,
-  logger: isDev,
+  logger: false,
 });

@@ -67,8 +67,8 @@ export function LeadAgentList({
 	};
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query],
-		enabled: !!agentSetting?.query, // 只有当agentSetting.query有值时才执行查询
+		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit],
+		enabled: !!agentSetting?.query && !!agentSetting?.subreddit, // 只有当agentSetting.query和agentSetting.subreddit都有值时才执行查询
 		queryFn: async () => {
 		let url = "/api/lead-agent/search";
 		//改为post请求
@@ -81,6 +81,8 @@ export function LeadAgentList({
 				query: agentSetting?.query || "",
 				page: currentPage,
 				pageSize: pageSize,
+				subreddit: agentSetting?.subreddit || "",
+				embedding: agentSetting?.embedding || [],
 			}),
 		});
 		return await response.json(); 

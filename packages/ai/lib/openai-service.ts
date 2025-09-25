@@ -220,7 +220,16 @@ export class OpenAIService {
         model: "text-embedding-3-small",
         input: text,
       });
-      return response.data[0].embedding;
+      
+      // 获取embedding结果
+      let embedding = response.data[0].embedding;
+      
+      // 检查并处理嵌套数组问题，确保返回一维数组
+      if (embedding && Array.isArray(embedding) && embedding.length > 0 && Array.isArray(embedding[0])) {
+        embedding = embedding.flat();
+      }
+      
+      return embedding;
     } catch (error) {
       console.error("Error generating query embedding:", error);
       throw error;

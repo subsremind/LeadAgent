@@ -232,6 +232,7 @@ export const agentSetting = pgTable('agent_setting', {
   description: text('description').notNull(),
   subreddit: text('subreddit'),
   query: text('query').notNull(),
+  embedding: vector('embedding', { dimensions: 1536 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, t => [

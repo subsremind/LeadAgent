@@ -1,0 +1,1 @@
+ALTER TABLE "agent_setting" ADD COLUMN "embedding" vector(1536);

@@ -37,14 +37,14 @@ export function NavBar() {
 			icon: HomeIcon,
 			isActive: pathname === basePath,
 		},
-		{
-			label: t("app.menu.aiChatbot"),
-			href: activeOrganization
-				? `/app/${activeOrganization.slug}/chatbot`
-				: "/app/chatbot",
-			icon: BotMessageSquareIcon,
-			isActive: pathname.includes("/chatbot"),
-		},
+		// {
+		// 	label: t("app.menu.aiChatbot"),
+		// 	href: activeOrganization
+		// 		? `/app/${activeOrganization.slug}/chatbot`
+		// 		: "/app/chatbot",
+		// 	icon: BotMessageSquareIcon,
+		// 	isActive: pathname.includes("/chatbot"),
+		// },
 		{
 			label: t("app.menu.leadAgent"),
 			href: activeOrganization
@@ -70,16 +70,17 @@ export function NavBar() {
 						isActive: pathname.startsWith("/app/settings/"),
 					},
 				]),
-		...(user?.role === "admin"
-			? [
-					{
-						label: t("app.menu.admin"),
-						href: "/app/admin",
-						icon: UserCogIcon,
-						isActive: pathname.startsWith("/app/admin/"),
-					}
-				]
-			: []),
+		// 仅对管理员显示的菜单
+		// ...(user?.role === "admin"
+		// 	? [
+		// 			{
+		// 				label: t("app.menu.admin"),
+		// 				href: "/app/admin",
+		// 				icon: UserCogIcon,
+		// 				isActive: pathname.startsWith("/app/admin/"),
+		// 			}
+		// 		]
+		// 	: []),
 	];
 
 	return (

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { any, z } from "zod";
 
 
 export const AgentSettingModel = z.object({
@@ -13,9 +13,10 @@ export const AgentSettingModel = z.object({
 
 export const AgentSettingCreateInput = z.object({
   userId: z.string(),
-  description: z.string(),
+  description: z.string().nonempty(),
   subreddit: z.string().optional(),
-  query: z.string().optional(),
+  query: z.string().nonempty(),
+
 });
 
 export const AgentSettingUpdateInput = AgentSettingCreateInput.partial().extend({
