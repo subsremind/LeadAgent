@@ -11,6 +11,8 @@ import type {
 	SetSubscriptionSeats,
 	WebhookHandler,
 } from "../../types";
+import { eq } from "drizzle-orm";
+import { purchase } from "@repo/database/drizzle/schema";
 
 const polarAccessToken = process.env.POLAR_ACCESS_TOKEN as string;
 const polarWebhookSecret = process.env.POLAR_WEBHOOK_SECRET as string;
@@ -94,15 +96,13 @@ export const webhookHandler: WebhookHandler = async (req) => {
 					break;
 				}
 
-				await db.purchase.create({
-					data: {
+				await db.insert(purchase).values({
 						organizationId:
 							(metadata?.organization_id as string) || null,
 						userId: (metadata?.user_id as string) || null,
 						customerId,
 						type: "ONE_TIME",
 						productId: productPriceId,
-					},
 				});
 
 				await setCustomerIdToEntity(customerId, {
@@ -116,8 +116,7 @@ export const webhookHandler: WebhookHandler = async (req) => {
 				const { metadata, customerId, priceId, id, status } =
 					event.data;
 
-				await db.purchase.create({
-					data: {
+				await db.insert(purchase).values({
 						subscriptionId: id,
 						organizationId: metadata?.organization_id as string,
 						userId: metadata?.user_id as string,
@@ -125,7 +124,6 @@ export const webhookHandler: WebhookHandler = async (req) => {
 						type: "SUBSCRIPTION",
 						productId: priceId,
 						status,
-					},
 				});
 
 				await setCustomerIdToEntity(customerId, {
@@ -138,33 +136,23 @@ export const webhookHandler: WebhookHandler = async (req) => {
 			case "subscription.updated": {
 				const { id, status, priceId } = event.data;
 
-				const existingPurchase = await db.purchase.findUnique({
-					where: {
-						subscriptionId: id,
-					},
+				const existingPurchase = await db.query.purchase.findFirst({
+					where: eq(purchase.subscriptionId, id),
 				});
 
 				if (existingPurchase) {
-					await db.purchase.update({
-						data: {
+					await db.update(purchase).set({
 							status,
 							productId: priceId,
-						},
-						where: {
-							subscriptionId: id,
-						},
-					});
+						
+					}).where(eq(purchase.subscriptionId, id));
 				}
 				break;
 			}
 			case "subscription.canceled": {
 				const { id } = event.data;
 
-				await db.purchase.delete({
-					where: {
-						subscriptionId: id,
-					},
-				});
+				await db.delete(purchase).where(eq(purchase.subscriptionId, id));
 
 				break;
 			}

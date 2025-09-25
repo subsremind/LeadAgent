@@ -37,7 +37,7 @@ export const agentSettingRouter = new Hono()
 
 			// 查询当前页数据
 			const records = await db.query.agentSetting.findMany({
-				orderBy: [desc("createdAt")], // 修正排序字段名
+				orderBy: [desc(agentSetting.createdAt)], // 使用表定义中的列
 				limit: pageSize,
 				offset,
 
@@ -66,7 +66,7 @@ export const agentSettingRouter = new Hono()
 			const user = c.get("user");
 			const promptSubreddit = promptLeadAgentSubreddit(description);
 			const responseSubreddit = await openaiService.generateText(promptSubreddit, {
-				model: 'gpt-3.5-turbo',
+				model: 'gpt-5',
 				temperature: 0.7,
 				userId: user.id, 
 			});
@@ -78,7 +78,7 @@ export const agentSettingRouter = new Hono()
 
 			const promptQuery = promptLeadAgentQuery(description);
 			const responseQuery = await openaiService.generateText(promptQuery, {
-				model: 'gpt-3.5-turbo',
+				model: 'gpt-5',
 				temperature: 0.7,
 				userId: user.id, 
 			});
@@ -120,11 +120,16 @@ export const agentSettingRouter = new Hono()
 			try {
 				const rawData = c.req.valid("json");
 				const user = c.get("user");
-				rawData.userId = user.id;
 				const embedding = await openaiService.generateQueryEmbedding(rawData.query);
-				rawData.embedding = embedding;
 
-				const agentSettingRecord = await db.insert(agentSetting).values(rawData);
+				// 创建包含所有必要字段的新对象
+				const agentSettingData = {
+					...rawData,
+					userId: user.id,
+					embedding
+				};
+
+				const agentSettingRecord = await db.insert(agentSetting).values(agentSettingData);
 
 				const subreddit = rawData.subreddit;
 				const subredditArray = subreddit?.split(',') || [];
@@ -156,49 +161,7 @@ export const agentSettingRouter = new Hono()
 			}
 		},
 	)
-	.patch(
-		"/:id",
-		validator("json", AgentSettingUpdateInput),
-		describeRoute({
-			summary: "Update agent-setting",
-			tags: ["AgentSetting"],
-		}),
-		async (c) => {
-			const id = c.req.param("id");
-			const data = c.req.valid("json");
-
-			const user = c.get("user");
-			if (data.organizationId) {
-				await verifyOrganizationMembership(
-					data.organizationId,
-					user.id,
-				);
-			}
-
-			const existing = await db.agentSetting.findUnique({
-				where: { id },
-			});
-			if (!existing) {
-				return c.json({ error: "AgentSetting not found" }, 404);
-			}
-
-			const { tags = [], ...cleanData } = data;
-				const agentSettingTags = tags.map((tagId) => ({ tagId }));
-				const agentSetting = await db.agentSetting.update({
-					where: { id },
-					data: {
-						...cleanData,
-						updatedAt: utcnow(),
-						agentSettingTags: {
-							deleteMany: {},
-							create: agentSettingTags,
-						},
-					}
-				});
-
-			return c.json(agentSetting);
-		},
-	)
+	
 	.put(
 		"/:id",
 		validator("json", AgentSettingCreateInput),
@@ -209,23 +172,28 @@ export const agentSettingRouter = new Hono()
 		async (c) => {
 			try {
 				const id = c.req.param("id");
-				const rawData = c.req.valid("json");
-				const user = c.get("user");
-				const embedding = await openaiService.generateQueryEmbedding(rawData.query);
-				rawData.embedding = embedding;
+			const rawData = c.req.valid("json");
+			const user = c.get("user");
+			const embedding = await openaiService.generateQueryEmbedding(rawData.query);
+
+			// 创建包含所有必要字段的新对象
+			const agentSettingData = {
+				...rawData,
+				embedding
+			};
 
 				const existing = await db.query.agentSetting.findFirst({
-					where: eq(agentSetting.id, id),
-				});
+				where: (setting, { eq }) => eq(setting.id, parseInt(id)),
+			});
 				if (!existing) {
 					return c.json({ error: "AgentSetting not found" }, 404);
 				}
 
 
 				const updatedAgentSetting = await db.update(agentSetting).set({
-					...rawData,
-					updatedAt: utcnow(),
-				}).where(eq(agentSetting.id, id)).returning();
+				...agentSettingData,
+				updatedAt: utcnow(),
+				}).where(eq(agentSetting.id, parseInt(id))).returning();
 
 				const subreddit = rawData.subreddit;
 				const subredditArray = subreddit?.split(',') || [];
@@ -254,21 +222,5 @@ export const agentSettingRouter = new Hono()
 					400,
 				);
 			}
-		},
-	)	
-	.delete(
-		"/:id",
-		describeRoute({
-			summary: "Delete agent-setting",
-			tags: ["AgentSetting"],
-		}),
-		async (c) => {
-			const id = c.req.param("id");
-			await db.agentSetting.delete({
-				where: {
-					id,
-				},
-			});
-			return c.json({ success: true });
 		},
 	);
