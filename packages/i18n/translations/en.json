@@ -274,17 +274,17 @@
 			"subject": "Reset your password"
 		},
 		"magicLink": {
-			"body": "Hey,\nyou requested a login email from subsremind.\n\nClick the link below to login.",
+			"body": "Hey,\nyou requested a login email from LeadAgent\n\nClick the link below to login.",
 			"login": "Login",
-			"subject": "Login to subsremind"
+			"subject": "Login to LeadAgent"
 		},
 		"newUser": {
-			"body": "Hey,\nthanks for signing up for subsremind.\n\nTo start using our app, please confirm your email address by clicking the link below.",
+			"body": "Hey,\nthanks for signing up for LeadAgent.\n\nTo start using our app, please confirm your email address by clicking the link below.",
 			"confirmEmail": "Confirm email",
 			"subject": "Confirm your email"
 		},
 		"newsletterSignup": {
-			"body": "Thank you for signing up for the subsremind newsletter. We will keep you updated with the latest news and updates.",
+			"body": "Thank you for signing up for the LeadAgent newsletter. We will keep you updated with the latest news and updates.",
 			"subject": "Welcome to our newsletter"
 		},
 		"organizationInvitation": {
@@ -306,7 +306,7 @@
 			}
 		},
 		"submit": "Subscribe",
-		"subtitle": "Be among the first to get access to subsremind.",
+		"subtitle": "Be among the first to get access to LeadAgent.",
 		"title": "Get early access"
 	},
 	"onboarding": {
@@ -853,6 +853,5 @@
 			"query": "Query keywords",
 			"subreddit": "Subreddit"
 		}
-		
 	}
 }

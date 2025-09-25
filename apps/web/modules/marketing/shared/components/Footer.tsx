@@ -8,12 +8,12 @@ export function Footer() {
 				<div>
 					<Logo className="opacity-70 grayscale" />
 					<p className="mt-3 text-sm opacity-70">
-						© {new Date().getFullYear()} subsremind. All rights
+						© {new Date().getFullYear()} LeadAgent. All rights
 						reserved.
 					</p>
 				</div>
 
-				<div className="flex flex-col gap-2">
+				{/* <div className="flex flex-col gap-2">
 					<LocaleLink href="/blog" className="block">
 						Blog
 					</LocaleLink>
@@ -25,7 +25,7 @@ export function Footer() {
 					<a href="/#pricing" className="block">
 						Pricing
 					</a>
-				</div>
+				</div> */}
 
 				<div className="flex flex-col gap-2">
 					<LocaleLink href="/legal/privacy-policy" className="block">
