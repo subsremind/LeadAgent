@@ -67,20 +67,22 @@ export function LeadAgentList({
 	};
 
 	const { data, isLoading } = useQuery({
-	queryKey: ["raddit-page", categoryId, organizationId, currentPage, pageSize],
-	queryFn: async () => {
-		let url = "/api/lead-agent";
-		const params = new URLSearchParams();
-		if (categoryId) {
-			params.append("categoryId", categoryId);
-		}
-		if (organizationId) {
-			params.append("organizationId", organizationId);
-		}
-		params.append("page", currentPage.toString());
-		params.append("pageSize", pageSize.toString());
-		url += `?${params.toString()}`;
-		const response = await fetch(url);
+		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query],
+		enabled: !!agentSetting?.query, // 只有当agentSetting.query有值时才执行查询
+		queryFn: async () => {
+		let url = "/api/lead-agent/search";
+		//改为post请求
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				query: agentSetting?.query || "",
+				page: currentPage,
+				pageSize: pageSize,
+			}),
+		});
 		return await response.json(); 
 	},
 });
@@ -111,6 +113,7 @@ export function LeadAgentList({
 				<h2 className="text-xl font-bold">{t("leadAgent.list.title")}</h2>
 				<Button
 					variant="primary"
+					className="bg-sky-600 border-0"
 					onClick={() => {
 						setEditOpen(true);
 					}}
@@ -120,7 +123,18 @@ export function LeadAgentList({
 				</Button>
 			</div>
 
-			{isLoading ? (
+			{!agentSetting?.query ? (
+				<div className="flex flex-col items-center justify-center h-64 border border-dashed rounded-lg">
+					<SettingsIcon className="size-12 text-muted-foreground mb-4" />
+					<p className="text-muted-foreground mb-2">{t("leadAgent.list.noQueryPrompt")}</p>
+					<Button
+						variant="secondary"
+						onClick={() => setEditOpen(true)}
+					>
+						{t("leadAgent.list.setQuery")}
+					</Button>
+				</div>
+			) : isLoading ? (
 				<div className="flex justify-center items-center h-64">
 					<Spinner className="mr-2 size-4 text-primary" />
 					{t("common.loading")}

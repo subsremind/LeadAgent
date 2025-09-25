@@ -35,7 +35,7 @@ export function utcDate(date: Date | string) {
  * @param locale 语言环境，默认为 "zh-CN"
  * @returns 格式化后的相对时间字符串，如 "1分钟前"、"2小时前"、"3天前"
  */
-export function formatRelativeTime(utcDate: number | Date | string, locale: string = "zh-CN"): string {
+export function formatRelativeTime(utcDate: number | Date | string, locale: string = "en-US"): string {
 	// 将输入转换为毫秒时间戳
 	let timestamp: number;
 	if (typeof utcDate === "number") {

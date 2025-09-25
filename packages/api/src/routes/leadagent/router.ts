@@ -62,6 +62,68 @@ export const leadAgentRouter = new Hono()
 			});
 		},
 	)
+	.post(
+		"/search",
+		validator(
+			"json",
+			z.object({
+				query: z.string().nonempty("Query is required"),
+				categoryId: z.string().optional(),
+				organizationId: z.string().optional(),
+				page: z.number().default(1),
+				pageSize: z.number().default(10),
+			}),
+		),
+		describeRoute({
+			summary: "Search lead-agent using vector search",
+			tags: ["LeadAgent"],
+		}),
+		async (c) => {
+			const { query, categoryId, organizationId, page, pageSize } = c.req.valid("json");
+			const offset = (page - 1) * pageSize;	
+
+			// 查询当前页数据
+			let records;
+			let total;
+
+			// 1. 生成查询文本的向量表示
+			const embedding = await openaiService.generateQueryEmbedding(query);
+
+			// 2. 使用pgvector进行向量搜索
+			records = await db.query.redditPost.findMany({
+				columns: {
+					id: true,
+					categoryId: true,
+					redditId: true,
+					title: true,
+					selftext: true,
+					url: true,
+					permalink: true,
+					author: true,
+					subreddit: true,
+					ups: true,
+					downs: true,
+					score: true,
+					numComments: true,
+					createdUtc: true,
+				},
+				where: sql`${redditPost.embedding} <=> ARRAY[${sql.raw(embedding.join(', '))}]::vector > 0.5`,
+				orderBy: [
+					desc(redditPost.createdUtc)], // 余弦相似度排序
+				// orderBy: [desc(redditPost.createdUtc)],
+				limit: pageSize,
+				offset,
+			});
+
+			// 单独查询总记录数
+			total = await db.$count(redditPost,sql`${redditPost.embedding} <=> ARRAY[${sql.raw(embedding.join(', '))}]::vector > 0.5`);
+
+			return c.json({
+				records,
+				total,
+			});
+		},
+	)
 	.get(
 		"/:id",
 		describeRoute({

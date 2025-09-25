@@ -10,6 +10,13 @@ const queryClient = postgres(process.env.DATABASE_URL, {
 	max: 5,
 	idle_timeout: 20,
 	connect_timeout: 60,
+	
   });
  
-export const db = drizzle(queryClient, { schema });
+// 在开发环境启用SQL日志记录
+const isDev = process.env.NODE_ENV === 'development';
+
+export const db = drizzle(queryClient, {
+  schema,
+  logger: isDev,
+});
