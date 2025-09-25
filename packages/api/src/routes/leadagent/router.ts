@@ -74,6 +74,7 @@ export const leadAgentRouter = new Hono()
 				organizationId: z.string().optional(),
 				page: z.number().default(1),
 				pageSize: z.number().default(10),
+				embeddingRate: z.number().default(0.7),
 			}),
 		),
 		describeRoute({
@@ -81,7 +82,7 @@ export const leadAgentRouter = new Hono()
 			tags: ["LeadAgent"],
 		}),
 		async (c) => {
-			const { query, subreddit, embedding, categoryId, organizationId, page, pageSize } = c.req.valid("json");
+			const { query, subreddit, embedding,embeddingRate, categoryId, organizationId, page, pageSize } = c.req.valid("json");
 			const subredditArr = subreddit.split(',');
 			const categoryIds = await db.select().from(category).where(inArray(category.path, subredditArr.map(subreddit => subreddit.trim())))
 			if (!categoryIds.length) {
@@ -126,7 +127,7 @@ export const leadAgentRouter = new Hono()
 				},
 				where: and(
 					inArray(redditPost.categoryId, categoryArray), 
-					sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < 0.7`
+					sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < ${embeddingRate}`
 				),
 				orderBy: [
 					desc(redditPost.createdUtc)], 
@@ -135,7 +136,7 @@ export const leadAgentRouter = new Hono()
 			});
 			total = await db.$count(redditPost, and(
 				inArray(redditPost.categoryId, categoryArray),
-				sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < 0.7`
+				sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < ${embeddingRate}`
 			));
 
 			return c.json({

@@ -845,7 +845,9 @@
 			"empty": "No data available",
 			"agentSetting": "Agent Setting",
 			"noQueryPrompt": "Please set your search query first",
-			"setQuery": "Set Query"
+			"setQuery": "Set Query",
+			"noDataPrompt": "No data available",
+			"embeddingRate": "Match Precision"
 		},
 		"form": {
 			"description": "Description of product or service",

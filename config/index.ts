@@ -65,7 +65,7 @@ export const config = {
 		// Whether users should be able to sign in with a magic link
 		enableMagicLink: false,
 		// Whether users should be able to sign in with a social provider
-		enableSocialLogin: true,
+		enableSocialLogin: false,
 		// Whether users should be able to sign in with a passkey
 		enablePasskeys: false,
 		// Whether users should be able to sign in with a password
