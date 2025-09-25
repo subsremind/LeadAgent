@@ -11,7 +11,7 @@ export function Hero() {
 		<div className="relative max-w-full overflow-x-hidden bg-linear-to-b from-0% from-card to-[50vh] to-background">
 			<div className="absolute left-1/2 z-10 ml-[-500px] h-[500px] w-[1000px] rounded-full bg-linear-to-r from-primary to-bg opacity-20 blur-[150px]" />
 			<div className="container relative z-20 pt-44 pb-12 text-center lg:pb-16">
-				<div className="mb-4 flex justify-center">
+				{/* <div className="mb-4 flex justify-center">
 					<div className="mx-auto flex flex-wrap items-center justify-center rounded-full border border-highlight/30 bg-card p-px px-4 py-1 font-normal text-highlight text-sm shadow-sm">
 						<span className="flex items-center gap-2 rounded-full font-semibold text-highlight">
 							<span className="size-2 rounded-full bg-highlight" />
@@ -21,15 +21,23 @@ export function Hero() {
 							Never miss a subscription renewal again
 						</span>
 					</div>
-				</div>
+				</div> */}
 
 				<h1 className="mx-auto max-w-3xl text-balance font-bold text-5xl lg:text-5xl">
-					Smart Subscription Reminders
+					Lead Agent – AI-Powered Reddit Marking Opportunity Finder
 				</h1>
 
-				<p className="mx-auto mt-4 max-w-lg text-balance text-foreground/60 text-lg">
-					SubsRemind helps you track all your subscriptions in one place and sends timely reminders before renewals. Save money by canceling unwanted subscriptions on time.
-				</p>
+				{/* <p className="mx-auto mt-4 md:mt-6 max-w-lg md:max-w-2xl lg:max-w-3xl text-balance whitespace-pre-line leading-relaxed text-foreground/60 text-base md:text-lg lg:text-xl text-center">
+                Product Overview
+                Lead Agent is an AI-driven platform designed to help businesses discover hidden sales opportunities on Reddit. By leveraging advanced AI agents, the product automatically scans, analyzes, and interprets millions of Reddit discussions to surface the most relevant leads for your business.
+                Core Features
+                AI Opportunity Detection: Continuously monitors Reddit communities, identifying posts and comments that signal purchase intent, product interest, or unmet needs.
+                Contextual Relevance Filtering: Uses natural language understanding to filter out noise and prioritize opportunities aligned with your product or service.
+                Lead Enrichment: Provides actionable insights, including the context of the discussion, potential customer needs, and engagement trends.
+                Customizable Tracking: Allows users to define keywords, industries, and buyer intent signals tailored to their business goals.
+                Value Proposition
+                Lead Agent transforms Reddit into a powerful lead-generation channel by automating the discovery of sales opportunities. Instead of manually browsing forums, sales and marketing teams gain instant visibility into conversations where potential customers are actively seeking solutions—making outreach more timely, relevant, and effective.
+                </p> */}
 
 				<div className="mt-6 flex flex-col items-center justify-center gap-3 md:flex-row">
 					<Button size="lg" variant="primary" asChild>
@@ -38,12 +46,12 @@ export function Hero() {
 							<ArrowRightIcon className="ml-2 size-4" />
 						</Link>
 					</Button>
-					<Button variant="outline" size="lg" asChild>
+					{/* <Button variant="outline" size="lg" asChild>
 						<LocaleLink href="/docs">Documentation</LocaleLink>
-					</Button>
+					</Button> */}
 				</div>
 
-				<div className="mt-16 px-8 text-center">
+				{/* <div className="mt-16 px-8 text-center">
 					<h5 className="font-semibold text-foreground/50 text-xs uppercase tracking-wider">
 					We support all major subscription services
 				</h5>
@@ -86,7 +94,7 @@ export function Hero() {
 							</svg>
 						</div>
 					</div>
-				</div>
+				</div> */}
 
 				<div className="mx-auto mt-16 max-w-5xl rounded-2xl border bg-card/50 p-2 shadow-lg dark:shadow-foreground/10">
 					<Image
@@ -101,7 +109,8 @@ export function Hero() {
 						className="hidden rounded-xl dark:block"
 						priority
 					/>
-				</div>
+				</div> 
+				
 			</div>
 		</div>
 	);

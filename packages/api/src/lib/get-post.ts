@@ -29,7 +29,7 @@ export async function getRedditPost() {
 			.from(category)
 			.where(eq(category.platform, "reddit"))
 			.orderBy(category.path, category.id);
-		const limitPerChannel = 1000; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
+		const limitPerChannel = 300; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
 		for (const channel of channelList) {
 			const subreddit = channel.path;
 			
@@ -111,6 +111,10 @@ async function generateEmbedding(text: string) {
 
 async function savePostToDB(post: any, embedding: number[], categoryId?: string) {
 	try {
+		const createdUtcTs = post?.created_utc != null
+			? new Date(Math.round(Number(post.created_utc) * 1000))
+			: null;
+
 		await db.insert(redditPost).values({
 				redditId: post.id,
 				title: post.title,
@@ -123,7 +127,7 @@ async function savePostToDB(post: any, embedding: number[], categoryId?: string)
 				downs: post.downs,
 				score: post.score,
 				numComments: post.num_comments,
-				createdUtc: post.created_utc,
+				createdUtc: createdUtcTs as any,
 				embedding: embedding,
 				categoryId: categoryId || null
 			}).onConflictDoNothing({ target: redditPost.redditId });

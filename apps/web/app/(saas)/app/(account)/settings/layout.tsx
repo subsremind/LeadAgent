@@ -41,17 +41,17 @@ export default async function SettingsLayout({ children }: PropsWithChildren) {
 					href: "/app/settings/security",
 					icon: <LockKeyholeIcon className="size-4 opacity-50" />,
 				},
-				...(config.users.enableBilling
-					? [
-							{
-								title: t("settings.menu.account.billing"),
-								href: "/app/settings/billing",
-								icon: (
-									<CreditCardIcon className="size-4 opacity-50" />
-								),
-							},
-						]
-					: []),
+				// ...(config.users.enableBilling
+				// 	? [
+				// 			{
+				// 				title: t("settings.menu.account.billing"),
+				// 				href: "/app/settings/billing",
+				// 				icon: (
+				// 					<CreditCardIcon className="size-4 opacity-50" />
+				// 				),
+				// 			},
+				// 		]
+				// 	: []),
 				{
 					title: t("settings.menu.account.dangerZone"),
 					href: "/app/settings/danger-zone",

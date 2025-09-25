@@ -1,5 +1,5 @@
 {
-	"name": "subsremind",
+	"name": "LeadAgent",
 	"private": true,
 	"scripts": {
 		"build": "dotenv -c -- turbo build",
