@@ -847,7 +847,7 @@
 			"noQueryPrompt": "Please set your search query first",
 			"setQuery": "Set Query",
 			"noDataPrompt": "No data available",
-			"embeddingRate": "Match Precision"
+			"embeddingRate": "Accuracy"
 		},
 		"form": {
 			"description": "Description of product or service",
