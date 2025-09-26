@@ -197,12 +197,18 @@ export class OpenAIService {
       organizationId?: string;
     }
   ): Promise<string> {
+    //如果model 是gpt-5, 不用max_tokens 和 temperature 参数
     const config: OpenAIRequestConfig = {
-      model: options?.model || 'gpt-3.5-turbo',
+      model: options?.model || 'gpt-4.1',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: options?.maxTokens || 1000,
       temperature: options?.temperature || 0.7,
     };
+
+    if (config.model === 'gpt-5') {
+      delete config.max_tokens;
+      delete config.temperature;
+    }
 
     const response = await this.chatCompletion(config, {
       userId: options?.userId,
