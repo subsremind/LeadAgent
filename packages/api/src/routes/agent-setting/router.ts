@@ -66,7 +66,7 @@ export const agentSettingRouter = new Hono()
 			const user = c.get("user");
 			const promptSubreddit = promptLeadAgentSubreddit(description);
 			const responseSubreddit = await openaiService.generateText(promptSubreddit, {
-				model: 'gpt-5',
+				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
 			});
@@ -78,7 +78,7 @@ export const agentSettingRouter = new Hono()
 
 			const promptQuery = promptLeadAgentQuery(description);
 			const responseQuery = await openaiService.generateText(promptQuery, {
-				model: 'gpt-5',
+				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
 			});
