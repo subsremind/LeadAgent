@@ -23,7 +23,8 @@ import {
 	ArrowBigUp,
 	MessageCircleMore,
 	Rss,
-	SettingsIcon
+	SettingsIcon,
+	InfoIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -32,6 +33,8 @@ import { useState } from "react";
 import { AgentSetupDialog } from "./AgentSetup";
 import { LeadAgentPagination } from "./LeadAgentPagination";
 import { Label } from "@ui/components/label";
+import { Slider } from "@ui/components/slider"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip"
 
 export function LeadAgentList({
 	categoryId,
@@ -42,6 +45,7 @@ export function LeadAgentList({
 	const [editOpen, setEditOpen] = useState<boolean>(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
+	const [embeddingRate, setEmbeddingRate] = useState<number>(0.7);
 
 	const { data: agentSetting, isLoading: isAgentSettingLoading } = useQuery({
 		queryKey: ["agent-setting"],
@@ -67,7 +71,7 @@ export function LeadAgentList({
 	};
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit],
+		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit, embeddingRate],
 		enabled: !!agentSetting?.query && !!agentSetting?.subreddit, // 只有当agentSetting.query和agentSetting.subreddit都有值时才执行查询
 		queryFn: async () => {
 		let url = "/api/lead-agent/search";
@@ -83,6 +87,7 @@ export function LeadAgentList({
 				pageSize: pageSize,
 				subreddit: agentSetting?.subreddit || "",
 				embedding: agentSetting?.embedding || [],
+				embeddingRate: embeddingRate,
 			}),
 		});
 		return await response.json(); 
@@ -112,7 +117,20 @@ export function LeadAgentList({
 	return (
 		<div className="p-6">
 			<div className="flex justify-between items-center mb-4">
-				<h2 className="text-xl font-bold">{t("leadAgent.list.title")}</h2>
+				<div className="flex items-center space-x-2">
+					<Label className="whitespace-nowrap">{t("leadAgent.list.embeddingRate")}</Label>
+					<Slider
+					className="w-32"
+					defaultValue={[embeddingRate]} 
+					max={2} 
+					step={0.1} 
+						onValueChange={(value) => {
+							setEmbeddingRate(value[0]);
+						}} />
+						<span className="text-sm text-muted-foreground min-w-[40px] text-right">{embeddingRate.toFixed(1)}</span>
+					
+				</div>
+				
 				<Button
 					variant="primary"
 					className="bg-sky-600 border-0"
@@ -125,21 +143,15 @@ export function LeadAgentList({
 				</Button>
 			</div>
 
-			{!agentSetting?.query ? (
-				<div className="flex flex-col items-center justify-center h-64 border border-dashed rounded-lg">
-					<SettingsIcon className="size-12 text-muted-foreground mb-4" />
-					<p className="text-muted-foreground mb-2">{t("leadAgent.list.noQueryPrompt")}</p>
-					<Button
-						variant="secondary"
-						onClick={() => setEditOpen(true)}
-					>
-						{t("leadAgent.list.setQuery")}
-					</Button>
-				</div>
-			) : isLoading ? (
+			{isAgentSettingLoading || isLoading ? (
 				<div className="flex justify-center items-center h-64">
 					<Spinner className="mr-2 size-4 text-primary" />
 					{t("common.loading")}
+				</div>
+			) : currentData.length === 0 ? (
+				<div className="flex flex-col items-center justify-center h-64 border border-dashed rounded-lg">
+					<InfoIcon className="size-12 text-muted-foreground mb-4" />
+					<p className="text-muted-foreground mb-2">{t("leadAgent.list.noDataPrompt")}</p>
 				</div>
 			) : (
 				currentData.map((item: any) => (

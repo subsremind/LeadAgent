@@ -61,106 +61,99 @@ export const leadAgentCategoryRouter = new Hono()
 		),
 		async (c) => {
 			const query = c.req.valid("query") || {};
-			const categories = await db.category.findMany({
-				orderBy: { name: "asc" },
-				where: query?.organizationId
-					? {
-							organizationId: query.organizationId,
-						}
-					: {
-							userId: c.get("user").id,
-							organizationId: null,
-						},
+			const categories = await db.query.category.findMany({
+				// orderBy: { name: "asc" },
 			});
 
 			return c.json(CategorySchema.array().parse(categories));
 		},
 	)
-	.get(
-		"/subscription-count",
-		validator(
-			"query",
-			z.object({
-				organizationId: z.string().optional(),
-			}),
-		),
-		describeRoute({
-			summary: "Get subscription count for all category",
-			tags: ["SubscriptionCategory"],
-		}),
-		async (c) => {
-			const { organizationId } = c.req.valid("query");
-			const count = await db.subscription.count({
-				where: {
-					...(organizationId
-						? { organizationId }
-						: {
-								userId: c.get("user").id,
-								organizationId: null,
-							}),
-				},
-			});
-			return c.json({ count: count });
-		},
-	)
-	.post(
-		"/",
-		validator("json", CategoryCreateInput),
-		describeRoute({
-			summary: "Create new subscription category",
-			tags: ["SubscriptionCategory"],
-		}),
-		async (c) => {
-			const { name, organizationId } = c.req.valid("json");
-			const user = c.get("user");
+	// .get(
+	// 	"/subscription-count",
+	// 	validator(
+	// 		"query",
+	// 		z.object({
+	// 			organizationId: z.string().optional(),
+	// 		}),
+	// 	),
+	// 	describeRoute({
+	// 		summary: "Get subscription count for all category",
+	// 		tags: ["SubscriptionCategory"],
+	// 	}),
+	// 	async (c) => {
+	// 		const { organizationId } = c.req.valid("query");
+	// 		const count = await db.query.subscription.count({
+	// 			where: {
+	// 				...(organizationId
+	// 					? { organizationId }
+	// 					: {
+	// 							userId: c.get("user").id,
+	// 							organizationId: null,
+	// 						}),
+	// 			},
+	// 		});
+	// 		return c.json({ count: count });
+	// 	},
+	// )
+	// .post(
+	// 	"/",
+	// 	validator("json", CategoryCreateInput),
+	// 	describeRoute({
+	// 		summary: "Create new subscription category",
+	// 		tags: ["SubscriptionCategory"],
+	// 	}),
+	// 	async (c) => {
+	// 		const { name, organizationId } = c.req.valid("json");
+	// 		const user = c.get("user");
 
-			if (organizationId) {
-				await verifyOrganizationMembership(organizationId, user.id);
-			}
-			const category = await db.category.create({
-				data: {
-					name,
-					userId: user.id,
-					organizationId,
-				},
-			});
-			return c.json(category, 201);
-		},
-	)
-	.patch(
-		"/:id",
-		validator("json", CategoryUpdateInput),
-		describeRoute({
-			summary: "Update subscription category",
-			tags: ["SubscriptionCategory"],
-		}),
-		async (c) => {
-			const id = c.req.param("id");
-			const { name, organizationId } = c.req.valid("json");
+	// 		if (organizationId) {
+	// 			await verifyOrganizationMembership(organizationId, user.id);
+	// 		}
+	// 		const category = await db.category.create({
+	// 			data: {
+	// 				name,
+	// 				userId: user.id,
+	// 				organizationId,
+	// 			},
+	// 		});
+	// 		return c.json(category, 201);
+	// 	},
+	// )
+	// .patch(
+	// 	"/:id",
+	// 	validator("json", CategoryUpdateInput),
+	// 	describeRoute({
+	// 		summary: "Update subscription category",
+	// 		tags: ["SubscriptionCategory"],
+	// 	}),
+	// 	async (c) => {
+	// 		const id = c.req.param("id");
+	// 		const { name, organizationId } = c.req.valid("json");
 
-			const user = c.get("user");
-			if (organizationId) {
-				await verifyOrganizationMembership(organizationId, user.id);
-			}
+	// 		const user = c.get("user");
+	// 		if (organizationId) {
+	// 			await verifyOrganizationMembership(organizationId, user.id);
+	// 		}
 
-			const category = await db.category.update({
-				where: { id },
-				data: {
-					name,
-				},
-			});
-			return c.json(category);
-		},
-	)
-	.delete(
-		"/:id",
-		describeRoute({
-			summary: "Delete subscription category",
-			tags: ["SubscriptionCategory"],
-		}),
-		async (c) => {
-			const id = c.req.param("id");
-			await db.category.delete({ where: { id } });
-			return c.json({ success: true });
-		},
-	);
+	// 		const category = await db.category.update({
+	// 			where: { id },
+	// 			data: {
+	// 				name,
+	// 			},
+	// 		});
+	// 		return c.json(category);
+	// 	},
+	// )
+	// .delete(
+	// 	"/:id",
+	// 	describeRoute({
+	// 		summary: "Delete subscription category",
+	// 		tags: ["SubscriptionCategory"],
+	// 	}),
+	// 	async (c) => {
+	// 		const id = c.req.param("id");
+	// 		await db.category.delete({ where: { id } });
+	// 		return c.json({ success: true });
+	// 	},
+	// )
+	// ;

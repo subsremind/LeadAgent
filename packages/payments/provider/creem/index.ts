@@ -8,6 +8,8 @@ import type {
 	SetSubscriptionSeats,
 	WebhookHandler,
 } from "../../types";
+import { eq } from "drizzle-orm";
+import { purchase } from "@repo/database/drizzle/schema";
 
 export function creemFetch(path: string, init: Parameters<typeof fetch>[1]) {
 	const creemApiKey = process.env.CREEM_API_KEY as string;
@@ -151,43 +153,40 @@ export const webhookHandler: WebhookHandler = async (req) => {
 					break;
 				}
 
-				await db.purchase.create({
-					data: {
+				await db.insert(purchase).values({
 						organizationId: metadata?.organization_id || null,
 						userId: metadata?.user_id || null,
 						customerId: customer as string,
 						type: "ONE_TIME",
 						productId: product.id,
-					},
 				});
 
 				break;
 			}
 			case "subscription.active": {
 				const { id, customer, product, metadata } = payload.object;
-				const existingPurchase = await db.purchase.findUnique({
-					where: {
-						subscriptionId: id,
-					},
+				const existingPurchase = await db.query.purchase.findFirst({
+					where: eq(purchase.subscriptionId, id),
 				});
 
-				await db.purchase.upsert({
-					create: {
-						subscriptionId: id,
-						customerId: customer.id,
-						type: "SUBSCRIPTION",
-						productId: product.id,
-						organizationId: metadata?.organization_id || null,
-						userId: metadata?.user_id || null,
+				await db.insert(purchase).values({
+					subscriptionId: id,
+					customerId: customer.id,
+					type: "SUBSCRIPTION",
+					productId: product.id,
+					organizationId: metadata?.organization_id || null,
+					userId: metadata?.user_id || null,
+					status: product.status,
+				}).onConflictDoUpdate({
+					target: purchase.subscriptionId,
+					set: {
 						status: product.status,
 					},
-					update: {
-						status: product.status,
-						productId: product.id,
-					},
-					where: {
-						subscriptionId: id,
-					},
+					// update: {
+					// 	status: product.status,
+					// 	productId: product.id,
+					// },
+					where: eq(purchase.subscriptionId, id),
 				});
 				break;
 			}

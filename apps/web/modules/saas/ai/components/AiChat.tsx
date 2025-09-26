@@ -51,7 +51,7 @@ export function AiChat({ organizationId }: { organizationId?: string }) {
 		await queryClient.invalidateQueries({
 			queryKey: aiChatListQueryKey(organizationId),
 		});
-		setChatId(newChat.id);
+		// setChatId(newChat.id);
 	}, [createChatMutation]);
 
 	useEffect(() => {
@@ -67,7 +67,7 @@ export function AiChat({ organizationId }: { organizationId?: string }) {
 				setMessages([]);
 			}
 		})();
-	}, [chatsStatus]);
+	}, [chatsStatus, createNewChat]);
 
 	const hasChat =
 		chatsStatus === "success" && !!chats?.length && !!currentChat?.id;

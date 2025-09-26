@@ -7,6 +7,8 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { authMiddleware } from "../middleware/auth";
 import { verifyOrganizationMembership } from "./organizations/lib/membership";
+import { aiChat } from "@repo/database/drizzle/schema";
+import { eq } from "drizzle-orm";
 
 const MessageSchema = z.object({
 	role: z.enum(["user", "assistant"]),
@@ -43,16 +45,7 @@ export const aiRouter = new Hono()
 		),
 		async (c) => {
 			const query = c.req.valid("query");
-			const chats = await db.query.aiChat.findMany({
-				where: query?.organizationId
-					? {
-							organizationId: query.organizationId,
-						}
-					: {
-							userId: c.get("user").id,
-							organizationId: null,
-						},
-			});
+			const chats = await db.query.aiChat.findMany();
 
 			return c.json(chats);
 		},
@@ -77,7 +70,7 @@ export const aiRouter = new Hono()
 		async (c) => {
 			const { id } = c.req.param();
 
-			const chat = await db.query.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findFirst();
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -127,13 +120,11 @@ export const aiRouter = new Hono()
 				await verifyOrganizationMembership(organizationId, user.id);
 			}
 
-			const chat = await db.query.aiChat.create({
-				data: {
+			const chat = await db.insert(aiChat).values({
 					title: title,
 					organizationId,
 					userId: user.id,
-				},
-			});
+			}).returning();
 
 			return c.json(chat);
 		},
@@ -161,7 +152,9 @@ export const aiRouter = new Hono()
 			const { title } = c.req.valid("json");
 			const user = c.get("user");
 
-			const chat = await db.query.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findFirst({
+				where: eq(aiChat.id, id),
+			});
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -176,10 +169,9 @@ export const aiRouter = new Hono()
 				throw new HTTPException(403, { message: "Forbidden" });
 			}
 
-			const updatedChat = await db.query.aiChat.update({
-				where: { id },
-				data: { title },
-			});
+			const updatedChat = await db.update(aiChat)
+				.set({ title })
+				.where(eq(aiChat.id, id));
 
 			return c.json(updatedChat);
 		},
@@ -199,7 +191,9 @@ export const aiRouter = new Hono()
 		async (c) => {
 			const { id } = c.req.param();
 			const user = c.get("user");
-			const chat = await db.query.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findFirst({
+				where: eq(aiChat.id, id),
+			});
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -214,7 +208,7 @@ export const aiRouter = new Hono()
 				throw new HTTPException(403, { message: "Forbidden" });
 			}
 
-			await db.query.aiChat.delete({ where: { id } });
+			await db.delete(aiChat).where(eq(aiChat.id, id));
 
 			return c.body(null, 204);
 		},
@@ -249,7 +243,9 @@ export const aiRouter = new Hono()
 			const { messages } = c.req.valid("json");
 			const user = c.get("user");
 
-			const chat = await db.query.aiChat.findUnique({ where: { id } });
+			const chat = await db.query.aiChat.findFirst({
+				where: eq(aiChat.id, id),
+			});
 
 			if (!chat) {
 				throw new HTTPException(404, { message: "Chat not found" });
@@ -268,9 +264,8 @@ export const aiRouter = new Hono()
 				model: textModel,
 				messages,
 				async onFinish({ text }) {
-					await db.query.aiChat.update({
-						where: { id },
-						data: {
+					await db.update(aiChat)
+						.set({
 							messages: [
 								...messages,
 								{
@@ -278,8 +273,8 @@ export const aiRouter = new Hono()
 									content: text,
 								},
 							],
-						},
-					});
+						})
+						.where(eq(aiChat.id, id));
 				},
 			});
 
