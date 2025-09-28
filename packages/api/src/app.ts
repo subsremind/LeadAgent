@@ -96,9 +96,12 @@ scheduler.schedule({
 
 scheduler.schedule({
 	id: "get-reddit-post",
-	cronExpression: "1 1 * * * *", //,config.syncPost.cronExpression,
+	cronExpression: "0 0 0/6 * * *", // 每天0点开始，每6小时执行一次
 	task: async () => {
-		getRedditPost();
+		const syncPost = config.syncPost.enabled
+		if (syncPost) {
+			getRedditPost();
+		}		
 	},
 });
 

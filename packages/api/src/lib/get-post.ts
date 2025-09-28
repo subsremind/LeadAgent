@@ -3,7 +3,7 @@ import { redditPost,category } from "@repo/database/drizzle/schema";
 import { logger } from "@repo/logs";
 import { OpenAI } from "openai";
 import { config } from "@repo/config";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { encode, decode } from "gpt-tokenizer";
 
 const openai = new OpenAI({
@@ -14,11 +14,6 @@ const MAX_TOKENS = 8191;
 
 export async function getRedditPost() {
 	try {
-		const syncPost = config.syncPost.enabled
-		if (!syncPost) {
-			logger.info(`sync post is disabled`);
-			return;
-		}
 		const sortType = "new";
 		const channelList = await db
 			.selectDistinctOn([category.path], {
@@ -28,28 +23,64 @@ export async function getRedditPost() {
 			.from(category)
 			.where(eq(category.platform, "reddit"))
 			.orderBy(category.path, category.id);
-		const limitPerChannel = 300; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
+		const limitPerChannel = 500; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
 		for (const channel of channelList) {
 			const subreddit = channel.path;
 			
 			try {
 				const posts = await fetchRedditPosts(subreddit, sortType, limitPerChannel);
 				
+				const postIds = posts.map(post => post.id);
+				const existingPosts = await db
+					.select({ redditId: redditPost.redditId })
+					.from(redditPost)
+					.where(inArray(redditPost.redditId, postIds));
+				
+				const existingPostIds = new Set(existingPosts.map(p => p.redditId));
+
+				const newPostsData: any[] = [];
+				
 				for (const post of posts) {
 					try {
-						const isExist = await db.select({ id: redditPost.id }).from(redditPost).where(eq(redditPost.redditId, post.id));
-						if (isExist.length > 0) {
+						// 跳过已存在的帖子
+						if (existingPostIds.has(post.id)) {
 							continue;
 						}
+						
 						const text = `${post.title}, ${post.selftext ?? ""}`;
 						const tokenCount = countTokens(text);						
 						if (tokenCount > MAX_TOKENS) {
 							continue;
 						}
+						
 						const embedding = await generateEmbedding(text);
-						await savePostToDB(post, embedding, channel.id);
+						
+						const createdUtcTs = post?.created_utc != null
+							? new Date(Math.round(Number(post.created_utc) * 1000))
+							: null;
+
+						newPostsData.push({
+							redditId: post.id,
+							title: post.title,
+							selftext: post.selftext ?? "",
+							url: post.url,
+							permalink: post.permalink,
+							author: post.author,
+							subreddit: post.subreddit,
+							ups: post.ups,
+							downs: post.downs,
+							score: post.score,
+							numComments: post.num_comments,
+							createdUtc: createdUtcTs as any,
+							embedding: embedding,
+							categoryId: channel.id || null
+						});
 					} catch (error) {
 					}
+				}
+				
+				if (newPostsData.length > 0) {
+					await batchInsertPosts(newPostsData);
 				}
 			} catch (error) {
 			}
@@ -112,34 +143,31 @@ async function generateEmbedding(text: string) {
 	}
 }
 
-async function savePostToDB(post: any, embedding: number[], categoryId?: string) {
+async function batchInsertPosts(postsData: any[]) {
 	try {
-		const createdUtcTs = post?.created_utc != null
-			? new Date(Math.round(Number(post.created_utc) * 1000))
-			: null;
-
-		await db.insert(redditPost).values({
-				redditId: post.id,
-				title: post.title,
-				selftext: post.selftext ?? "",
-				url: post.url,
-				permalink: post.permalink,
-				author: post.author,
-				subreddit: post.subreddit,
-				ups: post.ups,
-				downs: post.downs,
-				score: post.score,
-				numComments: post.num_comments,
-				createdUtc: createdUtcTs as any,
-				embedding: embedding,
-				categoryId: categoryId || null
-			}).onConflictDoNothing({ target: redditPost.redditId });
+		if (postsData.length === 0) {
+			return;
+		}
+		await db.insert(redditPost).values(postsData).onConflictDoNothing({ target: redditPost.redditId });
 		return true;
 	} catch (error) {
-		logger.error(`Error saving post ------------:`, error);
+		let successCount = 0;
+		for (const postData of postsData) {
+			try {
+				await db.insert(redditPost).values(postData).onConflictDoNothing({ target: redditPost.redditId });
+				successCount++;
+			} catch (individualError) {
+			}
+		}
+		
+		if (successCount > 0) {
+			logger.info(`Fallback: Successfully inserted ${successCount}/${postsData.length} posts individually`);
+		}
+		
 		throw error;
 	}
 }
+
 type RedditPost = {
 	id: string;
 	title: string;
