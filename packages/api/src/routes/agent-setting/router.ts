@@ -70,8 +70,6 @@ export const agentSettingRouter = new Hono()
 				temperature: 0.7,
 				userId: user.id, 
 			});
-			console.log('提示:', promptSubreddit);
-			console.log('响应:', responseSubreddit);
 			if (!responseSubreddit) {
 				return c.json({ error: "Failed to generate prompt" }, 500);
 			}
@@ -82,8 +80,6 @@ export const agentSettingRouter = new Hono()
 				temperature: 0.7,
 				userId: user.id, 
 			});
-			console.log('提示:', promptQuery);
-			console.log('响应:', responseQuery);
 			if (!responseQuery) {
 				return c.json({ error: "Failed to generate prompt" }, 500);
 			}
