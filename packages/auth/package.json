@@ -9,7 +9,6 @@
 		"@repo/utils": "workspace:*",
 		"better-auth": "1.1.21",
 		"cookie": "^1.0.2",
-		"drizzle-orm": "^0.44.5",
 		"next": "15.1.7"
 	},
 	"devDependencies": {

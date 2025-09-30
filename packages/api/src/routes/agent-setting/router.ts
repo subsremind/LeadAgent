@@ -3,14 +3,12 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { verifyOrganizationMembership } from "../organizations/lib/membership";
 
 import { utcnow } from "@repo/utils";
 import { authMiddleware } from "../../middleware/auth";
 import { AgentSettingCreateInput, AgentSettingUpdateInput } from "./types";
-import { desc, eq, inArray } from "drizzle-orm";
-import { agentSetting, category } from "@repo/database/drizzle/schema";
 import { openaiService, promptLeadAgentSubreddit, promptLeadAgentQuery} from "@repo/ai";
+import { nanoid } from "nanoid";
 
 export const agentSettingRouter = new Hono()
 	.basePath("/agent-setting")
@@ -37,14 +35,10 @@ export const agentSettingRouter = new Hono()
 
 			// 查询当前页数据
 			const records = await db.query.agentSetting.findMany({
-				orderBy: [desc(agentSetting.createdAt)], // 使用表定义中的列
-				limit: pageSize,
-				offset,
-
 			});
 
 			// 单独查询总记录数
-			const total = await db.$count(agentSetting);
+			const total = await db.$count(db.agentSetting);
 
 			return c.json({
 				records,
@@ -65,7 +59,7 @@ export const agentSettingRouter = new Hono()
 			const { description } = c.req.valid("json");
 			const user = c.get("user");
 			const promptSubreddit = promptLeadAgentSubreddit(description);
-			const responseSubreddit = await openaiService.generateText(promptSubreddit, {
+			const responseSubreddit = await openaiService.generateText('subreddit-prompt', promptSubreddit, {
 				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
@@ -75,7 +69,7 @@ export const agentSettingRouter = new Hono()
 			}
 
 			const promptQuery = promptLeadAgentQuery(description);
-			const responseQuery = await openaiService.generateText(promptQuery, {
+			const responseQuery = await openaiService.generateText('query-prompt', promptQuery, {
 				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
@@ -94,8 +88,8 @@ export const agentSettingRouter = new Hono()
 		}),
 		async (c) => {
 			const user = c.get("user");
-			const record = await db.query.agentSetting.findFirst({
-				where: eq(agentSetting.userId, user.id)
+			const record = await db.agentSetting.findUnique({
+				where: { userId: user.id },
 			});
 
 			if (!record) {
@@ -116,21 +110,54 @@ export const agentSettingRouter = new Hono()
 			try {
 				const rawData = c.req.valid("json");
 				const user = c.get("user");
-				const embedding = await openaiService.generateQueryEmbedding(rawData.query);
+				const embedding = await openaiService.generateEmbedding('query-embedding', user.id, rawData.query);
+				if (!embedding) {
+					return c.json({ error: "Failed to generate embedding" }, 500);
+				}
 
 				// 创建包含所有必要字段的新对象
 				const agentSettingData = {
 					...rawData,
+					id: nanoid(),
 					userId: user.id,
-					embedding
+					embedding: embedding,
 				};
 
-				const agentSettingRecord = await db.insert(agentSetting).values(agentSettingData);
+				// const agentSettingRecord = await db.agentSetting.create({
+				// 	data: agentSettingData,
+				// });
+				const agentSettingRecord = await db.$queryRaw`
+					INSERT INTO agent_setting (
+					"id",
+					"userId",
+					"description",
+					"subreddit",
+					"query",
+					"embedding",
+					"createdAt",
+					"updatedAt"
+					) VALUES (
+					${agentSettingData.id},
+					${agentSettingData.userId},
+					${agentSettingData.description},
+					${agentSettingData.subreddit},
+					${agentSettingData.query},
+					${agentSettingData.embedding}::vector,
+					NOW(),
+					NOW()
+					) RETURNING 
+						"id",
+					"userId",
+					"description",
+					"subreddit",
+					"query"
+				`;
+
 
 				const subreddit = rawData.subreddit;
 				const subredditArray = subreddit?.split(',') || [];
 				// 检查category 中是否有subredditArray的数据。 如果没有，则插入一条记录
-				const categoryRecords = await db.query.category.findMany();
+				const categoryRecords = await db.category.findMany();
 				// 排除已经存在的category, 首尾去空格
 				const existingCategoryPaths = categoryRecords?.map(category => category.path.trim()) || [];
 				const newSubredditArray = subredditArray.filter(subreddit => !existingCategoryPaths.includes(subreddit.trim())).map(subreddit => ({
@@ -140,8 +167,20 @@ export const agentSettingRouter = new Hono()
 				}));
 
 				if (newSubredditArray.length > 0) {
-					// 插入新的category
-					const newCategory = await db.insert(category).values(newSubredditArray);
+					try {
+						// 插入新的category
+						const newCategory = await db.category.createMany({
+							data: newSubredditArray,
+						});
+					} catch (e) {
+						return c.json(
+							{
+								error: "Failed to create category",
+								details: e?.toString(),
+							},
+							500,
+						);
+					}
 				}
 
 
@@ -168,33 +207,39 @@ export const agentSettingRouter = new Hono()
 		async (c) => {
 			try {
 				const id = c.req.param("id");
-			const rawData = c.req.valid("json");
-			const user = c.get("user");
-			const embedding = await openaiService.generateQueryEmbedding(rawData.query);
+				const rawData = c.req.valid("json");
+				const user = c.get("user");
 
-			// 创建包含所有必要字段的新对象
-			const agentSettingData = {
-				...rawData,
-				embedding
-			};
+				// 创建包含所有必要字段的新对象
+				const agentSettingData = {
+					...rawData,
+				};
 
-				const existing = await db.query.agentSetting.findFirst({
-				where: (setting, { eq }) => eq(setting.id, parseInt(id)),
-			});
+				const existing = await db.agentSetting.findUnique({
+					where: { id: id },
+				});
 				if (!existing) {
 					return c.json({ error: "AgentSetting not found" }, 404);
 				}
+				let embedding = existing.embedding;
+				if (existing.query !== agentSettingData.query) {
+					embedding = await openaiService.generateEmbedding('query-embedding', user.id, agentSettingData.query);
+				}
 
 
-				const updatedAgentSetting = await db.update(agentSetting).set({
-				...agentSettingData,
-				updatedAt: utcnow(),
-				}).where(eq(agentSetting.id, parseInt(id))).returning();
+				const updatedAgentSetting = await db.agentSetting.update({
+					where: { id: id },
+					data: {
+					...agentSettingData,
+					updatedAt: utcnow(),
+					embedding: embedding,
+					},
+				});
 
 				const subreddit = rawData.subreddit;
 				const subredditArray = subreddit?.split(',') || [];
 				// 检查category 中是否有subredditArray的数据。 如果没有，则插入一条记录
-				const categoryRecords = await db.query.category.findMany();
+				const categoryRecords = await db.category.findMany();
 				// 排除已经存在的category, 首尾去空格
 				const existingCategoryPaths = categoryRecords?.map(category => category.path.trim()) || [];
 				const newSubredditArray = subredditArray.filter(subreddit => !existingCategoryPaths.includes(subreddit.trim())).map(subreddit => ({
@@ -204,8 +249,20 @@ export const agentSettingRouter = new Hono()
 				}));
 
 				if (newSubredditArray.length > 0) {
-					// 插入新的category
-					const newCategory = await db.insert(category).values(newSubredditArray);
+					try {
+						// 插入新的category
+						const newCategory = await db.category.createMany({
+							data: newSubredditArray,
+						});
+					} catch (e) {
+						return c.json(
+							{
+								error: "Failed to create category",
+								details: e?.toString(),
+							},
+							500,
+						);
+					}
 				}
 
 				return c.json(updatedAgentSetting);

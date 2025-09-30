@@ -56,22 +56,16 @@ export const getUserAccounts = cache(async () => {
 
 export const getInvitation = cache(async (id: string) => {
 	try {
-		const invitationRecord = await db.query.invitation.findFirst({
-			where: (invitation, { eq }) => eq(invitation.id, id),
-			with: { org: true },
+		const invitation = await db.invitation.findUnique({
+			where: {
+				id,
+			},
+			include: {
+				organization: true,
+			},
 		});
 
-		if (!invitationRecord) {
-			return null;
-		}
-
-		const { org, ...rest } = invitationRecord as typeof invitationRecord & {
-			org?: any;
-		};
-
-		return { ...rest, organization: org } as typeof invitationRecord & {
-			organization: typeof org;
-		};
+		return invitation;
 	} catch (error) {
 		return null;
 	}

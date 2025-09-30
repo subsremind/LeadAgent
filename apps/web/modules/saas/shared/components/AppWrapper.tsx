@@ -20,7 +20,7 @@ export function AppWrapper({ children }: PropsWithChildren) {
 				])}
 			>
 				<main
-					className={cn("container max-w-6xl py-6", [
+					className={cn("w-full py-6", [
 						config.ui.saas.useSidebarLayout ? "" : "",
 					])}
 				>

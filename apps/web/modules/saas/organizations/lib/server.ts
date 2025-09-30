@@ -1,8 +1,10 @@
 import { db } from "@repo/database";
 
 export const getOrganizationById = async (id: string) => {
-	const organization = await db.query.organization.findFirst({
-		where: (org, { eq }) => eq(org.id, id),
+	const organization = await db.organization.findUnique({
+		where: {
+			id,
+		},
 	});
 
 	return organization;

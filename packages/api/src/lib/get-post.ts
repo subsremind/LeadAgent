@@ -1,65 +1,78 @@
-import { db } from "@repo/database";
-import { redditPost,category } from "@repo/database/drizzle/schema";
+import { Category, db, RedditPost } from "@repo/database";
 import { logger } from "@repo/logs";
-import { OpenAI } from "openai";
 import { config } from "@repo/config";
-import { eq } from "drizzle-orm";
-import { encode, decode } from "gpt-tokenizer";
-
-const openai = new OpenAI({
-	apiKey: process.env.OPENAI_API_KEY || "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",
-});
-const MAX_TOKENS = 8191;
+import { openaiService } from "@repo/ai";
+import { nanoid } from "nanoid";
 
 
 export async function getRedditPost() {
 	try {
+		logger.info(`start to sync post=============================`);
 		const syncPost = config.syncPost.enabled
 		if (!syncPost) {
 			logger.info(`sync post is disabled`);
 			return;
 		}
 		const sortType = "new";
-		const channelList = await db
-			.selectDistinctOn([category.path], {
-			id: category.id,
-			path: category.path,
-			})
-			.from(category)
-			.where(eq(category.platform, "reddit"))
-			.orderBy(category.path, category.id);
-		const limitPerChannel = 300; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
+		const channelList = await db.category.findMany({
+			select: {
+			  id: true,
+			  path: true
+			},
+			where: {
+			  platform: 'reddit'
+			},
+			distinct: ['path'],
+			orderBy: [
+			  { path: 'asc' },
+			  { id: 'asc' }
+			]
+		  });
+		const limitPerChannel = 1; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
+		const redditIdList: string[] = []
+		let posts: RedditPost[] = []
 		for (const channel of channelList) {
-			const subreddit = channel.path;
 			
 			try {
-				const posts = await fetchRedditPosts(subreddit, sortType, limitPerChannel);
+				posts = await fetchRedditPosts(channel, sortType, limitPerChannel);
 				
 				for (const post of posts) {
 					try {
-						const isExist = await db.select({ id: redditPost.id }).from(redditPost).where(eq(redditPost.redditId, post.id));
-						if (isExist.length > 0) {
-							continue;
-						}
-						const text = `${post.title}, ${post.selftext ?? ""}`;
-						const tokenCount = countTokens(text);						
-						if (tokenCount > MAX_TOKENS) {
-							continue;
-						}
-						const embedding = await generateEmbedding(text);
-						await savePostToDB(post, embedding, channel.id);
+						redditIdList.push(post.id);
+
+
+						
 					} catch (error) {
 					}
 				}
 			} catch (error) {
 			}
 		}
+		
+		const dbRecords = await db.redditPost.findMany({
+			select: {
+			  redditId: true
+			},
+			where: {
+			  subreddit: {
+				in: redditIdList
+				}
+			}
+		  });
+		// 从 posts 中移除已存在于 dbRecords 中的 redditId
+		const dbRedditIds = dbRecords.map(record => record.redditId);
+		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.id));
+		logger.info(`save ${filteredPosts.length} posts to db`);
+		await saveBatchRedditPosts(filteredPosts);
+
+		// await savePostToDB(post, embedding, channel.id);
 	} catch (error) {
 		throw error;
 	}
 }
 
-async function fetchRedditPosts(subreddit: string, sortType: string, limit = 1) {
+async function fetchRedditPosts(channel: Category, sortType: string, limit = 1) {
+	const subreddit = channel.path;
 	const allPosts: RedditPost[] = [];
 	let after: string | null = null;
 	let remainingLimit = limit;
@@ -68,6 +81,7 @@ async function fetchRedditPosts(subreddit: string, sortType: string, limit = 1) 
 		await new Promise(resolve => setTimeout(resolve, 2000));
 		const batchSize = Math.min(remainingLimit, 100);
 		const url: string = `https://www.reddit.com/${subreddit}/${sortType}.json?t=all&limit=${batchSize}${after ? `&after=${after}` : ''}`;
+		// const url: string = `https://www.reddit.com/${subreddit}/${sortType}.json?t=all&limit=${batchSize}`;
 		try {
 			const res: Response = await fetch(url, {
 				headers: { "User-Agent": "reddit-embeddings-script" },
@@ -76,9 +90,10 @@ async function fetchRedditPosts(subreddit: string, sortType: string, limit = 1) 
 				break;
 			}			
 			const json = await res.json();
-			const posts = extractPosts(json);
+			const posts = extractPosts(json, channel.id);
 			
 			if (posts.length === 0) {
+				logger.error(`no posts found from ${subreddit}`);
 				break;
 			}
 			
@@ -92,74 +107,76 @@ async function fetchRedditPosts(subreddit: string, sortType: string, limit = 1) 
 			break;
 		}
 	}
+	logger.info(`fetch ${allPosts.length} posts from ${subreddit}`);
 	return allPosts;
 }
 
-async function generateEmbedding(text: string) {
-	try {
-		// if (!process.env.OPENAI_API_KEY) {
-		// 	throw new Error("OPENAI_API_KEY environment variable is not set");
-		// }
-		
-		const response = await openai.embeddings.create({
-			model: "text-embedding-3-small",
-			input: text,
-		});
-		return response.data[0].embedding;
-	} catch (error) {
-		logger.error("Error generating embedding:", error);
-		throw error;
+
+
+async function saveBatchRedditPosts(
+	rows: RedditPost[],
+	batchSize = 500
+  ): Promise<number> {
+	if (!rows.length) return 0;
+  
+	let inserted = 0;
+	for (let i = 0; i < rows.length; i += batchSize) {
+	  const chunk = rows.slice(i, i + batchSize);
+	  const valuesSql: string[] = [];
+	  const valuesArg: any[]    = [];
+	  let cursor = 1;
+  
+	  for (const r of chunk) {
+		valuesSql.push(`(
+			$${cursor},$${cursor+1},$${cursor+2},$${cursor+3},$${cursor+4},$${cursor+5},$${cursor+6},
+			$${cursor+7}::int,$${cursor+8}::int,$${cursor+9}::int,$${cursor+10}::int,
+			$${cursor+11}::timestamp ,
+			$${cursor+12},$${cursor+13}::vector,
+			NOW(),NOW(),$${cursor+14}
+		  )`);
+		const embeddingStr = await openaiService.generateEmbedding('reddit-embedding','', `${r.title} + ${r.selftext ?? ""}`);	
+		valuesArg.push(
+			r.redditId,
+			r.title,
+			r.selftext ?? null,
+			r.url ?? null,
+			r.permalink ?? null,
+			r.author ?? null,
+			r.subreddit ?? null,
+			r.ups ?? 0,
+			r.downs ?? 0,
+			r.score ?? 0,
+			r.numComments ?? 0,
+			r.createdUtc ?? null,
+			r.categoryId ?? null,
+			`[${embeddingStr.join(',')}]`,
+			nanoid()   // 最后一个对应 $15
+		  );
+		cursor += 15;
+	  }
+  
+	  const stmt = `
+		INSERT INTO reddit_post (
+		  "redditId","title","selftext","url","permalink","author",
+		  "subreddit","ups","downs","score","numComments","createdUtc",
+		  "categoryId","embedding","recordCreatedAt","recordUpdatedAt","id"
+		) VALUES ${valuesSql.join(',')};
+	  `;
+  
+	  const res: { '?column?': number }[] = await db.$queryRawUnsafe(stmt, ...valuesArg);
+	  inserted += res.length;
 	}
-}
+	return inserted;
+  }
 
-async function savePostToDB(post: any, embedding: number[], categoryId?: string) {
-	try {
-		const createdUtcTs = post?.created_utc != null
-			? new Date(Math.round(Number(post.created_utc) * 1000))
-			: null;
-
-		await db.insert(redditPost).values({
-				redditId: post.id,
-				title: post.title,
-				selftext: post.selftext ?? "",
-				url: post.url,
-				permalink: post.permalink,
-				author: post.author,
-				subreddit: post.subreddit,
-				ups: post.ups,
-				downs: post.downs,
-				score: post.score,
-				numComments: post.num_comments,
-				createdUtc: createdUtcTs as any,
-				embedding: embedding,
-				categoryId: categoryId || null
-			}).onConflictDoNothing({ target: redditPost.redditId });
-		return true;
-	} catch (error) {
-		logger.error(`Error saving post ------------:`, error);
-		throw error;
-	}
-}
-type RedditPost = {
-	id: string;
-	title: string;
-	selftext: string;
-	url: string;
-	permalink: string;
-	author: string;
-	subreddit: string;
-	ups: number;
-	downs: number;
-	score: number;
-	num_comments: number;
-	created_utc: number;
-};
-
-function extractPosts(json: any): RedditPost[] {
+function extractPosts(json: any, categoryId?: string): RedditPost[] {
 	return json.data.children.map((c: any) => {
 	  const post = c.data;
-	  return {
-		id: post.id,
+	  logger.info(`=============extract post: `, post);
+	  const createdUtcTs = toUtcDate(post?.created_utc);
+		logger.info(`=============createdUtcTs: `, createdUtcTs);
+	  const redditPost: RedditPost = {
+		redditId: post.id,
 		title: post.title,
 		selftext: post.selftext ?? "",
 		url: post.url,
@@ -169,12 +186,23 @@ function extractPosts(json: any): RedditPost[] {
 		ups: post.ups,
 		downs: post.downs,
 		score: post.score,
-		num_comments: post.num_comments,
-		created_utc: post.created_utc,
+		numComments: post.num_comments,
+		createdUtc: createdUtcTs,
+		categoryId: categoryId || null,
+		id: nanoid(),
+		recordCreatedAt: new Date(),
+		recordUpdatedAt: new Date(),
 	  };
+		return redditPost;
 	});
   }
 
-  function countTokens(text: string): number {
-	return encode(text).length;
-}
+  export function toUtcDate(ts: string | number | null | undefined): Date | null {
+	if (ts == null) return null;
+	const n = Number(ts);
+	if (Number.isNaN(n)) return null;
+	// 10 位秒 → 13 位毫秒
+	const ms = n < 1e11 ? n * 1000 : n;
+	return new Date(ms);
+  }
+

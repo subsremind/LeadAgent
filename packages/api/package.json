@@ -14,7 +14,6 @@
 		"@scalar/hono-api-reference": "^0.5.175",
 		"@sindresorhus/slugify": "^2.2.1",
 		"date-fns": "^4.1.0",
-		"drizzle-orm": "^0.44.5",
 		"gpt-tokenizer": "^3.0.1",
 		"hono": "^4.7.2",
 		"hono-openapi": "^0.4.5",

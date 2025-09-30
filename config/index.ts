@@ -166,7 +166,7 @@ export const config = {
 		},
 	},
 	syncPost:{
-		enabled: false, // disable by sync post
+		enabled: true, // disable by sync post
 		cronExpression: "0 0 * * *",
 	}
 } as const satisfies Config;

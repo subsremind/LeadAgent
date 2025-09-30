@@ -82,11 +82,8 @@ export function LeadAgentList({
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				query: agentSetting?.query || "",
 				page: currentPage,
 				pageSize: pageSize,
-				subreddit: agentSetting?.subreddit || "",
-				embedding: agentSetting?.embedding || [],
 				embeddingRate: embeddingRate,
 			}),
 		});
