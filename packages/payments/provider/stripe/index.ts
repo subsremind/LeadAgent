@@ -9,8 +9,6 @@ import type {
 	SetSubscriptionSeats,
 	WebhookHandler,
 } from "../../types";
-import { eq } from "drizzle-orm";
-import { purchase } from "@repo/database/drizzle/schema";
 
 let stripeClient: Stripe | null = null;
 
@@ -175,12 +173,14 @@ export const webhookHandler: WebhookHandler = async (req) => {
 					});
 				}
 
-				await db.insert(purchase).values({
+				await db.purchase.create({
+					data: {
 						organizationId: metadata?.organization_id || null,
 						userId: metadata?.user_id || null,
 						customerId: customer as string,
 						type: "ONE_TIME",
 						productId,
+					},
 				});
 
 				await setCustomerIdToEntity(customer as string, {
@@ -201,7 +201,8 @@ export const webhookHandler: WebhookHandler = async (req) => {
 					});
 				}
 
-				await db.insert(purchase).values({
+				await db.purchase.create({
+					data: {
 						subscriptionId: id,
 						organizationId: metadata?.organization_id || null,
 						userId: metadata?.user_id || null,
@@ -209,6 +210,7 @@ export const webhookHandler: WebhookHandler = async (req) => {
 						type: "SUBSCRIPTION",
 						productId,
 						status: event.data.object.status,
+					},
 				});
 
 				await setCustomerIdToEntity(customer as string, {
@@ -221,21 +223,33 @@ export const webhookHandler: WebhookHandler = async (req) => {
 			case "customer.subscription.updated": {
 				const subscriptionId = event.data.object.id;
 
-				const existingPurchase = await db.query.purchase.findFirst({
-					where: eq(purchase.subscriptionId, subscriptionId),
+				const existingPurchase = await db.purchase.findUnique({
+					where: {
+						subscriptionId,
+					},
 				});
 
 				if (existingPurchase) {
-					await db.update(purchase).set({
+					await db.purchase.update({
+						data: {
 							status: event.data.object.status,
 							productId:
 								event.data.object.items?.data[0].price?.id,
-					}).where(eq(purchase.subscriptionId, subscriptionId));
+						},
+						where: {
+							subscriptionId,
+						},
+					});
 				}
 				break;
 			}
 			case "customer.subscription.deleted": {
-				await db.delete(purchase).where(eq(purchase.subscriptionId, event.data.object.id));
+				await db.purchase.delete({
+					where: {
+						subscriptionId: event.data.object.id,
+					},
+				});
+
 				break;
 			}
 

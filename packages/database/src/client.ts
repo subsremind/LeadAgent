@@ -1,21 +1,20 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import * as schema from "../drizzle/schema";
+import { PrismaClient } from "@prisma/client";
+// 配置客户端打印insert 的 sql 语句
+const prismaClientSingleton = () => {
+	return new PrismaClient({
+		log: [{ emit: "stdout", level: "query" }],
+	});
+};
 
-if (!process.env.DATABASE_URL) {
-	throw new Error("DATABASE_URL is not set");
+declare global {
+	var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
 }
-const queryClient = postgres(process.env.DATABASE_URL, {
-	ssl: { rejectUnauthorized: false },
-	max: 5,
-	idle_timeout: 20,
-	connect_timeout: 60,
-	
-  });
- 
-// 在开发环境启用SQL日志记录
 
-export const db = drizzle(queryClient, {
-  schema,
-  logger: false,
-});
+// biome-ignore lint/suspicious/noRedeclare: <explanation>
+const prisma = globalThis.prisma ?? prismaClientSingleton();
+
+if (process.env.NODE_ENV !== "production") {
+	globalThis.prisma = prisma;
+}
+
+export { prisma as db };
