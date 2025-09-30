@@ -36,7 +36,7 @@ export const leadAgentRouter = new Hono()
 			
 
 			// 2. 使用pgvector进行向量搜索
-			const records = await db.query.redditPost.findMany({
+			const records = await db.redditPost.findMany({
 			});
 
 			
@@ -68,15 +68,18 @@ export const leadAgentRouter = new Hono()
 				embedding: "",
 			};
 			try {
-				const [agentSettingRecord] = await db.$queryRaw`
+				const result = await db.$queryRaw`
 				SELECT id, "userId", description, subreddit, query, embedding::text as embedding,
 						"createdAt", "updatedAt"
 				FROM agent_setting
 				WHERE "userId" = ${user.id}
 				LIMIT 1`;
-				if (agentSettingRecord) {
-					agentSetting.subreddit = agentSettingRecord.subreddit;
-					agentSetting.embedding = JSON.parse(agentSettingRecord.embedding);
+				if (Array.isArray(result) && result.length > 0) {
+					const agentSettingRecord = result[0];
+					if (agentSettingRecord) {
+						agentSetting.subreddit = agentSettingRecord.subreddit;
+						agentSetting.embedding = JSON.parse(agentSettingRecord.embedding);
+					}
 				}
 			} catch (error) {
 				logger.error("Error fetching agent setting: ", error);
@@ -100,7 +103,7 @@ export const leadAgentRouter = new Hono()
 			}
 			const subredditArr = agentSetting?.subreddit?.split(',') || [];
 			const subredditFilter = subredditArr.map((item: String) => item.trim());
-			const categoryIds = await prisma.category.findMany({
+			const categoryIds = await db.category.findMany({
 				select: {
 				  id: true  // 只选择id字段
 				},
@@ -176,7 +179,7 @@ export const leadAgentRouter = new Hono()
 				`[${agentSetting.embedding.join(',')}]`,
 				embeddingRate);
 			
-			total = Number(totalResult[0].count);
+			total = Number(Array.isArray(totalResult) ? totalResult[0].count : totalResult.count);
 
 			return c.json({
 				records,

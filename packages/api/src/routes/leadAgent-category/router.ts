@@ -4,12 +4,8 @@ import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { authMiddleware } from "../../middleware/auth";
-import { verifyOrganizationMembership } from "../organizations/lib/membership";
-import { desc, asc } from 'drizzle-orm';
 import {
-	CategoryCreateInput,
 	CategorySchema,
-	CategoryUpdateInput,
 } from "./types";
 
 export const leadAgentCategoryRouter = new Hono()
@@ -27,17 +23,16 @@ export const leadAgentCategoryRouter = new Hono()
 		),
 		async (c) => {
 			const query = c.req.valid("query") || {};
-			const categories = await db.query.category.findMany({
-				columns: {
+			const categories = await db.category.findMany({
+				select: {
 					id: true,
 					name: true,
 					path: true,
 					platform: true,
 					createdAt: true,
 					updatedAt: true,
-				},
+				}
 				// orderBy: [asc(category.id)]
-				
 			});
 
 			// return c.json(
@@ -61,7 +56,7 @@ export const leadAgentCategoryRouter = new Hono()
 		),
 		async (c) => {
 			const query = c.req.valid("query") || {};
-			const categories = await db.query.category.findMany({
+			const categories = await db.category.findMany({
 				// orderBy: { name: "asc" },
 			});
 

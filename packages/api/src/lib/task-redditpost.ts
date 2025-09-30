@@ -1,4 +1,4 @@
-import { Category, db, RedditPost } from "@repo/database";
+import { db, RedditPost } from "@repo/database";
 import { logger } from "@repo/logs";
 import { config } from "@repo/config";
 import { openaiService } from "@repo/ai";
@@ -71,7 +71,7 @@ export async function getRedditPost() {
 	}
 }
 
-async function fetchRedditPosts(channel: Category, sortType: string, limit = 1) {
+async function fetchRedditPosts(channel: { id: string; path: string }, sortType: string, limit = 1) {
 	const subreddit = channel.path;
 	const allPosts: RedditPost[] = [];
 	let after: string | null = null;

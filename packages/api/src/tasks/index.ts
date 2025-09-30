@@ -1,5 +1,5 @@
 import { scheduler } from "@repo/scheduler";
-import { getRedditPost } from "../lib/get-post";
+import { getRedditPost } from "../lib/task-redditpost";
 import { config } from "@repo/config";
 import { logger } from "@repo/logs";
 

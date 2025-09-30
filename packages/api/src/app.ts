@@ -24,7 +24,7 @@ import { webhooksRouter } from "./routes/webhooks";
 
 // 导入任务初始化函数
 import { initializeTasks } from "./tasks";
-import { getRedditPost } from "./lib/get-post";
+import { getRedditPost } from "./lib/task-redditpost";
 
 export const app = new Hono().basePath("/api");
 
