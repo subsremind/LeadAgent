@@ -22,10 +22,6 @@ import { agentSettingRouter } from "./routes/agent-setting/router";
 import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
 
-// 导入任务初始化函数
-import { initializeTasks } from "./tasks";
-import { getRedditPost } from "./lib/task-redditpost";
-
 export const app = new Hono().basePath("/api");
 
 app.use(loggerMiddleware);
@@ -90,5 +86,3 @@ app.get(
 
 export type AppRouter = typeof appRouter;
 
-// 初始化所有定时任务
-initializeTasks();

@@ -15,7 +15,7 @@ export function AppWrapper({ children }: PropsWithChildren) {
 			<div
 				className={cn(" px-0 ", [
 					config.ui.saas.useSidebarLayout
-						? "min-h-[calc(100vh-1rem)] md:ml-[280px]"
+						? "min-h-[calc(100vh-1rem)] md:ml-[280px] p-4"
 						: "",
 				])}
 			>
