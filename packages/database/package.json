@@ -1,6 +1,6 @@
 {
 	"dependencies": {
-		"@prisma/client": "^6.3.1",
+		"@prisma/client": "^6.17.0",
 		"@repo/config": "workspace:*",
 		"decimal.js": "^10.5.0",
 		"zod": "^3.24.2"
@@ -10,7 +10,7 @@
 		"@repo/tsconfig": "workspace:*",
 		"@types/node": "22.13.5",
 		"dotenv-cli": "^8.0.0",
-		"prisma": "^6.3.1",
+		"prisma": "^6.17.0",
 		"prisma-json-types-generator": "^3.2.2",
 		"zod-prisma-types": "^3.2.4"
 	},

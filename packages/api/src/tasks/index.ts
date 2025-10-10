@@ -1,5 +1,6 @@
 import { scheduler } from "@repo/scheduler";
 import { getRedditPost } from "../lib/task-redditpost";
+import { getNoAnalyzePost } from "../lib/ai-analyzepost";
 import { config } from "@repo/config";
 import { logger } from "@repo/logs";
 
@@ -24,13 +25,18 @@ export function initializeTasks() {
   });
 
   // 可以在这里添加更多的定时任务
-  // scheduler.schedule({
-  //   id: "another-task",
-  //   cronExpression: "0 * * * * *", // 每分钟执行一次
-  //   task: async () => {
-  //     // 任务逻辑
-  //   },
-  // });
+  scheduler.schedule({
+    id: "get-no-analyze-post",
+    cronExpression: config.aiAnalyze?.cronExpression || "0 * * * * *", // 每分钟执行一次
+    task: async () => {
+       try {
+		logger.info("=============start to get no analyze post", new Date());
+		//await getNoAnalyzePost();
+      } catch (error) {
+        console.error("Failed to get no analyze posts:", error);
+      }
+    },
+  });
 }
 
 /**

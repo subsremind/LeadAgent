@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 export async function getRedditPost() {
 	try {
 		logger.info(`start to sync post=============================`);
-		const syncPost = config.syncPost.enabled
+		const syncPost = config.syncPost?.enabled
 		if (!syncPost) {
 			logger.info(`sync post is disabled`);
 			return;
@@ -28,7 +28,7 @@ export async function getRedditPost() {
 			  { id: 'asc' }
 			]
 		  });
-		const limitPerChannel = 1; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
+		const limitPerChannel = 100; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
 		const redditIdList: string[] = []
 		let posts: RedditPost[] = []
 		for (const channel of channelList) {
@@ -38,7 +38,7 @@ export async function getRedditPost() {
 				
 				for (const post of posts) {
 					try {
-						redditIdList.push(post.id);
+						redditIdList.push(post.redditId);
 
 
 						
@@ -54,15 +54,16 @@ export async function getRedditPost() {
 			  redditId: true
 			},
 			where: {
-			  subreddit: {
+				redditId: {
 				in: redditIdList
 				}
 			}
 		  });
 		// 从 posts 中移除已存在于 dbRecords 中的 redditId
 		const dbRedditIds = dbRecords.map(record => record.redditId);
-		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.id));
+		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.redditId));	
 		logger.info(`save ${filteredPosts.length} posts to db`);
+
 		await saveBatchRedditPosts(filteredPosts);
 
 		// await savePostToDB(post, embedding, channel.id);
@@ -93,7 +94,6 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 			const posts = extractPosts(json, channel.id);
 			
 			if (posts.length === 0) {
-				logger.error(`no posts found from ${subreddit}`);
 				break;
 			}
 			
@@ -115,7 +115,7 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 
 async function saveBatchRedditPosts(
 	rows: RedditPost[],
-	batchSize = 500
+	batchSize = 50
   ): Promise<number> {
 	if (!rows.length) return 0;
   
@@ -172,9 +172,7 @@ async function saveBatchRedditPosts(
 function extractPosts(json: any, categoryId?: string): RedditPost[] {
 	return json.data.children.map((c: any) => {
 	  const post = c.data;
-	  logger.info(`=============extract post: `, post);
 	  const createdUtcTs = toUtcDate(post?.created_utc);
-		logger.info(`=============createdUtcTs: `, createdUtcTs);
 	  const redditPost: RedditPost = {
 		redditId: post.id,
 		title: post.title,

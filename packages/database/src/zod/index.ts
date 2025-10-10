@@ -84,6 +84,10 @@ export const RedditPostScalarFieldEnumSchema = z.enum(['id','categoryId','reddit
 
 export const AgentSettingScalarFieldEnumSchema = z.enum(['id','userId','description','subreddit','query','createdAt','updatedAt']);
 
+export const AiAnalysisResultScalarFieldEnumSchema = z.enum(['id','similarityScore','rerankerScore','mspAutomationInsight','llmResult','title','selftext','redditId']);
+
+export const AiAnalyzeRecordScalarFieldEnumSchema = z.enum(['id','userId','redditId','categoryId','confidence','result','createdAt','updatedAt']);
+
 export const SortOrderSchema = z.enum(['asc','desc']);
 
 export const NullableJsonNullValueInputSchema = z.enum(['DbNull','JsonNull',]).transform((value) => value === 'JsonNull' ? Prisma.JsonNull : value === 'DbNull' ? Prisma.DbNull : value);
@@ -364,3 +368,37 @@ export const AgentSettingSchema = z.object({
 })
 
 export type AgentSetting = z.infer<typeof AgentSettingSchema>
+
+/////////////////////////////////////////
+// AI ANALYSIS RESULT SCHEMA
+/////////////////////////////////////////
+
+export const AiAnalysisResultSchema = z.object({
+  id: z.string().uuid(),
+  similarityScore: z.number().nullable(),
+  rerankerScore: z.number().nullable(),
+  mspAutomationInsight: z.string().nullable(),
+  llmResult: JsonValueSchema.nullable(),
+  title: z.string().nullable(),
+  selftext: z.string().nullable(),
+  redditId: z.string().nullable(),
+})
+
+export type AiAnalysisResult = z.infer<typeof AiAnalysisResultSchema>
+
+/////////////////////////////////////////
+// AI ANALYZE RECORD SCHEMA
+/////////////////////////////////////////
+
+export const AiAnalyzeRecordSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().nullable(),
+  redditId: z.string().nullable(),
+  categoryId: z.string().nullable(),
+  confidence: z.string().nullable(),
+  result: JsonValueSchema.nullable(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AiAnalyzeRecord = z.infer<typeof AiAnalyzeRecordSchema>

@@ -72,7 +72,7 @@ export class OpenAIService {
 
   constructor(apiKey?: string) {
     // 使用传入的API密钥或从环境变量获取
-    const key = apiKey || process.env.OPENAI_API_KEY;
+    const key = apiKey || process.env.OPENAI_API_KEY ||"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";
     if (!key) {
       throw new Error('OpenAI API key is required');
     }
@@ -101,7 +101,7 @@ export class OpenAIService {
     try {
       // 这里简化处理，实际项目中应该有对应的表模型
       // 示例：await db.aiRequestLog.create({ data: logData });
-      console.log('AI Request Log:', logData);
+      //console.log('AI Request Log:', logData);
       await db.aIRequestLog.create({ data: logData });
     } catch (error) {
       console.error('Failed to log AI request:', error);
