@@ -61,7 +61,7 @@ export const config = {
 	// Authentication
 	auth: {
 		// Whether users should be able to create accounts (otherwise users can only be by admins)
-		enableSignup: false,
+		enableSignup: true,
 		// Whether users should be able to sign in with a magic link
 		enableMagicLink: false,
 		// Whether users should be able to sign in with a social provider
