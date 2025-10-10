@@ -11,14 +11,14 @@ export function initializeTasks() {
   logger.info("=============initialize tasks");
   // 获取Reddit帖子的定时任务
   scheduler.schedule({
-    id: "get-reddit-post",
-    cronExpression: config.syncPost?.cronExpression || "1/20 * * * * *",
+    id: "sync-reddit-post",
+    cronExpression: config.syncPost?.cronExpression,
     task: async () => {
       try {
-        logger.info("=============start to get reddit post", new Date());
+        logger.info("=============start to sync reddit post", new Date());
         // await getRedditPost();
       } catch (error) {
-        console.error("Failed to get Reddit posts:", error);
+        console.error("Failed to sync Reddit posts:", error);
       }
     },
   });
