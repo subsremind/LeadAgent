@@ -252,6 +252,8 @@ model RedditPost {
   recordCreatedAt DateTime @default(now()) 
   recordUpdatedAt DateTime @updatedAt 
 
+  aiAnalyzeRecords AiAnalyzeRecord[]
+
   @@map("reddit_post")
 }
 
@@ -287,6 +289,7 @@ model AiAnalyzeRecord {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   redditId  String?  @map("reddit_id")
+  redditPost  RedditPost?     @relation(fields: [redditId], references: [redditId], onDelete: Cascade)
   categoryId	String?
   confidence String?
   result    Json?
