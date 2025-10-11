@@ -132,7 +132,7 @@ export function LeadAgentList({
 					<Slider
 						className="w-32"
 						defaultValue={[embeddingRate]} 
-						max={2} 
+						max={1} 
 						step={0.1} 
 						onValueChange={(value) => {
 							// 立即更新显示值
@@ -146,7 +146,8 @@ export function LeadAgentList({
 								setEmbeddingRate(value[0]);
 							}, 300);
 						}} />
-					<span className="text-sm text-muted-foreground min-w-[40px] text-right">{displayEmbeddingRate.toFixed(1)}</span>
+					<span className="text-sm text-muted-foreground min-w-[40px] text-left">{displayEmbeddingRate.toFixed(1)}</span>
+					<Label className="whitespace-nowrap text-sm text-muted-foreground">{total} Redords</Label>
 				</div>
 				
 				<Button

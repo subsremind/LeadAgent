@@ -3,7 +3,8 @@
 		"menu": {
 			"organizations": "Organizations",
 			"users": "Users",
-			"usage": "Usage"
+			"usage": "Usage",
+			"settings": "Settings"
 		},
 		"organizations": {
 			"backToList": "Back to organizations",
