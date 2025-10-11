@@ -68,7 +68,21 @@
 			"assignAdminRole": "Assign admin role",
 			"removeAdminRole": "Remove admin role"
 		},
-		"description": "Manage your application."
+		"description": "Manage your application.",
+		"usage": {
+			"dailyAnalytics": "Daily Analytics",
+			"usageAnalysis": "Usage Analysis",
+			"totalUsers": "Total Users",
+			"totalTokens": "Total Tokens",
+			"totalCategorys": "Total Categorys",
+			"totalPosts": "Total Posts",
+			"postAnalysis": "Post Analysis",
+			"userTokens": "User Token Usage",
+			"tokens": "Tokens",
+			"posts": "Posts",
+			"date": "Date",
+			"viewDetails": "View Details"
+		}
 	},
 	"app": {
 		"menu": {

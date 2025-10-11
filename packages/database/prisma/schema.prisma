@@ -48,6 +48,7 @@ model User {
   memberships        Member[]
   aiChats            AiChat[]
   agentSettings      AgentSetting[]
+  aiAnalyzeRecords   AiAnalyzeRecord[]
 
   @@unique([email])
   @@unique([username])
@@ -283,7 +284,8 @@ model AiAnalysisResult {
 
 model AiAnalyzeRecord {
   id        String   @id @default(uuid())
-  userId    String?  @map("user_id")
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   redditId  String?  @map("reddit_id")
   categoryId	String?
   confidence String?

@@ -392,7 +392,7 @@ export type AiAnalysisResult = z.infer<typeof AiAnalysisResultSchema>
 
 export const AiAnalyzeRecordSchema = z.object({
   id: z.string().uuid(),
-  userId: z.string().nullable(),
+  userId: z.string(),
   redditId: z.string().nullable(),
   categoryId: z.string().nullable(),
   confidence: z.string().nullable(),
