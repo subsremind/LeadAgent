@@ -4,7 +4,8 @@
 			"organizations": "Organizations",
 			"users": "Users",
 			"usage": "Usage",
-			"settings": "Settings"
+			"settings": "Settings",
+			"config": "Config"
 		},
 		"organizations": {
 			"backToList": "Back to organizations",
@@ -656,6 +657,47 @@
 					},
 					"submit": "Set password",
 					"title": "Your password"
+				},
+				"reddit": {
+					"title": "Reddit",
+					"description": "Connect your Reddit account to LeadAgent to access your Reddit posts and comments.",
+					"authorize": "Authorize with Reddit",
+					"status": "Connected",
+					"checking": "Checking connection...",
+					"connected": "Connected",
+					"disconnected": "Disconnected",
+					"disconnect": "Disconnect",
+					"disconnectError": "Could not disconnect Reddit account",
+					"notifications": {
+						"authWindowSuccess": "Authorization callback processed successfully",
+						"popupBlocked": "Authorization popup was blocked. Please allow popups for this website.",
+						"authUrlError": "Authorization URL is invalid. Please try again."
+					}
+				},
+				"callback": {
+					"error": {
+						"authFailed": "Authorization callback failed",
+						"noCode": "Authorization callback did not include a code parameter",
+						"processing": "Authorization callback is being processed",
+						"title": "Authorization callback processing failed",
+						"close": "Close",
+						"backHome": "Back to home",
+						"unexpected": "Unexpected error occurred. Please try again."
+					},
+					"actions": {
+						"close": "Close",
+						"goHome": "Back to home"
+					},
+					"success": {
+						"message": "Authorization callback processed successfully",
+						"toast": "Authorization callback processed successfully",
+						"title": "Authorization callback processed successfully",
+						"autoClose": "Authorization callback processed successfully"
+					},
+					"loading": {
+						"title": "Processing authorization callback...",
+						"description": "Please wait while we process the authorization callback."
+					}
 				},
 				"title": "Security"
 			},

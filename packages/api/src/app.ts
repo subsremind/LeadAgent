@@ -21,7 +21,6 @@ import { leadAgentRouter } from "./routes/leadagent/router";
 import { agentSettingRouter } from "./routes/agent-setting/router";
 import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
-
 export const app = new Hono().basePath("/api");
 
 app.use(loggerMiddleware);
