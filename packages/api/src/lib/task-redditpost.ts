@@ -62,7 +62,7 @@ export async function getRedditPost() {
 		// 从 posts 中移除已存在于 dbRecords 中的 redditId
 		const dbRedditIds = dbRecords.map(record => record.redditId);
 		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.redditId));	
-		logger.info(`save ${filteredPosts.length} posts to db`);
+		logger.info(`save === ${filteredPosts.length} posts to db`);
 
 		await saveBatchRedditPosts(filteredPosts);
 
@@ -85,14 +85,17 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 		// const url: string = `https://www.reddit.com/${subreddit}/${sortType}.json?t=all&limit=${batchSize}`;
 		try {
 			const res: Response = await fetch(url, {
-				headers: { "User-Agent": "reddit-embeddings-script" },
-			});			
+				//"User-Agent": "reddit-embeddings-script"
+				headers: { 
+					 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+  						"Accept": "application/json"
+				 },
+			});
 			if (!res.ok) {
 				break;
-			}			
+			}
 			const json = await res.json();
 			const posts = extractPosts(json, channel.id);
-			
 			if (posts.length === 0) {
 				break;
 			}
