@@ -248,7 +248,7 @@ model RedditPost {
   score         Int      @default(0)
   numComments   Int      @default(0) 
   createdUtc    DateTime? 
-  embedding     Unsupported("vector(1536)") 
+  embedding     Unsupported("vector(1536)")? 
   recordCreatedAt DateTime @default(now()) 
   recordUpdatedAt DateTime @updatedAt 
 
