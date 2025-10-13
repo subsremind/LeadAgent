@@ -27,6 +27,16 @@
 			"cache": false,
 			"dependsOn": ["^generate", "^build"],
 			"persistent": true
+		},
+		"tasks": {
+			"cache": false,
+			"dependsOn": ["^generate"],
+			"persistent": true
+		},
+		"tasks:prod": {
+			"cache": false,
+			"dependsOn": ["^generate", "^build"],
+			"persistent": true
 		}
 	}
 }

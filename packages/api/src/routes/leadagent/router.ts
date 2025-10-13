@@ -3,12 +3,10 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { verifyOrganizationMembership } from "../organizations/lib/membership";
 
-import { utcnow } from "@repo/utils";
 import { authMiddleware } from "../../middleware/auth";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { category, redditPost } from "@repo/database/drizzle/schema";
+import { logger } from "@repo/logs";
+import { AgentSettingQueryType } from "./types";
 
 export const leadAgentRouter = new Hono()
 	.basePath("/lead-agent")
@@ -38,7 +36,7 @@ export const leadAgentRouter = new Hono()
 			
 
 			// 2. 使用pgvector进行向量搜索
-			const records = await db.query.redditPost.findMany({
+			const records = await db.redditPost.findMany({
 			});
 
 			
@@ -47,17 +45,110 @@ export const leadAgentRouter = new Hono()
 				records
 			});
 		},
-	)
-	.post(
+	).post(
 		"/search",
 		validator(
 			"json",
 			z.object({
-				query: z.string().nonempty("Query is required"),
-				embedding: z.array(z.number()),
-				subreddit: z.string(),
-				categoryId: z.string().optional(),
-				organizationId: z.string().optional(),
+				page: z.number().default(1),
+				pageSize: z.number().default(10),
+				subreddit: z.string().optional(),
+				embeddingRate: z.number().default(0.7),
+			}),
+		),
+		describeRoute({
+			summary: "Search lead-agent using vector search",
+			tags: ["LeadAgent"],
+		}),
+		async (c) => {
+			const { embeddingRate, page, pageSize, subreddit } = c.req.valid("json");
+			const user = c.get("user");
+			const agentSetting: AgentSettingQueryType = {
+				subreddit: subreddit || "",
+				embedding: "",
+			};
+			
+			const subredditArr = agentSetting?.subreddit?.split(',') || [];
+			const subredditFilter = subredditArr.map((item: String) => item.trim());
+			const categoryIds = await db.category.findMany({
+				select: {
+				  id: true  // 只选择id字段
+				},
+				where: {
+				  path: {
+					in: subredditFilter
+				  }
+				}
+			  })
+			  
+			if (!categoryIds.length) {
+				return c.json({ error: "Subreddit not found" }, 404);
+			}
+
+			const categoryArray = categoryIds.map((item) => item.id);
+
+			const offset = (page - 1) * pageSize;	
+
+			// 查询当前页数据
+
+			
+
+			const records = await db.redditPost.findMany({
+				include: {
+					aiAnalyzeRecords: {
+						select: {
+							confidence: true,
+						},
+						where: {
+							userId: user.id,
+						}
+					}
+				},
+				skip: offset,
+				take: pageSize,
+				where: {
+					categoryId: {
+						in: categoryArray
+					},
+					aiAnalyzeRecords: {
+						some: {
+							userId: user.id,
+							confidence: {
+								gte: embeddingRate
+							}
+						}
+					}
+				}
+			});
+
+			const total = await db.redditPost.count({
+				where: {
+					categoryId: {
+						in: categoryArray
+					},
+					aiAnalyzeRecords: {
+						some: {
+							userId: user.id,
+							confidence: {
+								gte: embeddingRate
+							}
+						}
+					}
+				}
+			});
+			  
+
+			return c.json({
+				records,
+				total,
+			});
+		},
+	)
+	.post(
+		"/search-vector",
+		validator(
+			"json",
+			z.object({
 				page: z.number().default(1),
 				pageSize: z.number().default(10),
 				embeddingRate: z.number().default(0.7),
@@ -68,9 +159,47 @@ export const leadAgentRouter = new Hono()
 			tags: ["LeadAgent"],
 		}),
 		async (c) => {
-			const { query, subreddit, embedding,embeddingRate, categoryId, organizationId, page, pageSize } = c.req.valid("json");
-			const subredditArr = subreddit.split(',');
-			const categoryIds = await db.select().from(category).where(inArray(category.path, subredditArr.map(subreddit => subreddit.trim())))
+			const { embeddingRate, page, pageSize } = c.req.valid("json");
+			const user = c.get("user");
+			const agentSetting: AgentSettingQueryType = {
+				subreddit: "",
+				embedding: "",
+			};
+			try {
+				const result = await db.$queryRaw`
+				SELECT id, "userId", description, subreddit, query, embedding::text as embedding,
+						"createdAt", "updatedAt"
+				FROM agent_setting
+				WHERE "userId" = ${user.id}
+				LIMIT 1`;
+				if (Array.isArray(result) && result.length > 0) {
+					const agentSettingRecord = result[0];
+					if (agentSettingRecord) {
+						agentSetting.subreddit = agentSettingRecord.subreddit;
+						agentSetting.embedding = JSON.parse(agentSettingRecord.embedding);
+					}
+				}
+			} catch (error) {
+				logger.error("Error fetching agent setting: ", error);
+				return c.json({ error: "Internal server error" }, 500);
+			}
+			
+			if (!agentSetting) {
+				return c.json({ records: [], total: 0, message: "Agent setting not found" });
+			}
+			const subredditArr = agentSetting?.subreddit?.split(',') || [];
+			const subredditFilter = subredditArr.map((item: String) => item.trim());
+			const categoryIds = await db.category.findMany({
+				select: {
+				  id: true  // 只选择id字段
+				},
+				where: {
+				  path: {
+					in: subredditFilter
+				  }
+				}
+			  })
+			  
 			if (!categoryIds.length) {
 				return c.json({ error: "Subreddit not found" }, 404);
 			}
@@ -84,46 +213,57 @@ export const leadAgentRouter = new Hono()
 			let total;
 
 			// 检查 embedding 参数是否存在
-			if (!embedding || !Array.isArray(embedding)) {
+			if (!agentSetting?.embedding || !Array.isArray(agentSetting?.embedding)) {
 				return c.json({
 					records: [],
 					total: 0,
+					message: "embedding not found",
 				});
 			}
 
 			// 1. 生成查询文本的向量表示
 			// const embedding = await openaiService.generateQueryEmbedding(query);
 			// 2. 使用pgvector进行向量搜索
-			records = await db.query.redditPost.findMany({
-				columns: {
-					id: true,
-					categoryId: true,
-					redditId: true,
-					title: true,
-					selftext: true,
-					url: true,
-					permalink: true,
-					author: true,
-					subreddit: true,
-					ups: true,
-					downs: true,
-					score: true,
-					numComments: true,
-					createdUtc: true,
-				},
-				where: and(
-					inArray(redditPost.categoryId, categoryArray), 
-					sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < ${embeddingRate}`
-				),
-				orderBy: [
-					desc(redditPost.createdUtc)], 
-				limit: pageSize,
-				offset,
-			});
-			total = await db.$count(redditPost, and(
-				inArray(redditPost.categoryId, categoryArray),
-				sql`${redditPost.embedding} <=> array[${sql.raw(embedding.join(', '))}]::vector < ${embeddingRate}`
-			));
+			try {
+				records = await db.$queryRawUnsafe(`
+				SELECT
+				  id,
+				  "categoryId",
+				  "redditId",
+				  title,
+				  selftext,
+				  url,
+				  permalink,
+				  author,
+				  subreddit,
+				  ups,
+				  downs,
+				  score,
+				  "numComments",
+				  "createdUtc"
+				FROM "reddit_post"
+				WHERE "categoryId" = ANY($1)
+				  AND embedding <=> $2::vector < $3
+				ORDER BY "createdUtc" DESC
+				LIMIT $4
+				OFFSET $5
+			  `, categoryArray, `[${agentSetting?.embedding.join(',')}]`, embeddingRate, pageSize, offset);
+				} catch (error) {
+					logger.error("Error fetching posts: ", error);
+					return c.json({ error: "Internal server error" }, 500);
+				}
+			  
+			  // 查询总数
+			const totalResult = await db.$queryRawUnsafe<{ count: bigint }>(`
+			SELECT COUNT(*) AS count
+			FROM   "reddit_post"
+			WHERE  "categoryId" = ANY($1)
+				AND  embedding <=> $2::vector < $3
+			`, categoryArray,
+				`[${agentSetting.embedding.join(',')}]`,
+				embeddingRate);
+			
+			total = Number(Array.isArray(totalResult) ? totalResult[0].count : totalResult.count);
 
 			return c.json({
 				records,

@@ -1,1 +1,0 @@
-ALTER TABLE "reddit_post" ALTER COLUMN "created_utc" SET DATA TYPE timestamp with time zone;

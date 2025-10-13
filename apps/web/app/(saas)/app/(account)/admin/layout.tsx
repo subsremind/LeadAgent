@@ -4,7 +4,7 @@ import { SettingsMenu } from "@saas/settings/components/SettingsMenu";
 import { PageHeader } from "@saas/shared/components/PageHeader";
 import { SidebarContentLayout } from "@saas/shared/components/SidebarContentLayout";
 import { Logo } from "@shared/components/Logo";
-import { Building2Icon, UsersIcon } from "lucide-react";
+import { Building2Icon, UsersIcon, ChartBarIcon, SettingsIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
@@ -40,11 +40,26 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
 								),
 								title: t("admin.title"),
 								items: [
+									
 									{
 										title: t("admin.menu.users"),
 										href: "/app/admin/users",
 										icon: (
 											<UsersIcon className="size-4 opacity-50" />
+										),
+									},
+									{
+										title: t("admin.menu.usage"),
+										href: "/app/admin/usage",
+										icon: (
+											<ChartBarIcon className="size-4 opacity-50" />
+										),
+									},
+									{
+										title: t("admin.menu.config"),
+										href: "/app/admin/config",
+										icon: (
+											<SettingsIcon className="size-4 opacity-50" />
 										),
 									},
 									...(config.organizations.enable

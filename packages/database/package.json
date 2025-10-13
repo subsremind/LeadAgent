@@ -1,12 +1,8 @@
 {
 	"dependencies": {
+		"@prisma/client": "^6.17.0",
 		"@repo/config": "workspace:*",
-		"@types/pg": "^8.15.5",
 		"decimal.js": "^10.5.0",
-		"drizzle-orm": "^0.44.5",
-		"pg": "^8.16.3",
-		"pgvector": "^0.2.1",
-		"postgres": "^3.4.7",
 		"zod": "^3.24.2"
 	},
 	"devDependencies": {
@@ -14,17 +10,18 @@
 		"@repo/tsconfig": "workspace:*",
 		"@types/node": "22.13.5",
 		"dotenv-cli": "^8.0.0",
-		"drizzle-kit": "^0.31.4",
-		"drizzle-zod": "^0.8.3"
+		"prisma": "^6.17.0",
+		"prisma-json-types-generator": "^3.2.2",
+		"zod-prisma-types": "^3.2.4"
 	},
 	"main": "./index.ts",
 	"name": "@repo/database",
 	"scripts": {
-		"generate": "drizzle-kit generate",
-		"push": "dotenv -c -e ../../.env -- drizzle-kit push",
-		"migrate": "dotenv -c -e ../../.env -- drizzle-kit migrate",
-		"studio": "dotenv -c -e ../../.env -- drizzle-kit studio",
-		"type-check": "drizzle-kit check"
+		"generate": "prisma generate --no-hints",
+		"push": "dotenv -c -e ../../.env -- prisma db push --skip-generate",
+		"migrate": "dotenv -c -e ../../.env -- prisma migrate dev",
+		"studio": "dotenv -c -e ../../.env -- prisma studio",
+		"type-check": "tsc --noEmit"
 	},
 	"types": "./**/.tsx",
 	"version": "0.0.0"

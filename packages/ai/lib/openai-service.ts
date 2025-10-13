@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { nanoid } from "nanoid";
+import { db } from "@repo/database";
 
 // 请求配置接口
 export interface OpenAIRequestConfig {
@@ -41,8 +42,7 @@ export interface AIRequestLog {
   userId?: string;
   organizationId?: string;
   model: string;
-  prompt: string;
-  response: string;
+  business: string;
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
@@ -60,6 +60,7 @@ const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
   'gpt-4o': { prompt: 0.005, completion: 0.015 },
   'gpt-4-turbo': { prompt: 0.01, completion: 0.03 },
   'gpt-4': { prompt: 0.03, completion: 0.06 },
+  'text-embedding-3-small': { prompt: 0.02, completion: 0 }, // embedding模型价格
   // 可以添加更多模型的价格
 };
 
@@ -71,7 +72,7 @@ export class OpenAIService {
 
   constructor(apiKey?: string) {
     // 使用传入的API密钥或从环境变量获取
-    const key = apiKey || process.env.OPENAI_API_KEY;
+    const key = apiKey || process.env.OPENAI_API_KEY ||"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";
     if (!key) {
       throw new Error('OpenAI API key is required');
     }
@@ -100,7 +101,8 @@ export class OpenAIService {
     try {
       // 这里简化处理，实际项目中应该有对应的表模型
       // 示例：await db.aiRequestLog.create({ data: logData });
-      console.log('AI Request Log:', logData);
+      //console.log('AI Request Log:', logData);
+      await db.aIRequestLog.create({ data: logData });
     } catch (error) {
       console.error('Failed to log AI request:', error);
       // 记录失败不应影响主流程
@@ -111,6 +113,7 @@ export class OpenAIService {
    * 通用的OpenAI聊天完成请求方法
    */
   async chatCompletion(
+    business: string,
     config: OpenAIRequestConfig,
     logOptions?: {
       userId?: string;
@@ -147,8 +150,7 @@ export class OpenAIService {
         userId: logOptions?.userId,
         organizationId: logOptions?.organizationId,
         model: config.model,
-        prompt: promptText,
-        response: responseText,
+        business,
         promptTokens: response.usage?.prompt_tokens || 0,
         completionTokens: response.usage?.completion_tokens || 0,
         totalTokens: response.usage?.total_tokens || 0,
@@ -169,8 +171,7 @@ export class OpenAIService {
         userId: logOptions?.userId,
         organizationId: logOptions?.organizationId,
         model: config.model,
-        prompt: config.prompt || JSON.stringify(config.messages || {}),
-        response: '',
+        business,
         promptTokens: 0,
         completionTokens: 0,
         totalTokens: 0,
@@ -188,6 +189,7 @@ export class OpenAIService {
    * 简化的文本生成方法
    */
   async generateText(
+    business: string,
     prompt: string,
     options?: {
       model?: string;
@@ -210,7 +212,7 @@ export class OpenAIService {
       delete config.temperature;
     }
 
-    const response = await this.chatCompletion(config, {
+    const response = await this.chatCompletion(business, config, {
       userId: options?.userId,
       organizationId: options?.organizationId,
     });
@@ -219,12 +221,38 @@ export class OpenAIService {
   }
 
   // 生成查询文本的向量表示
-  async generateQueryEmbedding(text: string): Promise<number[]> {
+  async generateEmbedding(business: string, userId: string, text: string): Promise<number[]> {
+    const startTime = Date.now();
+    const requestId = nanoid();
+    
     try {
-
       const response = await this.openaiClient.embeddings.create({
         model: "text-embedding-3-small",
         input: text,
+      });
+      
+      const duration = Date.now() - startTime;
+      
+      // 获取token使用情况
+      const promptTokens = response.usage?.prompt_tokens || 0;
+      const totalTokens = response.usage?.total_tokens || 0;
+      
+      // 计算成本（使用正确的embedding模型价格）
+      const cost = this.calculateCost("text-embedding-3-small", promptTokens, 0);
+      
+      // 记录请求
+      await this.logRequest({
+        id: requestId,
+        userId,
+        model: "text-embedding-3-small",
+        business,
+        promptTokens,
+        completionTokens: 0,
+        totalTokens,
+        cost,
+        duration,
+        success: true,
+        timestamp: new Date(),
       });
       
       // 获取embedding结果
@@ -237,6 +265,23 @@ export class OpenAIService {
       
       return embedding;
     } catch (error) {
+      const duration = Date.now() - startTime;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // 记录失败的请求
+      await this.logRequest({
+        id: requestId,
+        model: "text-embedding-3-small",
+        business,
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+        duration,
+        success: false,
+        error: errorMessage,
+        timestamp: new Date(),
+      });
+      
       console.error("Error generating query embedding:", error);
       throw error;
     }
@@ -246,6 +291,7 @@ export class OpenAIService {
    * 流式响应方法
    */
   async streamChatCompletion(
+    business: string,
     config: OpenAIRequestConfig,
     onChunk: (chunk: string, isFinal: boolean) => void,
     logOptions?: {
@@ -294,8 +340,7 @@ export class OpenAIService {
         userId: logOptions?.userId,
         organizationId: logOptions?.organizationId,
         model: config.model,
-        prompt: config.prompt || JSON.stringify(config.messages || {}),
-        response: fullResponse,
+        business,
         promptTokens,
         completionTokens: estimatedTokens,
         totalTokens: promptTokens + estimatedTokens,
@@ -314,8 +359,7 @@ export class OpenAIService {
         userId: logOptions?.userId,
         organizationId: logOptions?.organizationId,
         model: config.model,
-        prompt: config.prompt || JSON.stringify(config.messages || {}),
-        response: '',
+        business,
         promptTokens: 0,
         completionTokens: 0,
         totalTokens: 0,

@@ -15,12 +15,12 @@ export function AppWrapper({ children }: PropsWithChildren) {
 			<div
 				className={cn(" px-0 ", [
 					config.ui.saas.useSidebarLayout
-						? "min-h-[calc(100vh-1rem)] md:ml-[280px]"
+						? "min-h-[calc(100vh-1rem)] md:ml-[280px] p-4"
 						: "",
 				])}
 			>
 				<main
-					className={cn("container max-w-6xl py-6", [
+					className={cn("w-full py-6", [
 						config.ui.saas.useSidebarLayout ? "" : "",
 					])}
 				>

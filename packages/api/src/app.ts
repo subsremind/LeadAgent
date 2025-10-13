@@ -21,9 +21,6 @@ import { leadAgentRouter } from "./routes/leadagent/router";
 import { agentSettingRouter } from "./routes/agent-setting/router";
 import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
-import { scheduler } from "@repo/scheduler";
-import { getRedditPost } from "./lib/get-post";
-import { config } from "@repo/config";
 export const app = new Hono().basePath("/api");
 
 app.use(loggerMiddleware);
@@ -86,20 +83,5 @@ app.get(
 	}),
 );
 
-scheduler.schedule({
-	id: "alert-task",
-	cronExpression: "0 0 1/1 * * *",
-	task: async () => {
-		// sendSubscriptionAlerts();
-	},
-});
-
-scheduler.schedule({
-	id: "get-reddit-post",
-	cronExpression: "1 1 * * * *", //,config.syncPost.cronExpression,
-	task: async () => {
-		getRedditPost();
-	},
-});
-
 export type AppRouter = typeof appRouter;
+
