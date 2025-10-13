@@ -80,7 +80,8 @@ export const config = {
 	// Mails
 	mails: {
 		// the from address for mails
-		from: "onboarding@maibozhineng.com",
+		// from: "onboarding@maibozhineng.com",
+		from: "onboarding@leadsagent.app",
 	},
 	// Frontend
 	ui: {
@@ -112,7 +113,7 @@ export const config = {
 		// whether the contact form should be enabled
 		enabled: true,
 		// the email to which the contact form messages should be sent
-		to: "onboarding@maibozhineng.com",
+		to: "onboarding@leadsagent.app",
 		// the subject of the email
 		subject: "Contact form message",
 	},

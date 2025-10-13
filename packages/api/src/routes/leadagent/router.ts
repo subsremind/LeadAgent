@@ -94,16 +94,16 @@ export const leadAgentRouter = new Hono()
 			
 
 			const records = await db.redditPost.findMany({
-				// select: {
-				// 	aiAnalyzeRecords: {
-				// 		where: {
-				// 			userId: user.id,
-				// 			confidence: {
-				// 				gte: embeddingRate
-				// 			}
-				// 		},
-				// 	}
-				// },
+				include: {
+					aiAnalyzeRecords: {
+						select: {
+							confidence: true,
+						},
+						where: {
+							userId: user.id,
+						}
+					}
+				},
 				skip: offset,
 				take: pageSize,
 				where: {
