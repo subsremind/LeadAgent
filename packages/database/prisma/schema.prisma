@@ -1,8 +1,8 @@
 
 datasource db {
   provider  = "postgresql"
-  url       = "postgresql://postgres.fepbvlwywijtpfyjmequ:afMzr8su6tv3Lu1g@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
-  directUrl = "postgresql://postgres.fepbvlwywijtpfyjmequ:afMzr8su6tv3Lu1g@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
   extensions = [pgvector(map: "vector", schema: "extensions")]
 }
 
