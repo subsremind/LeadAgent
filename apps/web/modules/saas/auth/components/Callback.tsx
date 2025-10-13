@@ -7,8 +7,9 @@ import { useRouter } from "@shared/hooks/router";
 import { Button } from "@ui/components/button";
 import { CheckCircleIcon, XCircleIcon } from "lucide-react";
 import { toast } from "sonner";
+import { authClient } from "@repo/auth/client";
 
-export default function CallbackPage() {
+export function Callback() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -20,7 +21,6 @@ export default function CallbackPage() {
 				const code = searchParams.get("code");
 				const state = searchParams.get("state");
 				const error = searchParams.get("error");
-
 				// 检查是否有错误参数
 				if (error) {
 					setStatus("error");
@@ -39,13 +39,23 @@ export default function CallbackPage() {
 
 				// 设置授权码并触发token获取
 				try {
-					// 调用API端点来处理授权码并存储token
-					const response = await fetch('/callback/reddit', {
+					
+					// 首先使用授权码交换 token					
+					const tokenData = await getAccessToken(code);
+
+					// 然后调用 API 保存 token 到数据库
+					const response = await fetch('/api/admin/config/authorize', {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
 						},
-						body: JSON.stringify({ code, state }),
+						body: JSON.stringify({
+							accessToken: tokenData.access_token,
+							refreshToken: tokenData.refresh_token || '',
+							tokenType: 'bearer',
+							expiresAt: tokenData.expires_in ? new Date(Date.now() + tokenData.expires_in * 1000).toISOString() : undefined,
+							scope: 'read'
+						}),
 					});
 
 					if (!response.ok) {
@@ -83,7 +93,32 @@ export default function CallbackPage() {
 				toast.error("An unexpected error occurred");
 			}
 		};
+		const  getAccessToken = async (authorizationCode: string) => {
+			const redditClientId = process.env.REDDIT_CLIENT_ID || "z_9PVcqKjjJKMFpXBhdzGw";
+			const redditClientSecret = process.env.REDDIT_CLIENT_SECRET || "3oLGLdeoCGEMP2RwMSQUztLxFSK7RA";
 
+			const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/callback`;
+			const res: Response = await fetch('https://www.reddit.com/api/v1/access_token', {
+				method: 'POST',
+				headers: {
+					'User-Agent': 'lead_agent_Oauth2/1.0',
+					'Authorization': 'Basic ' + Buffer.from(`${redditClientId}:${redditClientSecret}`).toString("base64"),
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: `grant_type=authorization_code&code=${encodeURIComponent(authorizationCode)}&redirect_uri=${encodeURIComponent(redirectUri)}`,
+			});
+		
+			logger.info(`Reddit token response status: ${res.status} ${res.statusText}`);
+			
+			if (!res.ok) {
+				const errorText = await res.text();
+				logger.error('Failed to exchange code for token:', errorText);
+				throw new Error(`Failed to get Reddit token: ${res.status} - ${errorText}`);
+			}
+		
+			const tokenData = await res.json();
+			return tokenData; // 添加返回值
+		};
 		handleCallback();
 	}, [searchParams]);
 

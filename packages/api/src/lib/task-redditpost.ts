@@ -33,8 +33,8 @@ export async function getRedditTokenFromDB(): Promise<{accessToken: string, refr
 
 // 刷新Reddit token
 export async function refreshRedditToken(refreshToken: string): Promise<{access_token: string, expires_in: number, refresh_token?: string}> {
-	const redditClientId = process.env.REDDIT_CLIENT_ID;
-	const redditClientSecret = process.env.REDDIT_CLIENT_SECRET;
+	const redditClientId = process.env.REDDIT_CLIENT_ID || "z_9PVcqKjjJKMFpXBhdzGw";
+	const redditClientSecret = process.env.REDDIT_CLIENT_SECRET || "3oLGLdeoCGEMP2RwMSQUztLxFSK7RA";
 
 	if (!redditClientId || !redditClientSecret) {
 		throw new Error('Reddit API credentials missing');
@@ -91,8 +91,8 @@ export async function updateRedditTokenInDB(tokenData: any): Promise<void> {
 export async function exchangeCodeForToken(authorizationCode: string): Promise<{access_token: string, expires_in: number, refresh_token?: string}> {
 	const redditClientId = process.env.REDDIT_CLIENT_ID;
 	const redditClientSecret = process.env.REDDIT_CLIENT_SECRET;
-	// 修复端口问题，使用动态端口检测
-	const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/callback`;
+	// 不做国际化处理，直接使用 /callback
+	const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/callback`;
 
 	if (!redditClientId || !redditClientSecret) {
 		logger.error('Reddit API credentials not configured in environment variables');
@@ -213,7 +213,7 @@ export async function getRedditPost() {
 			}
 		  });
 		// 从 posts 中移除已存在于 dbRecords 中的 redditId
-		const dbRedditIds = dbRecords.map(record => record.redditId);
+		const dbRedditIds = dbRecords.map((record: { redditId: string }) => record.redditId);
 		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.redditId));	
 		logger.info(`save === ${filteredPosts.length} posts to db`);
 
@@ -252,62 +252,15 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 					"Authorization": `Bearer ${accessToken}`
 				},
 			});
-			
-			// 检查是否是 401 未授权错误（token 过期）
-			if (res.status === 401) {
-				logger.warn('Access token expired, attempting to refresh token...');
-				
-				// 尝试刷新token
-				const tokenFromDB = await getRedditTokenFromDB();
-				if (tokenFromDB?.refreshToken) {
-					try {
-						const refreshedToken = await refreshRedditToken(tokenFromDB.refreshToken);
-						accessToken = refreshedToken.access_token;
-						
-						// 使用新令牌重试请求
-						const retryRes: Response = await fetch(url, {
-							headers: { 
-								"User-Agent": "reddit-get-post-script",
-								"Authorization": `Bearer ${accessToken}`
-							},
-						});
-						
-						if (!retryRes.ok) {
-							logger.error(`Reddit API request failed after token refresh: ${retryRes.status} ${retryRes.statusText}`);
-							break;
-						}
-						
-						const json = await retryRes.json();
-						const posts = extractPosts(json, channel.id);
-						if (posts.length === 0) {
-							break;
-						}
-						
-						allPosts.push(...posts);
-						remainingLimit -= posts.length;
-						after = json.data.after;
-					} catch (refreshError) {
-						logger.error('Failed to refresh token:', refreshError);
-						throw new Error('Reddit authorization expired and refresh failed. Please re-authorize.');
-					}
-				} else {
-					throw new Error('Reddit authorization expired and no refresh token available. Please re-authorize.');
-				}
-			} else if (!res.ok) {
-				logger.error(`Reddit API request failed: ${res.status} ${res.statusText}`);
+
+			const json = await res.json();
+			const posts = extractPosts(json, channel.id);
+			if (posts.length === 0) {
 				break;
-			} else {
-				const json = await res.json();
-				const posts = extractPosts(json, channel.id);
-				if (posts.length === 0) {
-					break;
-				}
-				
-				allPosts.push(...posts);
-				remainingLimit -= posts.length;
-				after = json.data.after;
-			}
-			
+			}				
+			allPosts.push(...posts);
+			remainingLimit -= posts.length;
+			after = json.data.after;
 			if (!after) {
 				break;
 			}
@@ -384,9 +337,9 @@ async function getValidAccessToken(): Promise<string> {
 	
 	// 使用授权码获取新的访问令牌
 	logger.info('Fetching new Reddit access token using authorization code...');
-	const tokenData = await getRedditToken(storedAuthorizationCode);
+	const tokenData ="" // await getRedditToken(storedAuthorizationCode);
 	
-	return tokenData.access_token;
+	return tokenData;
 }
 
 async function saveBatchRedditPosts(
@@ -410,7 +363,18 @@ async function saveBatchRedditPosts(
 			$${cursor+12},$${cursor+13}::vector,
 			NOW(),NOW(),$${cursor+14}
 		  )`);
-		const embeddingStr = ""//await openaiService.generateEmbedding('reddit-embedding','', `${r.title} + ${r.selftext ?? ""}`);	
+		// 生成默认的1536维零向量，或者使用 OpenAI embedding
+		//let embeddingStr: string;
+		// try {
+		// 	// 尝试生成真实的 embedding
+		// 	const embedding = await openaiService.generateEmbedding('reddit-embedding', '', `${r.title} ${r.selftext ?? ""}`);
+		// 	embeddingStr = embedding.join(',');
+		// } catch (error) {
+		// 	// 如果 embedding 生成失败，使用默认的1536维零向量
+		// 	logger.warn('Failed to generate embedding, using default zero vector:', error);
+		// 	embeddingStr = new Array(1536).fill(0).join(',');
+		// }
+		
 		valuesArg.push(
 			r.redditId,
 			r.title,
@@ -425,7 +389,7 @@ async function saveBatchRedditPosts(
 			r.numComments ?? 0,
 			r.createdUtc ?? null,
 			r.categoryId ?? null,
-			`[${embeddingStr}]`, //embeddingStr.join(',')
+			null, //embeddingStr.join(',')
 			nanoid()   // 最后一个对应 $15
 		  );
 		cursor += 15;
@@ -483,7 +447,8 @@ function extractPosts(json: any, categoryId?: string): RedditPost[] {
 // 生成Reddit OAuth2授权URL
 function generateRedditAuthUrl(): string {
 	const redditClientId = process.env.REDDIT_CLIENT_ID || "z_9PVcqKjjJKMFpXBhdzGw";
-	const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/callback`;
+	// 不做国际化处理，直接使用 /callback
+	const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/callback`;
 	const state = nanoid(16); // 生成16位随机状态参数
 	const scope = 'read'; // 请求读取权限
 	
@@ -513,7 +478,8 @@ function generateRedditAuthUrl(): string {
 async function exchangeCodeForTokenInternal(authorizationCode: string): Promise<{access_token: string, expires_in: number, refresh_token?: string}> {
 	const redditClientId = process.env.REDDIT_CLIENT_ID;
 	const redditClientSecret = process.env.REDDIT_CLIENT_SECRET;
-	const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/callback`;
+	// 不做国际化处理，直接使用 /callback
+	const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/callback`;
 
 	if (!redditClientId || !redditClientSecret) {
 		logger.error('Reddit API credentials not configured in environment variables');

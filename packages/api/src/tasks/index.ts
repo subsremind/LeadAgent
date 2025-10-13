@@ -31,7 +31,7 @@ export function initializeTasks() {
     task: async () => {
        try {
 		logger.info("=============start to get no analyze post", new Date());
-		//await getNoAnalyzePost();
+		// await getNoAnalyzePost();
       } catch (error) {
         console.error("Failed to get no analyze posts:", error);
       }
