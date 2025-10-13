@@ -85,7 +85,7 @@ export const configRouter = new Hono()
 		async (c) => {
 			try {
 				const user = c.get("user");
-				const tokenData = await db.integrationAuth.delete({
+				const tokenData = await db.integrationAuth.deleteMany({
 					where: {
 							type: 'reddit'
 					}
