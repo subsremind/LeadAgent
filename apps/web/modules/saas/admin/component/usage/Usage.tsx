@@ -221,10 +221,9 @@ export function Usage() {
 									label={{ value: t("admin.usage.posts"), angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } }}
 								/>
 								<Tooltip 
-									formatter={(value) => [`${formatNumber(Number(value))}`, t("admin.usage.posts")]}
+									formatter={(value, user) => [`${formatNumber(Number(value))}`, user]}
 									labelFormatter={(label) => t("admin.usage.date") + `: ${label}`}
 								/>
-								<Legend />
 								{uniquePostUsers.map((user) => (
 									<Line 
 										dataKey={`${user}Posts`}

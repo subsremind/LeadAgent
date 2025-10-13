@@ -14,18 +14,13 @@ import {
   } from "@ui/components/card"
 import { Badge } from "@ui/components/badge"
 import {
-	BellPlus,
-	EditIcon,
-	MoreVerticalIcon,
-	PlusIcon,
-	Trash2Icon,
-	BadgeCheckIcon,
 	ArrowBigDown,
 	ArrowBigUp,
 	MessageCircleMore,
-	Rss,
 	SettingsIcon,
-	InfoIcon
+	InfoIcon,
+	CheckCheckIcon,
+	
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -147,7 +142,7 @@ export function LeadAgentList({
 							}, 300);
 						}} />
 					<span className="text-sm text-muted-foreground min-w-[40px] text-left">{displayEmbeddingRate.toFixed(1)}</span>
-					<Label className="whitespace-nowrap text-sm text-muted-foreground">{total} Redords</Label>
+					{/* <Label className="whitespace-nowrap text-sm text-muted-foreground">{total} Records</Label> */}
 				</div>
 				
 				<Button
@@ -178,7 +173,7 @@ export function LeadAgentList({
 						<Card className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] cursor-pointer">
 							<CardHeader>
 								<div>
-									<Label className="ml-auto text-xs text-muted-foreground justify-start">{item.author} · {formatRelativeTime(new Date(item.createdUtc))}</Label>
+									<Label className="ml-auto text-xs text-muted-foreground justify-start">{item.author} · {formatRelativeTime(new Date(item.createdUtc))} </Label>
 								</div>
 								<CardTitle>
 									{item.title}
@@ -187,6 +182,13 @@ export function LeadAgentList({
 							</CardHeader>
 							<CardFooter>
 								<div className="flex w-full flex-wrap gap-2">
+
+									{/* <Badge
+										status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
+										>
+											<CheckCheckIcon size={16}/>
+											{item.aiAnalyzeRecords[0].confidence}
+									</Badge> */}
 									<Badge
 									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
 									>
