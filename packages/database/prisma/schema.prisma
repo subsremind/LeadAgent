@@ -286,7 +286,7 @@ model AiAnalysisResult {
 
 model AiAnalyzeRecord {
   id        String   @id @default(uuid())
-  userId      String   @unique
+  userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   redditId  String?  @map("reddit_id")
   redditPost  RedditPost?     @relation(fields: [redditId], references: [redditId], onDelete: Cascade)
