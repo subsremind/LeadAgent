@@ -111,6 +111,7 @@
 		"lint": "next lint",
 		"shadcn-ui": "pnpm dlx shadcn@latest",
 		"start": "next start",
+		"start:full": "concurrently \"next start\" \"dotenv -c -- pnpm -F @repo/api tasks:prod\"",
 		"type-check": "tsc --noEmit"
 	},
 	"version": "0.0.0"

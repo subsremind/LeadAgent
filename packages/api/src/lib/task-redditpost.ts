@@ -182,7 +182,7 @@ export async function getRedditPost() {
 			  { id: 'asc' }
 			]
 		  });
-		const limitPerChannel = 100; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
+		const limitPerChannel = 300; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
 		const redditIdList: string[] = []
 		let posts: RedditPost[] = []
 		for (const channel of channelList) {
@@ -251,21 +251,83 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 					"User-Agent": "reddit-get-post-script",
 					"Authorization": `Bearer ${accessToken}`
 				},
+				// 添加超时和重试配置
+				signal: AbortSignal.timeout(30000), // 30秒超时
 			});
 
-			const json = await res.json();
+			// 检查响应状态
+			if (!res.ok) {
+				logger.error(`Reddit API request failed with status ${res.status}: ${res.statusText}`);
+				
+				// 如果是认证错误，尝试刷新token
+				if (res.status === 401) {
+					logger.info('Access token expired, attempting to refresh...');
+					try {
+						accessToken = await getValidAccessToken();
+						continue; // 重试当前请求
+					} catch (refreshError) {
+						logger.error('Failed to refresh access token:', refreshError);
+						break;
+					}
+				}
+				break;
+			}
+
+			// 检查响应内容类型
+			const contentType = res.headers.get('content-type');
+			if (!contentType || !contentType.includes('application/json')) {
+				logger.error(`Unexpected content type: ${contentType}`);
+				const text = await res.text();
+				logger.error(`Response body: ${text.substring(0, 500)}`);
+				break;
+			}
+
+			// 获取响应文本并检查是否为空
+			const responseText = await res.text();
+			if (!responseText || responseText.trim() === '') {
+				logger.error('Empty response body from Reddit API');
+				break;
+			}
+
+			// 尝试解析 JSON
+			let json;
+			try {
+				json = JSON.parse(responseText);
+			} catch (parseError) {
+				logger.error('Failed to parse JSON response:', parseError);
+				logger.error(`Response text: ${responseText.substring(0, 500)}`);
+				break;
+			}
+
 			const posts = extractPosts(json, channel.id);
 			if (posts.length === 0) {
 				break;
 			}				
 			allPosts.push(...posts);
 			remainingLimit -= posts.length;
-			after = json.data.after;
+			after = json.data?.after;
 			if (!after) {
 				break;
 			}
 		} catch (error) {
 			logger.error('Error fetching Reddit posts:', error);
+			
+			// 检查是否是网络连接错误
+			if (error instanceof Error) {
+				if (error.message.includes('ECONNRESET') || error.message.includes('fetch failed')) {
+					logger.warn('Network connection error, retrying after delay...');
+					// 网络错误时等待更长时间再重试
+					await new Promise(resolve => setTimeout(resolve, 5000));
+					continue;
+				}
+				
+				if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
+					logger.warn('Request timeout, retrying...');
+					continue;
+				}
+			}
+			
+			// 其他错误直接退出
 			break;
 		}
 	}
