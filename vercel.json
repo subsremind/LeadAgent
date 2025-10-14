@@ -1,0 +1,13 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "crons": [
+      {
+        "path": "/api/tasks/sync-reddit-post",
+        "schedule": "0 0 1/2 * *"
+      },
+      {
+        "path": "/api/tasks/ai-analyze-post",
+        "schedule": "0 30 1/2 * *"
+      }
+    ]
+  }
