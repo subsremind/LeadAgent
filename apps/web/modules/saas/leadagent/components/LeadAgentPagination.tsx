@@ -61,7 +61,7 @@ export function LeadAgentPagination({
 	};
 
 	return (
-		<div className="flex w-full items-center gap-8 lg:w-fit">
+		<div className="flex w-full items-center gap-8 lg:w-fit p-1">
             <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
                 {totalItems} rows
             </div>

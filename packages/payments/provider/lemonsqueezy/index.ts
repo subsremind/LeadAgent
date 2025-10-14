@@ -15,8 +15,6 @@ import type {
 	SetSubscriptionSeats,
 	WebhookHandler,
 } from "../../types";
-import { purchase } from "@repo/database/drizzle/schema";
-import { eq } from "drizzle-orm";
 
 function initLemonsqueezyApi() {
 	lemonSqueezySetup({
@@ -167,7 +165,8 @@ export const webhookHandler: WebhookHandler = async (req: Request) => {
 
 		switch (eventName) {
 			case "subscription_created": {
-				await db.insert(purchase).values({
+				await db.purchase.create({
+					data: {
 						organizationId: customData.organization_id,
 						userId: customData.user_id,
 						subscriptionId: id,
@@ -175,6 +174,7 @@ export const webhookHandler: WebhookHandler = async (req: Request) => {
 						productId: String(data.attributes.variant_id),
 						status: data.attributes.status,
 						type: "SUBSCRIPTION",
+					},
 				});
 
 				await setCustomerIdToEntity(
@@ -192,14 +192,21 @@ export const webhookHandler: WebhookHandler = async (req: Request) => {
 			case "subscription_resumed": {
 				const subscriptionId = String(data.id);
 
-				const existingPurchase = await db.query.purchase.findUnique({
-					where: eq(purchase.subscriptionId, subscriptionId),
+				const existingPurchase = await db.purchase.findUnique({
+					where: {
+						subscriptionId,
+					},
 				});
 
 				if (existingPurchase) {
-					await db.update(purchase).set({
+					await db.purchase.update({
+						data: {
 							status: data.attributes.status,
-					}).where(eq(purchase.subscriptionId, subscriptionId));
+						},
+						where: {
+							subscriptionId,
+						},
+					});
 				}
 
 				break;
@@ -217,12 +224,14 @@ export const webhookHandler: WebhookHandler = async (req: Request) => {
 				break;
 			}
 			case "order_created": {
-				await db.insert(purchase).values({
+				await db.purchase.create({
+					data: {
 						organizationId: customData.organization_id,
 						userId: customData.user_id,
 						customerId: String(data.attributes.customer_id),
 						productId: String(data.attributes.product_id),
 						type: "ONE_TIME",
+					},
 				});
 
 				await setCustomerIdToEntity(

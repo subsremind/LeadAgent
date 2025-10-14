@@ -2,7 +2,10 @@
 	"admin": {
 		"menu": {
 			"organizations": "Organizations",
-			"users": "Users"
+			"users": "Users",
+			"usage": "Usage",
+			"settings": "Settings",
+			"config": "Config"
 		},
 		"organizations": {
 			"backToList": "Back to organizations",
@@ -67,7 +70,45 @@
 			"assignAdminRole": "Assign admin role",
 			"removeAdminRole": "Remove admin role"
 		},
-		"description": "Manage your application."
+		"description": "Manage your application.",
+		"usage": {
+			"dailyAnalytics": "Daily Analytics",
+			"usageAnalysis": "Usage Analysis",
+			"totalUsers": "Total Users",
+			"totalTokens": "Total Tokens",
+			"totalCategorys": "Total Categorys",
+			"totalPosts": "Total Posts",
+			"postAnalysis": "Post Analysis",
+			"userTokens": "User Token Usage",
+			"tokens": "Tokens",
+			"posts": "Posts",
+			"date": "Date",
+			"viewDetails": "View Details"
+		},
+		"config": {
+			"reddit": {
+				"title": "Reddit",
+				"status": {
+					"checking": "Checking authorization status...",
+					"connected": "Connected",
+					"disconnected": "Not connected"
+				},
+				"actions": {
+					"authorize": "Authorize Connection",
+					"disconnect": "Disconnect",
+					"disconnecting": "Disconnecting...",
+					"gettingAuthUrl": "Getting authorization link..."
+				},
+				"notifications": {
+					"authWindowOpened": "Authorization window opened, please complete the authorization process",
+					"popupBlocked": "Popup blocked, please allow popups and try again",
+					"disconnectSuccess": "Reddit authorization disconnected",
+					"getAuthUrlFailed": "Failed to get authorization link",
+					"disconnectFailed": "Failed to disconnect",
+					"getStatusFailed": "Failed to get authorization status"
+				}
+			}
+		}
 	},
 	"app": {
 		"menu": {
@@ -130,6 +171,9 @@
 			"message": "Please enter your email address and we will send you a link to reset your password.",
 			"submit": "Send link",
 			"title": "Forgot your password?"
+		},
+		"callback": {
+			"title": "Callback"
 		},
 		"login": {
 			"continueWith": "Or continue with",

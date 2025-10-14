@@ -86,4 +86,8 @@ export type Config = {
 		enabled: boolean;
 		cronExpression: string;
 	};
+	aiAnalyze:{
+		enabled: boolean;
+		cronExpression: string;
+	};
 };

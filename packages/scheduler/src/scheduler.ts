@@ -6,6 +6,7 @@ class SchedulerImpl implements Scheduler {
 	private jobs: Map<string, CronJob> = new Map();
 
 	schedule(task: ScheduledTask): void {
+		logger.info(`Scheduling task ${task.id} with cron expression ${task.cronExpression}`);
 		const job = new CronJob(
 			task.cronExpression,
 			async () => {
@@ -24,6 +25,7 @@ class SchedulerImpl implements Scheduler {
 	cancel(taskId: string): void {
 		const job = this.jobs.get(taskId);
 		if (job) {
+			logger.info(`Cancelling task ${taskId}`);
 			job.stop();
 			this.jobs.delete(taskId);
 		}

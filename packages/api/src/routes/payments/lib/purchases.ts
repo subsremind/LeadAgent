@@ -5,10 +5,10 @@ export const getPurchases = async (
 ) => {
 	if ("organizationId" in props) {
 		const { organizationId } = props;
-		const purchases = await db.query.purchase.findMany({
-			// where: {
-			// 	organizationId,
-			// },
+		const purchases = await db.purchase.findMany({
+			where: {
+				organizationId,
+			},
 		});
 
 		return purchases;
@@ -16,10 +16,10 @@ export const getPurchases = async (
 
 	const { userId } = props;
 
-	const purchases = await db.query.purchase.findMany({
-		// where: {
-		// 	userId,
-		// },
+	const purchases = await db.purchase.findMany({
+		where: {
+			userId,
+		},
 	});
 
 	return purchases;

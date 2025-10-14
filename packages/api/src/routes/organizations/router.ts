@@ -29,8 +29,10 @@ export const organizationsRouter = new Hono().basePath("/organizations").get(
 		let hasAvailableSlug = false;
 
 		for (let i = 0; i < 3; i++) {
-			const existing = await db.query.organization.findFirst({
-				where: (org, { eq }) => eq(org.slug, slug),
+			const existing = await db.organization.findUnique({
+				where: {
+					slug,
+				},
 			});
 
 			if (!existing) {

@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
-import Decimal from 'decimal.js';
 
 /////////////////////////////////////////
 // HELPER FUNCTIONS
@@ -50,27 +49,6 @@ export const InputJsonValueSchema: z.ZodType<Prisma.InputJsonValue> = z.lazy(() 
 
 export type InputJsonValueType = z.infer<typeof InputJsonValueSchema>;
 
-// DECIMAL
-//------------------------------------------------------
-
-export const DecimalJsLikeSchema: z.ZodType<Prisma.DecimalJsLike> = z.object({
-  d: z.array(z.number()),
-  e: z.number(),
-  s: z.number(),
-  toFixed: z.function(z.tuple([]), z.string()),
-})
-
-export const DECIMAL_STRING_REGEX = /^(?:-?Infinity|NaN|-?(?:0[bB][01]+(?:\.[01]+)?(?:[pP][-+]?\d+)?|0[oO][0-7]+(?:\.[0-7]+)?(?:[pP][-+]?\d+)?|0[xX][\da-fA-F]+(?:\.[\da-fA-F]+)?(?:[pP][-+]?\d+)?|(?:\d+|\d*\.\d+)(?:[eE][-+]?\d+)?))$/;
-
-export const isValidDecimalInput =
-  (v?: null | string | number | Prisma.DecimalJsLike): v is string | number | Prisma.DecimalJsLike => {
-    if (v === undefined || v === null) return false;
-    return (
-      (typeof v === 'object' && 'd' in v && 'e' in v && 's' in v && 'toFixed' in v) ||
-      (typeof v === 'string' && DECIMAL_STRING_REGEX.test(v)) ||
-      typeof v === 'number'
-    )
-  };
 
 /////////////////////////////////////////
 // ENUMS
@@ -98,19 +76,19 @@ export const PurchaseScalarFieldEnumSchema = z.enum(['id','organizationId','user
 
 export const AiChatScalarFieldEnumSchema = z.enum(['id','organizationId','userId','title','messages','createdAt','updatedAt']);
 
-export const CategoryScalarFieldEnumSchema = z.enum(['id','name','createdAt','updatedAt','organizationId','userId']);
+export const AIRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp']);
 
-export const TagScalarFieldEnumSchema = z.enum(['id','name','createdAt']);
+export const CategoryScalarFieldEnumSchema = z.enum(['id','name','path','platform','createdAt','updatedAt']);
 
-export const SubscriptionTagScalarFieldEnumSchema = z.enum(['id','subscriptionId','tagId','createdAt']);
+export const RedditPostScalarFieldEnumSchema = z.enum(['id','categoryId','redditId','title','selftext','url','permalink','author','subreddit','ups','downs','score','numComments','createdUtc','recordCreatedAt','recordUpdatedAt']);
 
-export const SubscriptionScalarFieldEnumSchema = z.enum(['id','company','description','frequency','value','currency','cycle','type','recurring','nextPaymentDate','contractExpiry','urlLink','paymentMethod','categoryId','notes','notesIncluded','createdAt','updatedAt','organizationId','userId']);
+export const AgentSettingScalarFieldEnumSchema = z.enum(['id','userId','description','subreddit','query','createdAt','updatedAt']);
 
-export const EditHistoryScalarFieldEnumSchema = z.enum(['id','tableName','tableField','tableId','fromValue','toValue','createdBy','createdAt']);
+export const AiAnalysisResultScalarFieldEnumSchema = z.enum(['id','similarityScore','rerankerScore','mspAutomationInsight','llmResult','title','selftext','redditId']);
 
-export const SubscriptionAlertScalarFieldEnumSchema = z.enum(['id','subscriptionId','intervalValue','intervalUnit','onField','contact','createdAt','updatedAt','userId']);
+export const AiAnalyzeRecordScalarFieldEnumSchema = z.enum(['id','userId','redditId','categoryId','confidence','result','createdAt','updatedAt']);
 
-export const SubscriptionAlertRecordScalarFieldEnumSchema = z.enum(['id','subscriptionId','subscriptionAlertId','contract','content','status','createdAt']);
+export const IntegrationAuthScalarFieldEnumSchema = z.enum(['id','accessToken','refreshToken','tokenType','expiresAt','scope','type','createdAt','updatedAt']);
 
 export const SortOrderSchema = z.enum(['asc','desc']);
 
@@ -125,10 +103,6 @@ export const JsonNullValueFilterSchema = z.enum(['DbNull','JsonNull','AnyNull',]
 export const PurchaseTypeSchema = z.enum(['SUBSCRIPTION','ONE_TIME']);
 
 export type PurchaseTypeType = `${z.infer<typeof PurchaseTypeSchema>}`
-
-export const CycleTypeSchema = z.enum(['Daily','Weekly','Monthly','Yearly']);
-
-export type CycleTypeType = `${z.infer<typeof CycleTypeSchema>}`
 
 /////////////////////////////////////////
 // MODELS
@@ -320,121 +294,131 @@ export const AiChatSchema = z.object({
 export type AiChat = z.infer<typeof AiChatSchema>
 
 /////////////////////////////////////////
+// AI REQUEST LOG SCHEMA
+/////////////////////////////////////////
+
+export const AIRequestLogSchema = z.object({
+  id: z.string().cuid(),
+  userId: z.string().nullable(),
+  organizationId: z.string().nullable(),
+  model: z.string(),
+  business: z.string(),
+  promptTokens: z.bigint(),
+  completionTokens: z.bigint(),
+  totalTokens: z.bigint(),
+  cost: z.number().nullable(),
+  duration: z.number().int(),
+  success: z.boolean(),
+  error: z.string().nullable(),
+  timestamp: z.coerce.date(),
+})
+
+export type AIRequestLog = z.infer<typeof AIRequestLogSchema>
+
+/////////////////////////////////////////
 // CATEGORY SCHEMA
 /////////////////////////////////////////
 
 export const CategorySchema = z.object({
   id: z.string().cuid(),
   name: z.string(),
+  path: z.string(),
+  platform: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-  organizationId: z.string().nullable(),
-  userId: z.string().nullable(),
 })
 
 export type Category = z.infer<typeof CategorySchema>
 
 /////////////////////////////////////////
-// TAG SCHEMA
+// REDDIT POST SCHEMA
 /////////////////////////////////////////
 
-export const TagSchema = z.object({
+export const RedditPostSchema = z.object({
   id: z.string().cuid(),
-  name: z.string(),
-  createdAt: z.coerce.date(),
-})
-
-export type Tag = z.infer<typeof TagSchema>
-
-/////////////////////////////////////////
-// SUBSCRIPTION TAG SCHEMA
-/////////////////////////////////////////
-
-export const SubscriptionTagSchema = z.object({
-  id: z.string().cuid(),
-  subscriptionId: z.string(),
-  tagId: z.string(),
-  createdAt: z.coerce.date(),
-})
-
-export type SubscriptionTag = z.infer<typeof SubscriptionTagSchema>
-
-/////////////////////////////////////////
-// SUBSCRIPTION SCHEMA
-/////////////////////////////////////////
-
-export const SubscriptionSchema = z.object({
-  cycle: CycleTypeSchema,
-  id: z.string().cuid(),
-  company: z.string(),
-  description: z.string().nullable(),
-  frequency: z.number().int(),
-  value: z.instanceof(Prisma.Decimal, { message: "Field 'value' must be a Decimal. Location: ['Models', 'Subscription']"}).nullable(),
-  currency: z.string(),
-  type: z.string(),
-  recurring: z.boolean(),
-  nextPaymentDate: z.coerce.date().nullable(),
-  contractExpiry: z.coerce.date().nullable(),
-  urlLink: z.string(),
-  paymentMethod: z.string().nullable(),
   categoryId: z.string().nullable(),
-  notes: z.string().nullable(),
-  notesIncluded: z.boolean(),
+  redditId: z.string(),
+  title: z.string(),
+  selftext: z.string().nullable(),
+  url: z.string().nullable(),
+  permalink: z.string().nullable(),
+  author: z.string().nullable(),
+  subreddit: z.string().nullable(),
+  ups: z.number().int(),
+  downs: z.number().int(),
+  score: z.number().int(),
+  numComments: z.number().int(),
+  createdUtc: z.coerce.date().nullable(),
+  recordCreatedAt: z.coerce.date(),
+  recordUpdatedAt: z.coerce.date(),
+})
+
+export type RedditPost = z.infer<typeof RedditPostSchema>
+
+/////////////////////////////////////////
+// AGENT SETTING SCHEMA
+/////////////////////////////////////////
+
+export const AgentSettingSchema = z.object({
+  id: z.string().cuid(),
+  userId: z.string(),
+  description: z.string(),
+  subreddit: z.string().nullable(),
+  query: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-  organizationId: z.string().nullable(),
-  userId: z.string().nullable(),
 })
 
-export type Subscription = z.infer<typeof SubscriptionSchema>
+export type AgentSetting = z.infer<typeof AgentSettingSchema>
 
 /////////////////////////////////////////
-// EDIT HISTORY SCHEMA
+// AI ANALYSIS RESULT SCHEMA
 /////////////////////////////////////////
 
-export const EditHistorySchema = z.object({
-  id: z.string().cuid(),
-  tableName: z.string(),
-  tableField: z.string(),
-  tableId: z.string(),
-  fromValue: z.string(),
-  toValue: z.string(),
-  createdBy: z.string(),
-  createdAt: z.coerce.date(),
+export const AiAnalysisResultSchema = z.object({
+  id: z.string().uuid(),
+  similarityScore: z.number().nullable(),
+  rerankerScore: z.number().nullable(),
+  mspAutomationInsight: z.string().nullable(),
+  llmResult: JsonValueSchema.nullable(),
+  title: z.string().nullable(),
+  selftext: z.string().nullable(),
+  redditId: z.string().nullable(),
 })
 
-export type EditHistory = z.infer<typeof EditHistorySchema>
+export type AiAnalysisResult = z.infer<typeof AiAnalysisResultSchema>
 
 /////////////////////////////////////////
-// SUBSCRIPTION ALERT SCHEMA
+// AI ANALYZE RECORD SCHEMA
 /////////////////////////////////////////
 
-export const SubscriptionAlertSchema = z.object({
-  id: z.string().cuid(),
-  subscriptionId: z.string(),
-  intervalValue: z.number().int(),
-  intervalUnit: z.string(),
-  onField: z.string(),
-  contact: z.string(),
+export const AiAnalyzeRecordSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string(),
+  redditId: z.string().nullable(),
+  categoryId: z.string().nullable(),
+  confidence: z.number().nullable(),
+  result: JsonValueSchema.nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-  userId: z.string().nullable(),
 })
 
-export type SubscriptionAlert = z.infer<typeof SubscriptionAlertSchema>
+export type AiAnalyzeRecord = z.infer<typeof AiAnalyzeRecordSchema>
 
 /////////////////////////////////////////
-// SUBSCRIPTION ALERT RECORD SCHEMA
+// INTEGRATION AUTH SCHEMA
 /////////////////////////////////////////
 
-export const SubscriptionAlertRecordSchema = z.object({
-  id: z.string().cuid(),
-  subscriptionId: z.string(),
-  subscriptionAlertId: z.string(),
-  contract: z.string(),
-  content: z.string(),
-  status: z.string(),
+export const integrationAuthSchema = z.object({
+  id: z.string().uuid(),
+  accessToken: z.string().nullable(),
+  refreshToken: z.string().nullable(),
+  tokenType: z.string().nullable(),
+  expiresAt: z.string().nullable(),
+  scope: z.string().nullable(),
+  type: z.string().nullable(),
   createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 })
 
-export type SubscriptionAlertRecord = z.infer<typeof SubscriptionAlertRecordSchema>
+export type integrationAuth = z.infer<typeof integrationAuthSchema>
