@@ -66,6 +66,7 @@ async function fetchUnanalyzedPosts(): Promise<UnanalyzedPostData[]> {
 }
 
 export async function getNoAnalyzePost() {
+  logger.info(`start to ai analyze post=============================`);
   try {
     // 1. 获取未分析的帖子
 	const aiAnalyze = config.aiAnalyze?.enabled
