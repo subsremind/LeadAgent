@@ -168,11 +168,11 @@ export const config = {
 	},
 	syncPost:{
 		enabled: true, // disable by sync post
-		cronExpression: "0 0 1/2 * * *",//"0 * * * * *" 
+		cronExpression: "0 40 */2 * * *",//"0 * * * * *" 
 	},
 	aiAnalyze:{
 		enabled: true, // disable by ai analyze
-		cronExpression: "0 30 1/2 * * *",
+		cronExpression: "0 50 */2 * * *",
 	},
 } as const satisfies Config;
 

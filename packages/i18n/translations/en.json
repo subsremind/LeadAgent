@@ -857,7 +857,7 @@
 	},
 	"leadAgent": {
 		"title": "Lead Agent",
-		"descriptionLabel": "LeadAgent Page",
+		"descriptionLabel": "AI-Powered Reddit Marking Opportunity Finder",
 		"categories": {
 			"loading": "Loading categories...",
 			"error": "Error loading categories",
