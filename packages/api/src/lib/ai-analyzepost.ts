@@ -15,7 +15,17 @@ interface UnanalyzedPostData {
   query: string;
   subreddit: string | null;
 }
-
+interface AIAnalyzeRecord {
+  userId: string;
+  redditId: string;
+  categoryId: string | null;
+  confidence: number;
+  result: {
+    confidence: number;
+    relation: string;
+    reason: string;
+  };
+}
 // 定义AI分析结果的接口
 interface AIAnalysisResult {
   confidence: number;
@@ -31,7 +41,7 @@ async function fetchUnanalyzedPosts(): Promise<UnanalyzedPostData[]> {
   logger.info("执行SQL查询获取未分析的Reddit帖子");
   
   const unanalyzedPosts = await db.$queryRaw<UnanalyzedPostData[]>`
-        SELECT 
+    SELECT 
       rp."redditId", 
       rp.title, 
       rp.selftext, 
@@ -50,16 +60,20 @@ async function fetchUnanalyzedPosts(): Promise<UnanalyzedPostData[]> {
     SELECT 1 
     FROM ai_analyze_record aar 
     WHERE aar.reddit_id = rp."redditId" 
-      AND aar.user_id = aset."userId"
+      AND aar."userId" = aset."userId"
 ) and rp.selftext is not null and rp.selftext <> ''`;
-
-  logger.info(`SQL查询完成，找到 ${unanalyzedPosts.length} 条未分析的帖子`);
   return unanalyzedPosts;
 }
 
 export async function getNoAnalyzePost() {
+  logger.info(`start to ai analyze post=============================`);
   try {
     // 1. 获取未分析的帖子
+	const aiAnalyze = config.aiAnalyze?.enabled
+	if (!aiAnalyze) {
+		logger.info(`ai analyze is disabled`);
+		return;
+	}
     const unanalyzedPosts = await fetchUnanalyzedPosts();
     logger.info(`找到 ${unanalyzedPosts.length} 条未分析的帖子`);
 
@@ -81,7 +95,6 @@ export async function getNoAnalyzePost() {
     };
 
   } catch (error) {
-    logger.error("获取和分析未分析帖子时发生错误:", error);
     throw new Error(`AI分析处理失败: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -97,7 +110,6 @@ function parseAndValidateAIResult(analysisResult: string, postId: string): AIAna
     // 检查返回结果是否为纯字符串（非JSON格式），如果是则跳过处理
     const trimmedResult = analysisResult.trim();
     if (!trimmedResult.startsWith('{') && !trimmedResult.startsWith('```')) {
-      logger.info(`AI返回纯字符串结果，跳过处理，帖子ID: ${postId}，内容: ${trimmedResult}`);
       return null;
     }
     
@@ -118,8 +130,6 @@ function parseAndValidateAIResult(analysisResult: string, postId: string): AIAna
     
     // 移除多余的空白字符
     cleanedResult = cleanedResult.trim();
-    
-    logger.info(`清理后的AI结果，帖子ID: ${postId}，内容: ${cleanedResult}`);
     
     // 解析AI返回的JSON结果
     const parsedResult: AIAnalysisResult = JSON.parse(cleanedResult);
@@ -147,40 +157,26 @@ function parseAndValidateAIResult(analysisResult: string, postId: string): AIAna
 
 /**
  * 保存AI分析结果到数据库
- * @param post 帖子数据
- * @param analysisResult 解析后的AI分析结果
+ * @param records AI分析记录数组
  * @returns 是否保存成功
  */
-async function saveAnalysisResult(post: UnanalyzedPostData, analysisResult: AIAnalysisResult): Promise<boolean> {
+async function saveAnalysisResult(records: AIAnalyzeRecord[]): Promise<boolean> {
   try {
-    await db.aiAnalyzeRecord.create({
-      data: {
-        userId: post.userId,
-        redditId: post.redditId,
-        categoryId: post.categoryId,
-        confidence: analysisResult.confidence.toString(),
-        result: {
-          confidence: analysisResult.confidence,
-          relation: analysisResult.relation,
-          reason: analysisResult.reason
-        }
-      }
+    if (records.length === 0) {
+      return true;
+    }
+    
+    await db.aiAnalyzeRecord.createMany({
+      data: records,
+      skipDuplicates: true // 跳过重复记录，避免唯一约束冲突
     });
+    
+    logger.info(`成功批量保存 ${records.length} 条分析结果`);
     return true;
-
   } catch (error) {
-    logger.error(`保存分析结果失败，帖子ID: ${post.redditId}`, error);
+    logger.error('批量保存分析结果失败:', error);
     return false;
   }
-}
-
-export function toUtcDate(ts: string | number | null | undefined): Date | null {
-  if (ts == null) return null;
-  const n = Number(ts);
-  if (Number.isNaN(n)) return null;
-  // 10 位秒 → 13 位毫秒
-  const ms = n < 1e11 ? n * 1000 : n;
-  return new Date(ms);
 }
 
 
@@ -189,7 +185,7 @@ export function toUtcDate(ts: string | number | null | undefined): Date | null {
  * @param post 帖子数据
  * @returns AI分析结果字符串或null（如果失败）
  */
-async function analyzePostWithAI(post: UnanalyzedPostData): Promise<string | null> {
+async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisResult | null> {
   try {
     logger.info(`开始AI分析帖子，ID: ${post.redditId}`);
     
@@ -210,9 +206,8 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<string | nul
     if (!analysisResult) {
       return null;
     }
-
-    logger.info(`AI分析完成，帖子ID: ${post.redditId}`);
-    return analysisResult;
+	const result = parseAndValidateAIResult(analysisResult, post.redditId);
+    return result;
 
   } catch (error) {
     logger.error(`AI分析过程中发生错误，帖子ID: ${post.redditId}`, error);
@@ -220,39 +215,6 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<string | nul
   }
 }
 
-
-/**
- * 处理单个帖子的完整流程
- * @param post 帖子数据
- * @returns 处理结果（成功返回帖子ID，失败返回null）
- */
-async function processSinglePost(post: UnanalyzedPostData): Promise<string | null> {
-  try {
-    // 1. AI分析
-    const analysisResult = await analyzePostWithAI(post);
-    if (!analysisResult) {
-      return null;
-    }
-
-    // 2. 解析和验证结果
-    const parsedResult = parseAndValidateAIResult(analysisResult, post.redditId);
-    if (!parsedResult) {
-      return null;
-    }
-
-    // 3. 保存结果到数据库
-    const saveSuccess = await saveAnalysisResult(post, parsedResult);
-    if (!saveSuccess) {
-      return null;
-    }
-
-    return post.redditId;
-
-  } catch (error) {
-    logger.error(`处理帖子时发生错误，ID: ${post.redditId}`, error);
-    return null;
-  }
-}
 
 /**
  * 批量处理帖子
@@ -265,6 +227,7 @@ async function processBatchPosts(posts: UnanalyzedPostData[], batchSize: number 
   total: number;
 }> {
   let processedCount = 0;
+  const allRecords: AIAnalyzeRecord[] = [];
 
   // 分批处理帖子
   for (let i = 0; i < posts.length; i += batchSize) {
@@ -272,23 +235,59 @@ async function processBatchPosts(posts: UnanalyzedPostData[], batchSize: number 
     const batchNumber = Math.floor(i / batchSize) + 1;
     
     logger.info(`处理第 ${batchNumber} 批，共 ${batch.length} 条帖子`);
-
-    // 并行处理当前批次的帖子
-    const batchPromises = batch.map(post => processSinglePost(post));
+	
+    // 处理当前批次的帖子
+    const batchPromises = batch.map(async (post) => {
+      const analysisResult = await analyzePostWithAI(post);
+      if (analysisResult) {
+        return {
+          post,
+          analysisResult
+        };
+      }
+      return null;
+    });
 
     // 等待当前批次完成
     const batchResults = await Promise.allSettled(batchPromises);
-    const successfulResults = batchResults
-      .filter(result => result.status === 'fulfilled' && result.value !== null)
-      .length;
-
-    processedCount += successfulResults;
     
-    logger.info(`第 ${batchNumber} 批处理完成，成功: ${successfulResults}/${batch.length}`);
+    // 收集成功的分析结果
+    const successfulResults = batchResults
+      .filter((result): result is PromiseFulfilledResult<{post: UnanalyzedPostData, analysisResult: AIAnalysisResult}> => 
+        result.status === 'fulfilled' && result.value !== null
+      )
+      .map(result => result.value);
+
+    // 将成功的结果转换为数据库记录格式
+    const batchRecords: AIAnalyzeRecord[] = successfulResults.map(({ post, analysisResult }) => ({
+      userId: post.userId,
+      redditId: post.redditId,
+      categoryId: post.categoryId,
+      confidence: analysisResult.confidence,
+      result: {
+        confidence: analysisResult.confidence,
+        relation: analysisResult.relation,
+        reason: analysisResult.reason
+      }
+    }));
+
+    // 添加到总记录数组
+    allRecords.push(...batchRecords);
+    processedCount += successfulResults.length;
+    
+    logger.info(`第 ${batchNumber} 批处理完成，成功: ${successfulResults.length}/${batch.length}`);
 
     // 批次间稍作延迟，避免API限流
     if (i + batchSize < posts.length) {
       await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  // 批量保存所有成功的分析结果
+  if (allRecords.length > 0) {
+    const saveSuccess = await saveAnalysisResult(allRecords);
+    if (!saveSuccess) {
+      throw new Error('批量保存分析结果失败');
     }
   }
 

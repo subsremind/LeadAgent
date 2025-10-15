@@ -1,6 +1,7 @@
 "use client";
 
 import { formatRelativeTime } from "@saas/utils/timezone";
+
 import { Spinner } from "@shared/components/Spinner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@ui/components/button";
@@ -13,28 +14,23 @@ import {
   } from "@ui/components/card"
 import { Badge } from "@ui/components/badge"
 import {
-	BellPlus,
-	EditIcon,
-	MoreVerticalIcon,
-	PlusIcon,
-	Trash2Icon,
-	BadgeCheckIcon,
 	ArrowBigDown,
 	ArrowBigUp,
 	MessageCircleMore,
-	Rss,
 	SettingsIcon,
-	InfoIcon
+	InfoIcon,
+	CheckCheckIcon,
+	
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { AgentSetupDialog } from "./AgentSetup";
 import { LeadAgentPagination } from "./LeadAgentPagination";
 import { Label } from "@ui/components/label";
-import { Slider } from "@ui/components/slider"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip"
+import { Slider } from "@ui/components/slider";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip";
 
 export function LeadAgentList({
 	categoryId,
@@ -46,6 +42,8 @@ export function LeadAgentList({
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
 	const [embeddingRate, setEmbeddingRate] = useState<number>(0.7);
+	const [displayEmbeddingRate, setDisplayEmbeddingRate] = useState<number>(0.7); // 用于显示的即时值
+	const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
 	const { data: agentSetting, isLoading: isAgentSettingLoading } = useQuery({
 		queryKey: ["agent-setting"],
@@ -72,7 +70,7 @@ export function LeadAgentList({
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit, embeddingRate],
-		enabled: !!agentSetting?.query && !!agentSetting?.subreddit, // 只有当agentSetting.query和agentSetting.subreddit都有值时才执行查询
+		enabled: !!agentSetting?.query && !!agentSetting?.subreddit,
 		queryFn: async () => {
 		let url = "/api/lead-agent/search";
 		//改为post请求
@@ -84,12 +82,13 @@ export function LeadAgentList({
 			body: JSON.stringify({
 				page: currentPage,
 				pageSize: pageSize,
+				subreddit: agentSetting?.subreddit,
 				embeddingRate: embeddingRate,
 			}),
 		});
 		return await response.json(); 
 	},
-});
+	});
 
 
 	// 从API响应中直接获取数据
@@ -110,6 +109,15 @@ export function LeadAgentList({
 		setPageSize(size);
 		setCurrentPage(1); // 重置到第一页
 	};
+    
+    // 组件卸载时清除定时器
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, []);
 	
 	return (
 		<div className="p-6">
@@ -117,15 +125,24 @@ export function LeadAgentList({
 				<div className="flex items-center space-x-2">
 					<Label className="whitespace-nowrap">{t("leadAgent.list.embeddingRate")}</Label>
 					<Slider
-					className="w-32"
-					defaultValue={[embeddingRate]} 
-					max={2} 
-					step={0.1} 
+						className="w-32"
+						defaultValue={[embeddingRate]} 
+						max={1} 
+						step={0.1} 
 						onValueChange={(value) => {
-							setEmbeddingRate(value[0]);
+							// 立即更新显示值
+							setDisplayEmbeddingRate(value[0]);
+							// 清除之前的定时器
+							if (debounceRef.current) {
+								clearTimeout(debounceRef.current);
+							}
+							// 设置新的定时器，300毫秒后更新实际值并触发查询
+							debounceRef.current = setTimeout(() => {
+								setEmbeddingRate(value[0]);
+							}, 300);
 						}} />
-						<span className="text-sm text-muted-foreground min-w-[40px] text-right">{embeddingRate.toFixed(1)}</span>
-					
+					<span className="text-sm text-muted-foreground min-w-[40px] text-left">{displayEmbeddingRate.toFixed(1)}</span>
+					{/* <Label className="whitespace-nowrap text-sm text-muted-foreground">{total} Records</Label> */}
 				</div>
 				
 				<Button
@@ -156,7 +173,7 @@ export function LeadAgentList({
 						<Card className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] cursor-pointer">
 							<CardHeader>
 								<div>
-								<Label className="ml-auto text-xs text-muted-foreground justify-start">{item.author} · {formatRelativeTime(new Date(item.createdUtc))}</Label>
+									<Label className="ml-auto text-xs text-muted-foreground justify-start">{item.author} · {formatRelativeTime(new Date(item.createdUtc))} </Label>
 								</div>
 								<CardTitle>
 									{item.title}
@@ -165,30 +182,37 @@ export function LeadAgentList({
 							</CardHeader>
 							<CardFooter>
 								<div className="flex w-full flex-wrap gap-2">
+
+									{/* <Badge
+										status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
+										>
+											<CheckCheckIcon size={16}/>
+											{item.aiAnalyzeRecords[0].confidence}
+									</Badge> */}
 									<Badge
 									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
 									>
-									<ArrowBigUp size={16}/>
-									{item.ups}
+										<ArrowBigUp size={16}/>
+										{item.ups}
 									</Badge>
 									<Badge
 									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
 									>
-									<ArrowBigDown size={16}/>
-									{item.downs}
+										<ArrowBigDown size={16}/>
+										{item.downs}
 									</Badge>
 
 									<Badge
 									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
 									>
-									<MessageCircleMore size={16}/>
-									{item.numComments}
+										<MessageCircleMore size={16}/>
+										{item.numComments}
 									</Badge>
 
 									<Badge
 									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums bg-slate-600 text-white normal-case"
 									>
-									{item.subreddit}
+										{item.subreddit}
 									</Badge>
 								</div>
 							</CardFooter>

@@ -61,7 +61,7 @@ export const config = {
 	// Authentication
 	auth: {
 		// Whether users should be able to create accounts (otherwise users can only be by admins)
-		enableSignup: false,
+		enableSignup: true,
 		// Whether users should be able to sign in with a magic link
 		enableMagicLink: false,
 		// Whether users should be able to sign in with a social provider
@@ -80,7 +80,8 @@ export const config = {
 	// Mails
 	mails: {
 		// the from address for mails
-		from: "onboarding@maibozhineng.com",
+		// from: "onboarding@maibozhineng.com",
+		from: "onboarding@leadsagent.app",
 	},
 	// Frontend
 	ui: {
@@ -112,7 +113,7 @@ export const config = {
 		// whether the contact form should be enabled
 		enabled: true,
 		// the email to which the contact form messages should be sent
-		to: "onboarding@maibozhineng.com",
+		to: "onboarding@leadsagent.app",
 		// the subject of the email
 		subject: "Contact form message",
 	},
@@ -167,11 +168,11 @@ export const config = {
 	},
 	syncPost:{
 		enabled: true, // disable by sync post
-		cronExpression: "1/5 * * * * *",
+		cronExpression: "0 40 */2 * * *",//"0 * * * * *" 
 	},
 	aiAnalyze:{
 		enabled: true, // disable by ai analyze
-		cronExpression: "0 * * * * *",
+		cronExpression: "0 50 */2 * * *",
 	},
 } as const satisfies Config;
 

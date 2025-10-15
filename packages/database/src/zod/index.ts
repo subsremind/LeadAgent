@@ -88,6 +88,8 @@ export const AiAnalysisResultScalarFieldEnumSchema = z.enum(['id','similaritySco
 
 export const AiAnalyzeRecordScalarFieldEnumSchema = z.enum(['id','userId','redditId','categoryId','confidence','result','createdAt','updatedAt']);
 
+export const IntegrationAuthScalarFieldEnumSchema = z.enum(['id','accessToken','refreshToken','tokenType','expiresAt','scope','type','createdAt','updatedAt']);
+
 export const SortOrderSchema = z.enum(['asc','desc']);
 
 export const NullableJsonNullValueInputSchema = z.enum(['DbNull','JsonNull',]).transform((value) => value === 'JsonNull' ? Prisma.JsonNull : value === 'DbNull' ? Prisma.DbNull : value);
@@ -392,13 +394,31 @@ export type AiAnalysisResult = z.infer<typeof AiAnalysisResultSchema>
 
 export const AiAnalyzeRecordSchema = z.object({
   id: z.string().uuid(),
-  userId: z.string().nullable(),
+  userId: z.string(),
   redditId: z.string().nullable(),
   categoryId: z.string().nullable(),
-  confidence: z.string().nullable(),
+  confidence: z.number().nullable(),
   result: JsonValueSchema.nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
 
 export type AiAnalyzeRecord = z.infer<typeof AiAnalyzeRecordSchema>
+
+/////////////////////////////////////////
+// INTEGRATION AUTH SCHEMA
+/////////////////////////////////////////
+
+export const integrationAuthSchema = z.object({
+  id: z.string().uuid(),
+  accessToken: z.string().nullable(),
+  refreshToken: z.string().nullable(),
+  tokenType: z.string().nullable(),
+  expiresAt: z.string().nullable(),
+  scope: z.string().nullable(),
+  type: z.string().nullable(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type integrationAuth = z.infer<typeof integrationAuthSchema>

@@ -71,16 +71,16 @@ export function NavBar() {
 					},
 				]),
 		// 仅对管理员显示的菜单
-		// ...(user?.role === "admin"
-		// 	? [
-		// 			{
-		// 				label: t("app.menu.admin"),
-		// 				href: "/app/admin",
-		// 				icon: UserCogIcon,
-		// 				isActive: pathname.startsWith("/app/admin/"),
-		// 			}
-		// 		]
-		// 	: []),
+		...(user?.role === "admin"
+			? [
+					{
+						label: t("app.menu.admin"),
+						href: "/app/admin",
+						icon: UserCogIcon,
+						isActive: pathname.startsWith("/app/admin/"),
+					}
+				]
+			: []),
 	];
 
 	return (

@@ -1,8 +1,8 @@
 
 datasource db {
   provider  = "postgresql"
-  url       = "postgresql://postgres.fepbvlwywijtpfyjmequ:afMzr8su6tv3Lu1g@aws-1-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
-  directUrl = "postgresql://postgres.fepbvlwywijtpfyjmequ:afMzr8su6tv3Lu1g@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
   extensions = [pgvector(map: "vector", schema: "extensions")]
 }
 
@@ -48,6 +48,7 @@ model User {
   memberships        Member[]
   aiChats            AiChat[]
   agentSettings      AgentSetting[]
+  aiAnalyzeRecords   AiAnalyzeRecord[]
 
   @@unique([email])
   @@unique([username])
@@ -247,9 +248,11 @@ model RedditPost {
   score         Int      @default(0)
   numComments   Int      @default(0) 
   createdUtc    DateTime? 
-  embedding     Unsupported("vector(1536)") 
+  embedding     Unsupported("vector(1536)")? 
   recordCreatedAt DateTime @default(now()) 
   recordUpdatedAt DateTime @updatedAt 
+
+  aiAnalyzeRecords AiAnalyzeRecord[]
 
   @@map("reddit_post")
 }
@@ -283,13 +286,30 @@ model AiAnalysisResult {
 
 model AiAnalyzeRecord {
   id        String   @id @default(uuid())
-  userId    String?  @map("user_id")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   redditId  String?  @map("reddit_id")
+  redditPost  RedditPost?     @relation(fields: [redditId], references: [redditId], onDelete: Cascade)
   categoryId	String?
-  confidence String?
+  confidence Float?
   result    Json?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
 
+  @@unique([userId, redditId])
   @@map("ai_analyze_record")
+}
+
+model integrationAuth {
+  id String   @id @default(uuid())
+  accessToken String?
+  refreshToken String?
+  tokenType String?
+  expiresAt String?
+  scope String?
+  type String?
+  createdAt   DateTime @default(now()) 
+  updatedAt   DateTime @updatedAt 
+  
+  @@map("integrationAuth")
 }

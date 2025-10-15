@@ -45,9 +45,107 @@ export const leadAgentRouter = new Hono()
 				records
 			});
 		},
+	).post(
+		"/search",
+		validator(
+			"json",
+			z.object({
+				page: z.number().default(1),
+				pageSize: z.number().default(10),
+				subreddit: z.string().optional(),
+				embeddingRate: z.number().default(0.7),
+			}),
+		),
+		describeRoute({
+			summary: "Search lead-agent using vector search",
+			tags: ["LeadAgent"],
+		}),
+		async (c) => {
+			const { embeddingRate, page, pageSize, subreddit } = c.req.valid("json");
+			const user = c.get("user");
+			const agentSetting: AgentSettingQueryType = {
+				subreddit: subreddit || "",
+				embedding: "",
+			};
+			
+			const subredditArr = agentSetting?.subreddit?.split(',') || [];
+			const subredditFilter = subredditArr.map((item: String) => item.trim());
+			const categoryIds = await db.category.findMany({
+				select: {
+				  id: true  // 只选择id字段
+				},
+				where: {
+				  path: {
+					in: subredditFilter
+				  }
+				}
+			  })
+			  
+			if (!categoryIds.length) {
+				return c.json({ error: "Subreddit not found" }, 404);
+			}
+
+			const categoryArray = categoryIds.map((item) => item.id);
+
+			const offset = (page - 1) * pageSize;	
+
+			// 查询当前页数据
+
+			
+
+			const records = await db.redditPost.findMany({
+				include: {
+					aiAnalyzeRecords: {
+						select: {
+							confidence: true,
+						},
+						where: {
+							userId: user.id,
+						}
+					}
+				},
+				skip: offset,
+				take: pageSize,
+				where: {
+					categoryId: {
+						in: categoryArray
+					},
+					aiAnalyzeRecords: {
+						some: {
+							userId: user.id,
+							confidence: {
+								gte: embeddingRate
+							}
+						}
+					}
+				}
+			});
+
+			const total = await db.redditPost.count({
+				where: {
+					categoryId: {
+						in: categoryArray
+					},
+					aiAnalyzeRecords: {
+						some: {
+							userId: user.id,
+							confidence: {
+								gte: embeddingRate
+							}
+						}
+					}
+				}
+			});
+			  
+
+			return c.json({
+				records,
+				total,
+			});
+		},
 	)
 	.post(
-		"/search",
+		"/search-vector",
 		validator(
 			"json",
 			z.object({
@@ -85,19 +183,7 @@ export const leadAgentRouter = new Hono()
 				logger.error("Error fetching agent setting: ", error);
 				return c.json({ error: "Internal server error" }, 500);
 			}
-			// const agentSetting = await db.agentSetting.findUnique({
-			// 	where: { userId: user.id },
-			// 	select: {
-			// 		id: true,
-			// 		userId: true,
-			// 		description: true,
-			// 		subreddit: true,
-			// 		query: true,
-			// 		embedding: true,
-			// 		createdAt: true,
-			// 		updatedAt: true
-			// 	  }
-			// });
+			
 			if (!agentSetting) {
 				return c.json({ records: [], total: 0, message: "Agent setting not found" });
 			}
@@ -114,8 +200,6 @@ export const leadAgentRouter = new Hono()
 				}
 			  })
 			  
-			//   // 如果只需要id值的数组，可以进一步处理
-			//   const ids = categoryIds.map(cat => cat.id);
 			if (!categoryIds.length) {
 				return c.json({ error: "Subreddit not found" }, 404);
 			}

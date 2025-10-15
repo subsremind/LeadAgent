@@ -1,0 +1,48 @@
+name: Run scheduled cron jobs
+
+on:
+  schedule:
+    # 每小时执行一次（UTC） → 调用 sync-reddit-post
+    - cron: '0 * * * *'
+    # 每 2 小时的第 50 分执行（UTC）
+    - cron: '50 */2 * * *'
+  workflow_dispatch: # 手动触发（用于测试）
+
+jobs:
+  sync-reddit-post:
+    if: github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Sync Reddit Post API
+        run: |
+          echo "🚀 Triggering Reddit Post Sync..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "https://leadagent.vercel.app/api/schedule/sync-reddit-post" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          BODY=$(echo "$RESPONSE" | head -n1)
+          CODE=$(echo "$RESPONSE" | tail -n1)
+          echo "Response code: $CODE"
+          echo "Response body: $BODY"
+          if [ "$CODE" != "200" ]; then
+            echo "❌ Reddit sync failed."
+            exit 1
+          fi
+          echo "✅ Reddit sync success!"
+
+  ai-analyze-post:
+    if: github.event.schedule == '50 */2 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger AI Analyze Post API
+        run: |
+          echo "🤖 Triggering AI Analyze Post..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "https://leadagent.vercel.app/api/schedule/ai-analyze-post" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          BODY=$(echo "$RESPONSE" | head -n1)
+          CODE=$(echo "$RESPONSE" | tail -n1)
+          echo "Response code: $CODE"
+          echo "Response body: $BODY"
+          if [ "$CODE" != "200" ]; then
+            echo "❌ AI analyze failed."
+            exit 1
+          fi
+          echo "✅ AI analyze success!"
