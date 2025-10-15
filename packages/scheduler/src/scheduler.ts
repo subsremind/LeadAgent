@@ -6,6 +6,12 @@ class SchedulerImpl implements Scheduler {
 	private jobs: Map<string, CronJob> = new Map();
 
 	schedule(task: ScheduledTask): void {
+		// 检查任务是否已存在，如果存在先取消
+		if (this.jobs.has(task.id)) {
+			logger.info(`Task ${task.id} already exists, replacing it with new configuration`);
+			this.cancel(task.id);
+		}
+		
 		logger.info(`Scheduling task ${task.id} with cron expression ${task.cronExpression}`);
 		const job = new CronJob(
 			task.cronExpression,
@@ -32,4 +38,9 @@ class SchedulerImpl implements Scheduler {
 	}
 }
 
-export const scheduler = new SchedulerImpl();
+// 使用单例模式确保全局只有一个scheduler实例
+if (!global._schedulerInstance) {
+	global._schedulerInstance = new SchedulerImpl();
+}
+
+export const scheduler = global._schedulerInstance as SchedulerImpl;
