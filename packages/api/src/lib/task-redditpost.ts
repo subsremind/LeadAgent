@@ -216,8 +216,9 @@ export async function getRedditPost() {
 		const dbRedditIds = dbRecords.map((record: { redditId: string }) => record.redditId);
 		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.redditId));	
 		logger.info(`save === ${filteredPosts.length} posts to db`);
-
-		await saveBatchRedditPosts(filteredPosts);
+		if(filteredPosts.length>0){
+			await saveBatchRedditPosts(filteredPosts);
+		}
 
 		// await savePostToDB(post, embedding, channel.id);
 	} catch (error) {
