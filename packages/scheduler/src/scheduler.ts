@@ -38,9 +38,15 @@ class SchedulerImpl implements Scheduler {
 	}
 }
 
-// 使用单例模式确保全局只有一个scheduler实例
-if (!global._schedulerInstance) {
-	global._schedulerInstance = new SchedulerImpl();
+// 使用模块级变量和闭包实现单例模式，避免使用全局变量
+let _instance: SchedulerImpl | null = null;
+
+function getSchedulerInstance(): SchedulerImpl {
+	if (!_instance) {
+		_instance = new SchedulerImpl();
+	}
+	return _instance;
 }
 
-export const scheduler = global._schedulerInstance as SchedulerImpl;
+// 导出单例实例
+export const scheduler = getSchedulerInstance();
