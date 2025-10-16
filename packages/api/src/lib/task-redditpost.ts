@@ -1,7 +1,6 @@
 import { db, RedditPost } from "@repo/database";
 import { logger } from "@repo/logs";
 import { config } from "@repo/config";
-import { openaiService } from "@repo/ai";
 import { nanoid } from "nanoid";
 
 // 从数据库获取Reddit token
