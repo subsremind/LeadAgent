@@ -194,6 +194,7 @@ export async function getRedditPost() {
 						posts.push(post);
 				}
 			} catch (error) {
+				logger.error(`Failed to fetch posts for channel ${channel.path}:`, error);
 			}
 		}
 		
@@ -235,7 +236,7 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 	
 	// 获取有效的访问令牌
 	let accessToken = await getValidAccessToken();
-	
+	logger.info(`sync-post fetchRedditPosts subreddit: ${subreddit} accessToken: ${accessToken} limit: ${remainingLimit}`);
 	while (remainingLimit > 0) {
 		// 随机延迟 1-3 秒
 		const delay = Math.floor(Math.random() * 2000) + 1000; // 1000-3000ms
@@ -269,6 +270,8 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 					}
 				}
 				break;
+			} else  {
+				logger.error(`sync-post Rate limit hit for: ${url}`);
 			}
 
 			// 检查响应内容类型
@@ -308,7 +311,7 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 				break;
 			}
 		} catch (error) {
-			logger.error('Error fetching Reddit posts:', error);
+			logger.error('sync-post Error fetching Reddit posts:', error);
 			
 			// 检查是否是网络连接错误
 			if (error instanceof Error) {
