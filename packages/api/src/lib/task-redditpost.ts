@@ -186,17 +186,12 @@ export async function getRedditPost() {
 		const redditIdList: string[] = []
 		let posts: RedditPost[] = []
 		for (const channel of channelList) {
-			
 			try {
-				posts = await fetchRedditPosts(channel, sortType, limitPerChannel);
+				const channelPosts = await fetchRedditPosts(channel, sortType, limitPerChannel);
 				
-				for (const post of posts) {
-					try {
+				for (const post of channelPosts) {
 						redditIdList.push(post.redditId);
-
-						
-					} catch (error) {
-					}
+						posts.push(post);
 				}
 			} catch (error) {
 			}
@@ -212,10 +207,12 @@ export async function getRedditPost() {
 				}
 			}
 		  });
+		logger.info(`sync post list size: ${redditIdList.length} `);
 		// 从 posts 中移除已存在于 dbRecords 中的 redditId
 		const dbRedditIds = dbRecords.map((record: { redditId: string }) => record.redditId);
+		logger.info(`sync post db list size: ${dbRedditIds.length} `);
 		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.redditId));	
-		logger.info(`save === ${filteredPosts.length} posts to db`);
+		logger.info(`sync post save list size: ${filteredPosts.length} `);
 		if(filteredPosts.length>0){
 			await saveBatchRedditPosts(filteredPosts);
 		}
@@ -410,65 +407,81 @@ async function saveBatchRedditPosts(
 	batchSize = 50
   ): Promise<number> {
 	if (!rows.length) return 0;
-  
+
+	logger.info(`sync post save batch ${rows.length}, batchSize: ${batchSize}`);
+	if (rows.length <= batchSize) {
+		const createMany = await db.redditPost.createMany({
+			data: rows,
+		});
+		return createMany.count;
+	}
 	let inserted = 0;
 	for (let i = 0; i < rows.length; i += batchSize) {
-	  const chunk = rows.slice(i, i + batchSize);
-	  const valuesSql: string[] = [];
-	  const valuesArg: any[]    = [];
-	  let cursor = 1;
-  
-	  for (const r of chunk) {
-		valuesSql.push(`(
-			$${cursor},$${cursor+1},$${cursor+2},$${cursor+3},$${cursor+4},$${cursor+5},$${cursor+6},
-			$${cursor+7}::int,$${cursor+8}::int,$${cursor+9}::int,$${cursor+10}::int,
-			$${cursor+11}::timestamp ,
-			$${cursor+12},$${cursor+13}::vector,
-			NOW(),NOW(),$${cursor+14}
-		  )`);
-		// 生成默认的1536维零向量，或者使用 OpenAI embedding
-		//let embeddingStr: string;
-		// try {
-		// 	// 尝试生成真实的 embedding
-		// 	const embedding = await openaiService.generateEmbedding('reddit-embedding', '', `${r.title} ${r.selftext ?? ""}`);
-		// 	embeddingStr = embedding.join(',');
-		// } catch (error) {
-		// 	// 如果 embedding 生成失败，使用默认的1536维零向量
-		// 	logger.warn('Failed to generate embedding, using default zero vector:', error);
-		// 	embeddingStr = new Array(1536).fill(0).join(',');
-		// }
-		
-		valuesArg.push(
-			r.redditId,
-			r.title,
-			r.selftext ?? null,
-			r.url ?? null,
-			r.permalink ?? null,
-			r.author ?? null,
-			r.subreddit ?? null,
-			r.ups ?? 0,
-			r.downs ?? 0,
-			r.score ?? 0,
-			r.numComments ?? 0,
-			r.createdUtc ?? null,
-			r.categoryId ?? null,
-			null, //embeddingStr.join(',')
-			nanoid()   // 最后一个对应 $15
-		  );
-		cursor += 15;
-	  }
-  
-	  const stmt = `
-		INSERT INTO reddit_post (
-		  "redditId","title","selftext","url","permalink","author",
-		  "subreddit","ups","downs","score","numComments","createdUtc",
-		  "categoryId","embedding","recordCreatedAt","recordUpdatedAt","id"
-		) VALUES ${valuesSql.join(',')};
-	  `;
-  
-	  const res: { '?column?': number }[] = await db.$queryRawUnsafe(stmt, ...valuesArg);
-	  inserted += res.length;
+		const chunk = rows.slice(i, i + batchSize);
+		const createMany = await db.redditPost.createMany({
+			data: chunk,
+		});
+		inserted += createMany.count;
 	}
+  
+	// let inserted = 0;
+	// for (let i = 0; i < rows.length; i += batchSize) {
+	//   const chunk = rows.slice(i, i + batchSize);
+	//   const valuesSql: string[] = [];
+	//   const valuesArg: any[]    = [];
+	//   let cursor = 1;
+  
+	//   for (const r of chunk) {
+	// 	valuesSql.push(`(
+	// 		$${cursor},$${cursor+1},$${cursor+2},$${cursor+3},$${cursor+4},$${cursor+5},$${cursor+6},
+	// 		$${cursor+7}::int,$${cursor+8}::int,$${cursor+9}::int,$${cursor+10}::int,
+	// 		$${cursor+11}::timestamp ,
+	// 		$${cursor+12},$${cursor+13}::vector,
+	// 		NOW(),NOW(),$${cursor+14}
+	// 	  )`);
+	// 	// 生成默认的1536维零向量，或者使用 OpenAI embedding
+	// 	//let embeddingStr: string;
+	// 	// try {
+	// 	// 	// 尝试生成真实的 embedding
+	// 	// 	const embedding = await openaiService.generateEmbedding('reddit-embedding', '', `${r.title} ${r.selftext ?? ""}`);
+	// 	// 	embeddingStr = embedding.join(',');
+	// 	// } catch (error) {
+	// 	// 	// 如果 embedding 生成失败，使用默认的1536维零向量
+	// 	// 	logger.warn('Failed to generate embedding, using default zero vector:', error);
+	// 	// 	embeddingStr = new Array(1536).fill(0).join(',');
+	// 	// }
+		
+	// 	valuesArg.push(
+	// 		r.redditId,
+	// 		r.title,
+	// 		r.selftext ?? null,
+	// 		r.url ?? null,
+	// 		r.permalink ?? null,
+	// 		r.author ?? null,
+	// 		r.subreddit ?? null,
+	// 		r.ups ?? 0,
+	// 		r.downs ?? 0,
+	// 		r.score ?? 0,
+	// 		r.numComments ?? 0,
+	// 		r.createdUtc ?? null,
+	// 		r.categoryId ?? null,
+	// 		null, //embeddingStr.join(',')
+	// 		nanoid()   // 最后一个对应 $15
+	// 	  );
+	// 	cursor += 15;
+	//   }
+  
+	//   const stmt = `
+	// 	INSERT INTO reddit_post (
+	// 	  "redditId","title","selftext","url","permalink","author",
+	// 	  "subreddit","ups","downs","score","numComments","createdUtc",
+	// 	  "categoryId","embedding","recordCreatedAt","recordUpdatedAt","id"
+	// 	) VALUES ${valuesSql.join(',')};
+	//   `;
+  
+	//   const res: { '?column?': number }[] = await db.$queryRawUnsafe(stmt, ...valuesArg);
+	//   inserted += res.length;
+	// }
 	return inserted;
   }
 
