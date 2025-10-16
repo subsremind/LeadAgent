@@ -41,6 +41,7 @@ async function fetchUnanalyzedPosts(): Promise<UnanalyzedPostData[]> {
   logger.info("执行SQL查询获取未分析的Reddit帖子");
   
   const unanalyzedPosts = await db.$queryRaw<UnanalyzedPostData[]>`
+select * from  (
       SELECT 
       rp."redditId", 
       rp.title, 
@@ -49,14 +50,18 @@ async function fetchUnanalyzedPosts(): Promise<UnanalyzedPostData[]> {
       ca.path, 
       aset."userId", 
       aset.query, 
-      aset.subreddit
+      aset.subreddit,
+      aset.subreddit ~ rp.subreddit as include
     FROM reddit_post rp       
     cross JOIN  agent_setting aset 
     LEFT JOIN  ai_analyze_record aar 
-    on rp."redditId" = aar.reddit_id AND aar."userId" =aset."userId"
+    on rp."redditId" = aar.reddit_id AND aar."userId" =aset."userId" 
        LEFT JOIN category ca 
       on ca.id =rp."categoryId"
-    where aar."userId"  is null  and rp.selftext is not null and rp.selftext <> ''`;
+    where aar."userId"  is null  and rp.selftext is not null and rp.selftext <> '' 
+) as abc 
+where include = true
+order by abc."redditId"`;
   return unanalyzedPosts;
 }
 
