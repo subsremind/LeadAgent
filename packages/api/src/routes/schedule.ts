@@ -16,14 +16,21 @@ export const scheduleRouter = new Hono().get(
 	async (c) => {
 		const task = c.req.param("task");
 		logger.info(`=============start to run task: ${task}`);
+		
+		// 异步执行任务，不等待完成
 		if (task === "sync-reddit-post") {
-			await getRedditPost();
+			getRedditPost().catch(err => {
+				logger.error(`Error executing sync-reddit-post task: ${err}`);
+			});
 		} else if (task === "ai-analyze-post") {
-			await getNoAnalyzePost();
+			getNoAnalyzePost().catch(err => {
+				logger.error(`Error executing ai-analyze-post task: ${err}`);
+			});
 		} else {
 			return new Response("Task not found", { status: 404 });
 		}
-		logger.info(`=============finish to run task: ${task}`);
-		return new Response("OK");
+		
+		// 立即返回任务提交成功响应
+		return new Response("Task submitted successfully");
 	},
 );
