@@ -161,7 +161,7 @@ export async function saveRedditToken(tokenData: any): Promise<void> {
 
 export async function getRedditPost() {
 	try {
-		logger.info(`start to sync post=============================`);
+		logger.info(`sync-posts tart to sync post enable ${config.syncPost?.enabled}`);
 		const syncPost = config.syncPost?.enabled
 		if (!syncPost) {
 			logger.info(`sync post is disabled`);
@@ -182,13 +182,15 @@ export async function getRedditPost() {
 			  { id: 'asc' }
 			]
 		  });
+		logger.info(`sync-posts channelList size: ${channelList.length}`);
 		const limitPerChannel = 300; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
 		const redditIdList: string[] = []
 		let posts: RedditPost[] = []
 		for (const channel of channelList) {
 			try {
+				logger.info(`sync-posts start fetchRedditPosts channel: ${channel.path}`);
 				const channelPosts = await fetchRedditPosts(channel, sortType, limitPerChannel);
-				
+				logger.info(`sync-posts end fetchRedditPosts channel: ${channel.path} posts size: ${channelPosts.length}`);
 				for (const post of channelPosts) {
 						redditIdList.push(post.redditId);
 						posts.push(post);
@@ -197,7 +199,7 @@ export async function getRedditPost() {
 				logger.error(`Failed to fetch posts for channel ${channel.path}:`, error);
 			}
 		}
-		
+		logger.info(`sync-posts total posts size: ${posts.length}`);
 		const dbRecords = await db.redditPost.findMany({
 			select: {
 			  redditId: true
@@ -208,18 +210,20 @@ export async function getRedditPost() {
 				}
 			}
 		  });
-		logger.info(`sync post list size: ${redditIdList.length} `);
+		logger.info(`sync-posts post list size: ${redditIdList.length} `);
 		// 从 posts 中移除已存在于 dbRecords 中的 redditId
 		const dbRedditIds = dbRecords.map((record: { redditId: string }) => record.redditId);
-		logger.info(`sync post db list size: ${dbRedditIds.length} `);
+		logger.info(`sync-posts db list size: ${dbRedditIds.length} `);
 		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.redditId));	
-		logger.info(`sync post save list size: ${filteredPosts.length} `);
+		logger.info(`sync-posts save list size: ${filteredPosts.length} `);
 		if(filteredPosts.length>0){
+			logger.info(`sync-posts start saveBatchRedditPosts`);
 			await saveBatchRedditPosts(filteredPosts);
+			logger.info(`sync-posts end saveBatchRedditPosts`);
 		}
 
-		// await savePostToDB(post, embedding, channel.id);
 	} catch (error) {
+		logger.error(`Failed to sync posts:`, error);
 		throw error;
 	}
 }
