@@ -17,7 +17,7 @@ export function initializeTasks() {
     task: async () => {
       try {
         //logger.info("=============start to sync reddit post", new Date());
-       // await getRedditPost();
+        await getRedditPost();
       } catch (error) {
         console.error("Failed to sync Reddit posts:", error);
       }
@@ -26,12 +26,12 @@ export function initializeTasks() {
 
   // 可以在这里添加更多的定时任务
   scheduler.schedule({
-    id: "get-no-analyze-post",
+    id: "ai-analyze-reddit-post",
     cronExpression: config.aiAnalyze?.cronExpression,
     task: async () => {
        try {
 		//logger.info("=============start to get no analyze post", new Date());
-		//await getNoAnalyzePost();
+		    await getNoAnalyzePost();
       } catch (error) {
         console.error("Failed to get no analyze posts:", error);
       }
