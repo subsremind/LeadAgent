@@ -119,6 +119,7 @@ export function AgentSetupForm({
 					...data,
 					organizationId,
 					userId: user?.id || null,
+					id: agentSetting?.id || null,
 				}),
 			});
 

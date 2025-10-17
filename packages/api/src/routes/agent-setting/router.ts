@@ -110,17 +110,17 @@ export const agentSettingRouter = new Hono()
 			try {
 				const rawData = c.req.valid("json");
 				const user = c.get("user");
-				const embedding = await openaiService.generateEmbedding('query-embedding', user.id, rawData.query);
-				if (!embedding) {
-					return c.json({ error: "Failed to generate embedding" }, 500);
-				}
+				// const embedding = await openaiService.generateEmbedding('query-embedding', user.id, rawData.query);
+				// if (!embedding) {
+				// 	return c.json({ error: "Failed to generate embedding" }, 500);
+				// }
 
 				// 创建包含所有必要字段的新对象
 				const agentSettingData = {
 					...rawData,
 					id: nanoid(),
 					userId: user.id,
-					embedding: embedding,
+					// embedding: embedding,
 				};
 
 				// 直接从 agentSettingData 创建返回对象，完全避免类型推断问题
@@ -134,33 +134,37 @@ export const agentSettingRouter = new Hono()
 					updatedAt: new Date().toISOString()
 				};
 
+				await db.agentSetting.create({
+					data: agentSettingData,
+				});
+
 				// 执行数据库操作，但不依赖返回值的类型
-				await db.$queryRaw`
-					INSERT INTO agent_setting (
-					"id",
-					"userId",
-					"description",
-					"subreddit",
-					"query",
-					"embedding",
-					"createdAt",
-					"updatedAt"
-					) VALUES (
-					${agentSettingData.id},
-					${agentSettingData.userId},
-					${agentSettingData.description},
-					${agentSettingData.subreddit},
-					${agentSettingData.query},
-					${agentSettingData.embedding}::vector,
-					NOW(),
-					NOW()
-					) RETURNING 
-						"id",
-					"userId",
-					"description",
-					"subreddit",
-					"query"
-				`;
+				// await db.$queryRaw`
+				// 	INSERT INTO agent_setting (
+				// 	"id",
+				// 	"userId",
+				// 	"description",
+				// 	"subreddit",
+				// 	"query",
+				// 	"embedding",
+				// 	"createdAt",
+				// 	"updatedAt"
+				// 	) VALUES (
+				// 	${agentSettingData.id},
+				// 	${agentSettingData.userId},
+				// 	${agentSettingData.description},
+				// 	${agentSettingData.subreddit},
+				// 	${agentSettingData.query},
+				// 	${agentSettingData.embedding}::vector,
+				// 	NOW(),
+				// 	NOW()
+				// 	) RETURNING 
+				// 		"id",
+				// 	"userId",
+				// 	"description",
+				// 	"subreddit",
+				// 	"query"
+				// `;
 
 
 				const subreddit = rawData.subreddit;
@@ -224,34 +228,24 @@ export const agentSettingRouter = new Hono()
 				};
 
 				// 使用queryRaw并手动处理类型
-				const result = await db.$queryRaw`
-					SELECT query, embedding
-					FROM agent_setting
-					WHERE id = ${id}
-				`;
+				const result = await db.agentSetting.findUnique({
+					where: { id },
+				});
 				// 处理类型和结果检查
-				const existing = Array.isArray(result) && result.length > 0 ? result[0] : null;
-				if (!existing) {
+				if (!result) {
 					return c.json({ error: "AgentSetting not found" }, 404);
 				}
-				// 使用类型断言访问embedding字段
-				let embedding = (existing as any).embedding;
-				if (existing.query !== agentSettingData.query) {
-					embedding = await openaiService.generateEmbedding('query-embedding', user.id, agentSettingData.query);
-				}
 
+				await db.agentSetting.update({
+					where: { id },
+					data: {
+						description: agentSettingData.description,
+						subreddit: agentSettingData.subreddit,
+						query: agentSettingData.query,
+						updatedAt: new Date().toISOString(),
+					},
+				});
 
-				// 使用queryRaw来避开Prisma的类型检查
-				await db.$queryRaw`
-					UPDATE agent_setting
-					SET 
-						description = ${agentSettingData.description},
-						subreddit = ${agentSettingData.subreddit},
-						query = ${agentSettingData.query},
-						updatedAt = NOW(),
-						embedding = ${embedding}::vector
-					WHERE id = ${id}
-				`;
 
 				// 直接从agentSettingData构建返回对象，避免类型推断问题
 				const updatedAgentSetting = {
@@ -296,7 +290,7 @@ export const agentSettingRouter = new Hono()
 						error: "Failed to update agent-setting",
 						details: e?.toString(),
 					},
-					400,
+					500,
 				);
 			}
 		},
