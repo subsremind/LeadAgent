@@ -90,4 +90,8 @@ export type Config = {
 		enabled: boolean;
 		cronExpression: string;
 	};
+	cleanData:{
+		enabled: boolean;
+		cronExpression: string;
+	};
 };

@@ -1,6 +1,7 @@
 import { scheduler } from "@repo/scheduler";
 import { getRedditPost } from "../lib/task-redditpost";
 import { getNoAnalyzePost } from "../lib/ai-analyzepost";
+import { cleanData } from "../lib/clean-data";
 import { config } from "@repo/config";
 import { logger } from "@repo/logs";
 
@@ -34,6 +35,19 @@ export function initializeTasks() {
 		    await getNoAnalyzePost();
       } catch (error) {
         console.error("Failed to get no analyze posts:", error);
+      }
+    },
+  });
+
+  scheduler.schedule({
+    id: "clean-data",
+    cronExpression: config.cleanData?.cronExpression,
+    task: async () => {
+       try {
+        
+		    await cleanData();
+      } catch (error) {
+        console.error("Failed to clean data:", error);
       }
     },
   });

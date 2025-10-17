@@ -238,6 +238,7 @@ async function processBatchPosts(posts: UnanalyzedPostData[], batchSize: number 
 	
     // 处理当前批次的帖子
     const batchPromises = batch.map(async (post) => {
+      await new Promise(resolve => setTimeout(resolve, 1500));
       const analysisResult = await analyzePostWithAI(post);
       if (analysisResult) {
         return {
