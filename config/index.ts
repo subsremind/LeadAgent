@@ -168,7 +168,7 @@ export const config = {
 	},
 	syncPost:{
 		enabled: true, // disable by sync post
-		cronExpression: "0 45 2/2 * * *",//"0 * * * * *" 
+		cronExpression: "0 47 2/2 * * *",//"0 * * * * *" 
 	},
 	
 	aiAnalyze:{
