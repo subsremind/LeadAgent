@@ -3,44 +3,36 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
  
-FROM base AS builder
+WORKDIR /app
+
+# 安装依赖
 RUN apk add --no-cache libc6-compat
 RUN apk update
-WORKDIR /app
-RUN pnpm add -g turbo
-COPY . .
-RUN turbo prune @repo/api --docker
- 
-FROM base AS installer
-RUN apk add --no-cache libc6-compat
-RUN apk update
-WORKDIR /app
- 
-COPY .gitignore .gitignore
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-ENV CYPRESS_INSTALL_BINARY=0
-RUN pnpm install
- 
-COPY --from=builder /app/out/full/ .
-COPY turbo.json turbo.json
- 
-RUN pnpm turbo run build --filter=@repo/api...
- 
-FROM base AS runner
-WORKDIR /app
- 
+
+# 复制项目文件
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json turbo.json ./
+COPY config ./config
+COPY packages/api ./packages/api
+COPY packages/scheduler ./packages/scheduler
+COPY packages/logs ./packages/logs
+COPY packages/database ./packages/database
+COPY packages/utils ./packages/utils
+COPY packages/config ./packages/config
+
+# 安装pnpm并安装依赖
+RUN pnpm install --frozen-lockfile
+
+# 构建项目
+RUN pnpm build
+
+# 创建非root用户
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
- 
-# 复制构建后的文件
-COPY --from=installer --chown=nextjs:nodejs /app/packages/api/dist ./packages/api/dist
-COPY --from=installer --chown=nextjs:nodejs /app/packages/api/package.json ./packages/api/
-COPY --from=installer --chown=nextjs:nodejs /app/config ./config
- 
+
 # 设置环境变量
 ENV NODE_ENV production
- 
-# 运行tasks:prod命令
-CMD ["pnpm", "-F", "@repo/api", "tasks:prod"]
+
+# 进入api包目录运行tasks:prod命令
+WORKDIR /app/packages/api
+CMD ["node", "dist/scripts/start-tasks.js"]
