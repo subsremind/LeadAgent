@@ -37,6 +37,6 @@ USER nextjs
 # 设置环境变量
 ENV NODE_ENV production
 
-# 进入api包目录运行tasks:prod命令
+# 进入api包目录运行tasks命令（使用tsx直接运行TypeScript文件）
 WORKDIR /app/packages/api
-CMD ["node", "dist/scripts/start-tasks.js"]
+CMD ["pnpm", "tasks"]
