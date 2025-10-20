@@ -22,6 +22,7 @@ COPY packages/utils ./packages/utils
 COPY packages/i18n ./packages/i18n
 COPY packages/mail ./packages/mail
 COPY packages/auth ./packages/auth
+COPY packages/ai ./packages/ai
 
 # 安装pnpm并安装依赖
 RUN pnpm install --frozen-lockfile
@@ -32,11 +33,17 @@ RUN pnpm turbo run build --filter=@repo/api...
 # 创建非root用户
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# 确保packages目录权限正确
+RUN chown -R nextjs:nodejs /app/packages
+
 USER nextjs
 
 # 设置环境变量
 ENV NODE_ENV production
 
-# 进入api包目录运行tasks命令（使用tsx直接运行TypeScript文件）
-WORKDIR /app/packages/api
-CMD ["pnpm", "tasks"]
+# 进入项目根目录，确保monorepo工作区解析正常
+WORKDIR /app
+
+# 运行api包的tasks命令
+CMD ["pnpm", "-F", "@repo/api", "tasks"]
