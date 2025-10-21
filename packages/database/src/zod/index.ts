@@ -78,6 +78,12 @@ export const AiChatScalarFieldEnumSchema = z.enum(['id','organizationId','userId
 
 export const AIRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp']);
 
+export const AdminSettingScalarFieldEnumSchema = z.enum(['id','key','value','updatedBy','createdAt','updatedAt']);
+
+export const UserCreditUsageScalarFieldEnumSchema = z.enum(['id','userId','tokens','credit','createdAt']);
+
+export const UserCreditSettingScalarFieldEnumSchema = z.enum(['id','date','userId','credit','createdAt','updatedAt']);
+
 export const CategoryScalarFieldEnumSchema = z.enum(['id','name','path','platform','createdAt','updatedAt']);
 
 export const RedditPostScalarFieldEnumSchema = z.enum(['id','categoryId','redditId','title','selftext','url','permalink','author','subreddit','ups','downs','score','numComments','createdUtc','recordCreatedAt','recordUpdatedAt']);
@@ -314,6 +320,50 @@ export const AIRequestLogSchema = z.object({
 })
 
 export type AIRequestLog = z.infer<typeof AIRequestLogSchema>
+
+/////////////////////////////////////////
+// ADMIN SETTING SCHEMA
+/////////////////////////////////////////
+
+export const AdminSettingSchema = z.object({
+  id: z.string().cuid(),
+  key: z.string(),
+  value: z.string(),
+  updatedBy: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AdminSetting = z.infer<typeof AdminSettingSchema>
+
+/////////////////////////////////////////
+// USER CREDIT USAGE SCHEMA
+/////////////////////////////////////////
+
+export const UserCreditUsageSchema = z.object({
+  id: z.string().cuid(),
+  userId: z.string(),
+  tokens: z.bigint(),
+  credit: z.bigint(),
+  createdAt: z.coerce.date(),
+})
+
+export type UserCreditUsage = z.infer<typeof UserCreditUsageSchema>
+
+/////////////////////////////////////////
+// USER CREDIT SETTING SCHEMA
+/////////////////////////////////////////
+
+export const UserCreditSettingSchema = z.object({
+  id: z.string().cuid(),
+  date: z.coerce.date(),
+  userId: z.string(),
+  credit: z.bigint(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type UserCreditSetting = z.infer<typeof UserCreditSettingSchema>
 
 /////////////////////////////////////////
 // CATEGORY SCHEMA

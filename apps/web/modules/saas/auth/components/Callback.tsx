@@ -44,7 +44,7 @@ export function Callback() {
 					const tokenData = await getAccessToken(code);
 
 					// 然后调用 API 保存 token 到数据库
-					const response = await fetch('/api/admin/config/authorize', {
+					const response = await fetch('/api/admin/integration/reddit/authorize', {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
