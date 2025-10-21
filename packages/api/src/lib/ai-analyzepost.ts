@@ -221,11 +221,12 @@ async function processBatchPosts(posts: UnanalyzedPostData[], batchSize: number 
 	let processedCount = 0;
 
   // 分批处理帖子
+  const totalBatches = Math.ceil(posts.length / batchSize);
   for (let i = 0; i < posts.length; i += batchSize) {
     const batch = posts.slice(i, i + batchSize);
     const batchNumber = Math.floor(i / batchSize) + 1;
     
-    logger.info(`处理第 ${batchNumber} / ${totalPosts} 批`);
+    logger.info(`处理第 ${batchNumber} / ${totalBatches} 批`);
 	
     // 处理当前批次的帖子
     const batchPromises = batch.map(async (post) => {
