@@ -7,22 +7,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import * as z from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const adminSettingSchema = z.object({
   value: z.string().trim().min(1, { message: "Value is required" }),
 });
 
-export function   AdminSettingItem({ settingKey, value }: { settingKey: string; value: string }) {
+export function AdminSettingItem({ settingKey, value }: { settingKey: string; value: string }) {
   const [submitting, setSubmitting] = useState(false);
   const t = useTranslations();
+  const queryClient = useQueryClient();
+
   
   const updateSettingMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      // 添加调试日志
-      console.log('Saving setting with:', { key, value });
       
-      // 确保key和value都存在
       if (!key || !value) {
         throw new Error('Both key and value are required');
       }
@@ -51,18 +50,17 @@ export function   AdminSettingItem({ settingKey, value }: { settingKey: string; 
   });
 
   const onSubmit = form.handleSubmit(async ({ value }) => {
-    // 确保settingKey存在
     if (!settingKey) {
-      console.error('SettingKey is not provided to AdminSettingItem component');
       toast.error('Missing required setting key');
       setSubmitting(false);
       return;
     }
     
-    console.log('Submitting form with props:', { settingKey, value });
     setSubmitting(true);
     try {
       await updateSettingMutation.mutateAsync({ key: settingKey, value });
+      // 刷新adminSetting缓存
+      await queryClient.invalidateQueries({ queryKey: ["adminSetting"] });
       toast.success(t("common.status.success"));
     } catch (error) {
       toast.error(t("common.status.failure"));
@@ -75,7 +73,6 @@ export function   AdminSettingItem({ settingKey, value }: { settingKey: string; 
     <div className="grid grid-cols-1 gap-4">
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
           <Input
             type="text"
             className="w-full"
