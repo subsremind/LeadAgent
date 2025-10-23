@@ -31,6 +31,18 @@ export const userRouter = new Hono()
 				},
 				take: limit,
 				skip: offset,
+				include: {
+					userCreditUsage: {
+						select: {
+							credit: true,
+						},
+					},
+					userCreditSetting: {
+						select: {
+							credit: true,
+						},
+					},
+				},
 			});
 
 			const total = await db.user.count();

@@ -43,6 +43,12 @@
 				"message": "Are you sure you want to delete this user? This action cannot be undone.",
 				"title": "Delete user"
 			},
+			"credit": {
+				"creditSetting": "Credit Setting",
+				"creditTotal": "Total Credit",
+				"user": "User",
+				"creditUsed": "Used Credit"
+			},
 			"delete": "Delete",
 			"deleteUser": {
 				"deleted": "User has been deleted successfully!",
@@ -240,7 +246,8 @@
 			"cancel": "Cancel",
 			"confirm": "Confirm",
 			"delete": "Delete",
-			"save": "Save"
+			"save": "Save",
+			"submitting": "Submitting"
 		},
 		"actions": {
 			"new": "New",

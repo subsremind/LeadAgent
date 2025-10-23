@@ -76,11 +76,11 @@ export const PurchaseScalarFieldEnumSchema = z.enum(['id','organizationId','user
 
 export const AiChatScalarFieldEnumSchema = z.enum(['id','organizationId','userId','title','messages','createdAt','updatedAt']);
 
-export const AIRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp']);
+export const AIRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp','credit']);
 
 export const AdminSettingScalarFieldEnumSchema = z.enum(['id','key','value','updatedBy','createdAt','updatedAt']);
 
-export const UserCreditUsageScalarFieldEnumSchema = z.enum(['id','userId','tokens','credit','createdAt']);
+export const UserCreditUsageScalarFieldEnumSchema = z.enum(['id','userId','credit','createdAt']);
 
 export const UserCreditSettingScalarFieldEnumSchema = z.enum(['id','date','userId','credit','createdAt','updatedAt']);
 
@@ -317,6 +317,7 @@ export const AIRequestLogSchema = z.object({
   success: z.boolean(),
   error: z.string().nullable(),
   timestamp: z.coerce.date(),
+  credit: z.number().int(),
 })
 
 export type AIRequestLog = z.infer<typeof AIRequestLogSchema>
@@ -342,9 +343,8 @@ export type AdminSetting = z.infer<typeof AdminSettingSchema>
 
 export const UserCreditUsageSchema = z.object({
   id: z.string().cuid(),
-  userId: z.string(),
-  tokens: z.bigint(),
-  credit: z.bigint(),
+  userId: z.string().nullable(),
+  credit: z.number().int(),
   createdAt: z.coerce.date(),
 })
 
@@ -357,8 +357,8 @@ export type UserCreditUsage = z.infer<typeof UserCreditUsageSchema>
 export const UserCreditSettingSchema = z.object({
   id: z.string().cuid(),
   date: z.coerce.date(),
-  userId: z.string(),
-  credit: z.bigint(),
+  userId: z.string().nullable(),
+  credit: z.number().int(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
