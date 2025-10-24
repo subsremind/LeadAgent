@@ -1,4 +1,4 @@
-import { LeadAgentPage } from "@saas/leadagent/page";
+import { LeadAgentPage } from "@saas/leadagent/Suggestion";
 import { getActiveOrganization } from "@saas/auth/lib/server";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@saas/shared/components/PageHeader";

@@ -32,7 +32,7 @@ import { Label } from "@ui/components/label";
 import { Slider } from "@ui/components/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip";
 
-export function LeadAgentList({
+export function LeadAgentSuggestionList({
 	categoryId,
 	organizationId,
 }: { categoryId?: string; organizationId?: string }) {
@@ -69,10 +69,10 @@ export function LeadAgentList({
 	};
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit, embeddingRate],
+		queryKey: ["leadagent-setting", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit, embeddingRate],
 		enabled: !!agentSetting?.query && !!agentSetting?.subreddit,
 		queryFn: async () => {
-		let url = "/api/lead-agent/search";
+		let url = "/api/leadagent/suggestion/search";
 		//改为post请求
 		const response = await fetch(url, {
 			method: "POST",
@@ -147,7 +147,7 @@ export function LeadAgentList({
 				
 				<Button
 					variant="primary"
-					className="bg-sky-600 border-0"
+					className="bg-sky-600 border-0 hover:bg-sky-600 hover:opacity-90"
 					onClick={() => {
 						setEditOpen(true);
 					}}

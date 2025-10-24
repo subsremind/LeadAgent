@@ -1,7 +1,7 @@
 import { db, RedditPost } from "@repo/database";
 import { logger } from "@repo/logs";
 import { config } from "@repo/config";
-import { openaiService } from "@repo/ai";
+import { BUSINESS, openaiService } from "@repo/ai";
 import { promptAiAnalyzeQuery } from "@repo/ai";
 
 // 定义查询结果的接口
@@ -193,7 +193,7 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisRe
     );
 
     // 调用AI服务进行分析
-    const analysisResult = await openaiService.generateText('ai-analyze-post', prompt, {
+    const analysisResult = await openaiService.generateText(BUSINESS.REDDIT_POST_ANALYZE, prompt, {
       model: 'gpt-4o',
       temperature: 0.7,
       userId: post.userId,

@@ -41,7 +41,7 @@ const appRouter = app
 	.route("/", healthRouter)
 	.route("/", leadAgentRouter)
 	.route("/", scheduleRouter)
-	.route("/", leadAgentCategoryRouter)
+	// .route("/", leadAgentCategoryRouter)
 	.route("/", agentSettingRouter)
 	.route("/", integrationRouter);
 

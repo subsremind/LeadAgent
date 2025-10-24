@@ -869,26 +869,9 @@
 	"leadAgent": {
 		"title": "Lead Agent",
 		"descriptionLabel": "AI-Powered Reddit Marking Opportunity Finder",
-		"categories": {
-			"loading": "Loading categories...",
-			"error": "Error loading categories",
-			"tryAgain": "Try again",
-			"empty": "No categories available",
-			"title": "Categories",
-			"addNew": "Add New Category",
-			"categoryName": "Category Name",
-			"confirm": "Confirm",
-			"confirmDelete": "Confirm Delete",
-			"adding": "Adding Category",
-			"addSuccess": "Category added successfully",
-			"addFailed": "Failed to add category",
-			"updateFailed": "Failed to update category",
-			"updateSuccess": "Category updated successfully",
-			"deleteSuccess": "Category deleted successfully",
-			"deleteFailed": "Failed to delete category",
-			"edit": "Edit",
-			"deleteConfirmMessage": "Are you sure you want to delete this category?",
-			"duplicate": "Category name already exists"
+		"menu": {
+			"suggestion": "AI Suggestion",
+			"draft": "AI Draft"
 		},
 		"list": {
 			"title": "Resource List",
@@ -911,6 +894,11 @@
 			"generateFailed": "Failed to generate prompt",
 			"query": "Query keywords",
 			"subreddit": "Subreddit"
+		},
+		"draft": {
+			"generate": "Generate Draft",
+			"form_title": "Draft Generation",
+			"customPrompt": "Company Description & Business Introduction "
 		}
 	}
 }

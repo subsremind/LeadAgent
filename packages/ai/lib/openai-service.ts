@@ -64,6 +64,13 @@ const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
   // 可以添加更多模型的价格
 };
 
+export const BUSINESS: Record<string, string> = {
+  REDDIT_POST_ANALYZE: 'reddit-post-analyze',
+  SUGGESTION_SUBREDDIT_GENERATE: 'suggestion-subreddit-generate',
+  SUGGESTION_QUERY_GENERATE: 'suggestion-query-generate',
+  DRAFT_GENERATE: 'draft-generate',
+}
+
 /**
  * OpenAI服务类 - 提供通用的OpenAI接口请求方法
  */
