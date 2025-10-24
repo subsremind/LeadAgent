@@ -867,11 +867,12 @@
 		}
 	},
 	"leadAgent": {
-		"title": "Lead Agent",
+		"title": "Reddit Agent",
 		"descriptionLabel": "AI-Powered Reddit Marking Opportunity Finder",
 		"menu": {
 			"suggestion": "AI Suggestion",
-			"draft": "AI Draft"
+			"draft": "AI Draft",
+			"title": "Jobs"
 		},
 		"list": {
 			"title": "Resource List",

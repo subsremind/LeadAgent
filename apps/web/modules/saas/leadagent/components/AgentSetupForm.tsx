@@ -49,12 +49,9 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function AgentSetupForm({
 	agentSetting,
-	organizationId,
 	onSuccess,
 }: {
 	agentSetting?: any;
-	categoryId?: string;
-	organizationId?: string;
 	onSuccess: (open: boolean, isReload: boolean) => void;
 }) {
 	const t = useTranslations();
@@ -117,7 +114,6 @@ export function AgentSetupForm({
 				},
 				body: JSON.stringify({
 					...data,
-					organizationId,
 					userId: user?.id || null,
 					id: agentSetting?.id || null,
 				}),

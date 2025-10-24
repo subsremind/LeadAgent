@@ -25,7 +25,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef } from "react";
 
-import { AgentSetupDialog } from "./AgentSetup";
+import { AgentSetupDialog } from "./AgentSetupDialog";
 import { LeadAgentPagination } from "./LeadAgentPagination";
 import { Label } from "@ui/components/label";
 import { Slider } from "@ui/components/slider";
@@ -34,14 +34,17 @@ import { DraftGenerateDialog } from "@saas/leadagent/components/DraftGenerateDia
 import { DraftViewDialog } from "@saas/leadagent/components/DraftViewDialog";
 import { apiClient } from "@shared/lib/api-client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { Spinner } from "@shared/components/Spinner";
 
 export function LeadAgentDraftList() {
 	const t = useTranslations();
 	const [generateOpen, setGenerateOpen] = useState<boolean>(false);
 	const [viewOpen, setViewOpen] = useState<boolean>(false);
-	const [draftList, setDraftList] = useState<any[]>([]);
+	// const [draftList, setDraftList] = useState<any[]>([]);
 	const [currentDraft, setCurrentDraft] = useState<any>({});
 	const [isGenerating, setIsGenerating] = useState<boolean>(false);
+	const queryClient = useQueryClient();
 
 	const { data: agentSetting, isLoading: isAgentSettingLoading } = useQuery({
 		queryKey: ["agent-setting"],
@@ -54,33 +57,61 @@ export function LeadAgentDraftList() {
 		},
 	});
 
-	const onGenerateSuccess = (open: boolean, isReload: boolean, draftList: any[]) => {
-		setGenerateOpen(open);
-		if (isReload) {
-			console.log('onGenerateSuccess 2 ', draftList);
-			setDraftList(draftList);
-		}
-	};
+	const {data: draftList = [], isLoading: isDraftListLoading} = useQuery({
+		queryKey: ["draft-list"],
+		enabled: !!agentSetting,
+		queryFn: async () => {
+			const response = await apiClient.leadagent.draft["generate"].$post({
+				json: {
+					customPrompt: agentSetting.description || "",
+				},
+			});
+			if (!response.ok) {
+				throw new Error("Failed to fetch draft-list");
+			}
+			return await response.json();
+		},
+	});
 
-	const handleGenerateClick = async () => {
-		setIsGenerating(true);
-		const response = await apiClient.leadagent.draft["generate"].$post({
-			json: {
-				customPrompt: agentSetting.description || "",
-			},
-		});
-		if (!response.ok) {
-			toast.error(t("leadAgent.form.generateFailed"));
-			setIsGenerating(false);
-			return;
+		const handleGenerateClick = async () => {
+			// 使用isGenerating状态来确保按钮在invalidateQueries期间显示loading效果
+			setIsGenerating(true);
+			try {
+				// 触发数据重新加载
+				await queryClient.invalidateQueries({ queryKey: ["draft-list"] });
+				// 等待数据加载完成
+				// await queryClient.refetchQueries({ queryKey: ["draft-list"] });
+			} finally {
+				// 无论成功失败，都在最后重置状态
+				setIsGenerating(false);
+			}
 		}
-		const result = await response.json();
-		if (result?.length > 0) {
-			setDraftList(result);
-		}
-	}
 
 
+	// 	const onGenerateSuccess = (open: boolean, isReload: boolean, draftList: any[]) => {
+	// 	setGenerateOpen(open);
+	// 	if (isReload) {
+	// 		setDraftList(draftList);
+	// 	}
+	// };
+
+	// const handleGenerateClick = async () => {
+	// 	setIsGenerating(true);
+	// 	const response = await apiClient.leadagent.draft["generate"].$post({
+	// 		json: {
+	// 			customPrompt: agentSetting.description || "",
+	// 		},
+	// 	});
+	// 	if (!response.ok) {
+	// 		toast.error(t("leadAgent.form.generateFailed"));
+	// 		setIsGenerating(false);
+	// 		return;
+	// 	}
+	// 	const result = await response.json();
+	// 	if (result?.length > 0) {
+	// 		setDraftList(result);
+	// 	}
+	// }
 	
 
 	
@@ -90,21 +121,25 @@ export function LeadAgentDraftList() {
 				<Button
 					variant="primary"
 					className="bg-sky-600 border-0 hover:bg-sky-600 hover:opacity-90"
-					disabled={isAgentSettingLoading}
+					disabled={isAgentSettingLoading || isDraftListLoading || isGenerating}
 					onClick={() => {
 						// setGenerateOpen(true);
 						handleGenerateClick();
 					}}
 				>
-					<BotMessageSquareIcon className="size-4" />
+					{isAgentSettingLoading || isDraftListLoading || isGenerating ? (
+						<Spinner className="mr-2 size-4" />
+					) : (
+						<BotMessageSquareIcon className="size-4" />
+					)}
 					{t("leadAgent.draft.generate")}
 				</Button>
 			</div>
 
-			{draftList.length === 0 ? (
-				<div className="flex flex-col items-center justify-center h-64 border border-dashed rounded-lg">
-					<InfoIcon className="size-12 text-muted-foreground mb-4" />
-					<p className="text-muted-foreground mb-2">{t("leadAgent.list.noDataPrompt")}</p>
+			{isAgentSettingLoading || isDraftListLoading || isGenerating ? (
+				<div className="flex justify-center items-center h-64">
+					<Spinner className="mr-2 size-4 text-primary" />
+					{t("common.loading")}
 				</div>
 			) : (
 				draftList.map((item: any, item_index: number) => (
@@ -137,12 +172,12 @@ export function LeadAgentDraftList() {
 					// </Link>
 				))
 			)}
-			{<DraftGenerateDialog
+			{/* {<DraftGenerateDialog
 				open={generateOpen}
 				agentSetting={agentSetting}
 				onGenerateSuccess={onGenerateSuccess}
 			/>
-			}
+			} */}
 			{<DraftViewDialog
 				open={viewOpen}
 				draft={currentDraft}
