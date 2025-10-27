@@ -4,7 +4,8 @@
 			"organizations": "Organizations",
 			"users": "Users",
 			"usage": "Usage",
-			"setting": "Setting"
+			"setting": "Setting",
+			"prompt": "Prompt"
 		},
 		"organizations": {
 			"backToList": "Back to organizations",

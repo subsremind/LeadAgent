@@ -5,7 +5,7 @@ import { usageRouter } from "./usage";
 import { settingRouter } from "./setting";
 import { integrationRouter } from "./integration";
 import { userCreditSettingRouter } from "./user_credit_setting";
-
+import { aiPromptRouter } from "./ai_prompt";
 
 
 export const adminRouter = new Hono()
@@ -15,4 +15,5 @@ export const adminRouter = new Hono()
 	.route("/", usageRouter)
 	.route("/", settingRouter)
 	.route("/", integrationRouter)
-	.route("/", userCreditSettingRouter);
+	.route("/", userCreditSettingRouter)
+	.route("/", aiPromptRouter);

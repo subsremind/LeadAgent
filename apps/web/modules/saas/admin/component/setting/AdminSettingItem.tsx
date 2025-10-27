@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@ui/components/button";
 import { Input } from "@ui/components/input";
@@ -48,6 +48,13 @@ export function AdminSettingItem({ settingKey, value }: { settingKey: string; va
       value: value || "",
     },
   });
+
+  // 监听value prop变化，当从undefined更新为实际值时重置表单
+  useEffect(() => {
+    if (value && value !== form.getValues("value")) {
+      form.reset({ value });
+    }
+  }, [value, form]);
 
   const onSubmit = form.handleSubmit(async ({ value }) => {
     if (!settingKey) {

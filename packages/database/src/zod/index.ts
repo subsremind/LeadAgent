@@ -76,7 +76,9 @@ export const PurchaseScalarFieldEnumSchema = z.enum(['id','organizationId','user
 
 export const AiChatScalarFieldEnumSchema = z.enum(['id','organizationId','userId','title','messages','createdAt','updatedAt']);
 
-export const AIRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp','credit']);
+export const AiRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp','credit']);
+
+export const AiPromptScalarFieldEnumSchema = z.enum(['id','business','description','prompt','createdAt','updatedAt']);
 
 export const AdminSettingScalarFieldEnumSchema = z.enum(['id','key','value','updatedBy','createdAt','updatedAt']);
 
@@ -303,7 +305,7 @@ export type AiChat = z.infer<typeof AiChatSchema>
 // AI REQUEST LOG SCHEMA
 /////////////////////////////////////////
 
-export const AIRequestLogSchema = z.object({
+export const AiRequestLogSchema = z.object({
   id: z.string().cuid(),
   userId: z.string().nullable(),
   organizationId: z.string().nullable(),
@@ -320,7 +322,22 @@ export const AIRequestLogSchema = z.object({
   credit: z.number().int(),
 })
 
-export type AIRequestLog = z.infer<typeof AIRequestLogSchema>
+export type AiRequestLog = z.infer<typeof AiRequestLogSchema>
+
+/////////////////////////////////////////
+// AI PROMPT SCHEMA
+/////////////////////////////////////////
+
+export const AiPromptSchema = z.object({
+  id: z.string().cuid(),
+  business: z.string(),
+  description: z.string(),
+  prompt: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AiPrompt = z.infer<typeof AiPromptSchema>
 
 /////////////////////////////////////////
 // ADMIN SETTING SCHEMA
