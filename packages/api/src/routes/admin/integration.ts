@@ -7,22 +7,24 @@ import { adminMiddleware } from "../../middleware/admin";
 import { logger } from "@repo/logs";
 
 
-export const configRouter = new Hono()
-	.basePath("/config")
+export const integrationRouter = new Hono()
+	.basePath("/integration")
 	.use(adminMiddleware)
 	.get(
-		"/status",
+		"/:type/status",
 		describeRoute({
-			summary: "Check Reddit authorization status",
+			summary: "Check integration authorization status",
 			tags: ["Callback"],
 		}),
 		async (c) => {
 			try {
 				const user = c.get("user");
+				const type = c.req.param("type");
+
 				try {
 					const tokenData = await db.integrationAuth.findFirst({
 						where: {
-							type: 'reddit'
+							type: type
 						},
 						orderBy: {
 							createdAt: 'desc'
@@ -77,17 +79,18 @@ export const configRouter = new Hono()
 		}
 	)
 	.delete(
-		"/delete",
+		"/:type/delete",
 		describeRoute({
-			summary: "Delete Reddit authorization",
+			summary: "Delete integration authorization",
 			tags: ["Callback"],
 		}),
 		async (c) => {
 			try {
 				const user = c.get("user");
+				const type = c.req.param("type");
 				const tokenData = await db.integrationAuth.deleteMany({
 					where: {
-							type: 'reddit'
+							type: type
 					}
 				});
 					
@@ -116,9 +119,9 @@ export const configRouter = new Hono()
 		}
 	)
 	.post(
-		"/authorize",
+		"/:type/authorize",
 		describeRoute({
-			summary: "Authorize Reddit",
+			summary: "Authorize integration",
 			tags: ["Callback"],
 		}),
 		validator("json", z.object({
@@ -131,12 +134,13 @@ export const configRouter = new Hono()
 		async (c) => {
 			try {
 				const user = c.get("user");
+				const type = c.req.param("type");
 				const { accessToken, refreshToken, tokenType, expiresAt, scope } = c.req.valid("json");
 
-				// 删除现有的 Reddit 授权记录
+				// 删除现有的授权记录
 				await db.integrationAuth.deleteMany({
 					where: {
-						type: 'reddit'
+						type: type
 					}
 				});
 
@@ -148,11 +152,11 @@ export const configRouter = new Hono()
 						tokenType,
 						expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
 						scope,
-						type: 'reddit',
+						type: type,
 					}
 				});
 
-				logger.info("Reddit authorization saved successfully:", { id: authRecord.id });
+				logger.info("Integration authorization saved successfully:", { id: authRecord.id });
 
 				return c.json({
 					success: true,

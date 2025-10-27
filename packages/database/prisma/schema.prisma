@@ -3,12 +3,10 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  extensions = [pgvector(map: "vector", schema: "extensions")]
 }
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
 }
 
 generator zod {
@@ -49,6 +47,8 @@ model User {
   aiChats            AiChat[]
   agentSettings      AgentSetting[]
   aiAnalyzeRecords   AiAnalyzeRecord[]
+  userCreditSetting  UserCreditSetting? 
+  userCreditUsage    UserCreditUsage? 
 
   @@unique([email])
   @@unique([username])
@@ -203,7 +203,7 @@ model AiChat {
   updatedAt      DateTime      @updatedAt
 }
 
-model AIRequestLog {
+model AiRequestLog {
   id                String    @id @default(cuid())   // 全局唯一主键
   userId            String?                       // 可选
   organizationId    String?                       // 可选
@@ -217,9 +217,54 @@ model AIRequestLog {
   success           Boolean
   error             String?                       // 失败时记录错误信息
   timestamp         DateTime   @default(now())    // 发生时间
+  credit            Int         @default(1)
 
   @@index([business])
   @@map("ai_request_log")
+}
+
+model AiPrompt {
+  id                String    @id @default(cuid())
+  business          String    @unique
+  description       String
+  prompt            String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@map("ai_prompt")
+}
+
+model AdminSetting {
+  id                String    @id @default(cuid())
+  key               String    @unique
+  value             String
+  updatedBy         String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@map("admin_setting")
+}
+
+model UserCreditUsage {
+  id                String    @id @default(cuid())
+  userId            String?   @unique
+  user              User?         @relation(fields: [userId], references: [id])
+  credit            Int
+  createdAt         DateTime      @default(now())
+
+  @@map("user_credit_usage")
+}
+
+model UserCreditSetting {
+  id                String    @id @default(cuid())
+  date			      DateTime
+  userId            String?   @unique
+  user              User?         @relation(fields: [userId], references: [id])
+  credit            Int
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@map("user_credit_setting")
 }
 
 model Category {

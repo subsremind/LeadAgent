@@ -38,6 +38,11 @@ const nextConfig: NextConfig = {
 				destination: "/app/admin/users",
 				permanent: true,
 			},
+			{
+				source: "/app/leadagent",
+				destination: "/app/leadagent/suggestion",
+				permanent: true,
+			},
 		];
 	},
 	eslint: {
