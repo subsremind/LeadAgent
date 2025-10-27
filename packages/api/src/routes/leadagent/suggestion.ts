@@ -118,6 +118,9 @@ export const suggestionRouterRouter = new Hono()
 							}
 						}
 					}
+				},
+				orderBy: {
+					createdUtc: 'desc'
 				}
 			});
 

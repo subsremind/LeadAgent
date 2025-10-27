@@ -55,3 +55,19 @@ For example to add the skeleton component you would run:
 
 **Create admin user**
 `pnpm --filter scripts create:user`
+
+## docker deploy
+
+cd /data/git/LeadAgent
+# 拉取代码，分支是 docker-deploy
+git pull
+
+docker build -f apps/web/Dockerfile-task . --no-cache -t leadagent-task
+
+docker build -f apps/web/Dockerfile . --no-cache -t leadagent
+
+docker-compose up -d
+
+docker logs -f -n 200 leadagent-task
+docker logs -f -n 200 leadagent
+`
