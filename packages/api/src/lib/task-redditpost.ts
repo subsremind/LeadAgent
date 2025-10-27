@@ -1,7 +1,6 @@
 import { db, RedditPost } from "@repo/database";
 import { logger } from "@repo/logs";
 import { config } from "@repo/config";
-import { openaiService } from "@repo/ai";
 import { nanoid } from "nanoid";
 
 // 从数据库获取Reddit token
@@ -161,7 +160,7 @@ export async function saveRedditToken(tokenData: any): Promise<void> {
 
 export async function getRedditPost() {
 	try {
-		logger.info(`start to sync post=============================`);
+		logger.info(`sync-posts tart to sync post enable ${config.syncPost?.enabled}`);
 		const syncPost = config.syncPost?.enabled
 		if (!syncPost) {
 			logger.info(`sync post is disabled`);
@@ -182,26 +181,24 @@ export async function getRedditPost() {
 			  { id: 'asc' }
 			]
 		  });
+		logger.info(`sync-posts channelList size: ${channelList.length}`);
 		const limitPerChannel = 300; // 每个 channel 同步 x 条数据 process.env.REDDIT_LIMIT_PER_CHANNEL ||
 		const redditIdList: string[] = []
 		let posts: RedditPost[] = []
 		for (const channel of channelList) {
-			
 			try {
-				posts = await fetchRedditPosts(channel, sortType, limitPerChannel);
-				
-				for (const post of posts) {
-					try {
+				logger.info(`sync-posts start fetchRedditPosts channel: ${channel.path}`);
+				const channelPosts = await fetchRedditPosts(channel, sortType, limitPerChannel);
+				logger.info(`sync-posts end fetchRedditPosts channel: ${channel.path} posts size: ${channelPosts.length}`);
+				for (const post of channelPosts) {
 						redditIdList.push(post.redditId);
-
-						
-					} catch (error) {
-					}
+						posts.push(post);
 				}
 			} catch (error) {
+				logger.error(`Failed to fetch posts for channel ${channel.path}:`, error);
 			}
 		}
-		
+		logger.info(`sync-posts total posts size: ${posts.length}`);
 		const dbRecords = await db.redditPost.findMany({
 			select: {
 			  redditId: true
@@ -212,15 +209,20 @@ export async function getRedditPost() {
 				}
 			}
 		  });
+		logger.info(`sync-posts post list size: ${redditIdList.length} `);
 		// 从 posts 中移除已存在于 dbRecords 中的 redditId
 		const dbRedditIds = dbRecords.map((record: { redditId: string }) => record.redditId);
+		logger.info(`sync-posts db list size: ${dbRedditIds.length} `);
 		const filteredPosts = posts.filter(post => !dbRedditIds.includes(post.redditId));	
-		logger.info(`save === ${filteredPosts.length} posts to db`);
+		logger.info(`sync-posts save list size: ${filteredPosts.length} `);
+		if(filteredPosts.length>0){
+			logger.info(`sync-posts start saveBatchRedditPosts`);
+			await saveBatchRedditPosts(filteredPosts);
+			logger.info(`sync-posts end saveBatchRedditPosts`);
+		}
 
-		await saveBatchRedditPosts(filteredPosts);
-
-		// await savePostToDB(post, embedding, channel.id);
 	} catch (error) {
+		logger.error(`Failed to sync posts:`, error);
 		throw error;
 	}
 }
@@ -237,7 +239,7 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 	
 	// 获取有效的访问令牌
 	let accessToken = await getValidAccessToken();
-	
+	logger.info(`sync-post fetchRedditPosts subreddit: ${subreddit} accessToken: ${accessToken} limit: ${remainingLimit}`);
 	while (remainingLimit > 0) {
 		// 随机延迟 1-3 秒
 		const delay = Math.floor(Math.random() * 2000) + 1000; // 1000-3000ms
@@ -271,6 +273,8 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 					}
 				}
 				break;
+			} else  {
+				logger.error(`sync-post Rate limit hit for: ${url}`);
 			}
 
 			// 检查响应内容类型
@@ -310,7 +314,7 @@ async function fetchRedditPosts(channel: { id: string; path: string }, sortType:
 				break;
 			}
 		} catch (error) {
-			logger.error('Error fetching Reddit posts:', error);
+			logger.error('sync-post Error fetching Reddit posts:', error);
 			
 			// 检查是否是网络连接错误
 			if (error instanceof Error) {
@@ -409,65 +413,81 @@ async function saveBatchRedditPosts(
 	batchSize = 50
   ): Promise<number> {
 	if (!rows.length) return 0;
-  
+
+	logger.info(`sync post save batch ${rows.length}, batchSize: ${batchSize}`);
+	if (rows.length <= batchSize) {
+		const createMany = await db.redditPost.createMany({
+			data: rows,
+		});
+		return createMany.count;
+	}
 	let inserted = 0;
 	for (let i = 0; i < rows.length; i += batchSize) {
-	  const chunk = rows.slice(i, i + batchSize);
-	  const valuesSql: string[] = [];
-	  const valuesArg: any[]    = [];
-	  let cursor = 1;
-  
-	  for (const r of chunk) {
-		valuesSql.push(`(
-			$${cursor},$${cursor+1},$${cursor+2},$${cursor+3},$${cursor+4},$${cursor+5},$${cursor+6},
-			$${cursor+7}::int,$${cursor+8}::int,$${cursor+9}::int,$${cursor+10}::int,
-			$${cursor+11}::timestamp ,
-			$${cursor+12},$${cursor+13}::vector,
-			NOW(),NOW(),$${cursor+14}
-		  )`);
-		// 生成默认的1536维零向量，或者使用 OpenAI embedding
-		//let embeddingStr: string;
-		// try {
-		// 	// 尝试生成真实的 embedding
-		// 	const embedding = await openaiService.generateEmbedding('reddit-embedding', '', `${r.title} ${r.selftext ?? ""}`);
-		// 	embeddingStr = embedding.join(',');
-		// } catch (error) {
-		// 	// 如果 embedding 生成失败，使用默认的1536维零向量
-		// 	logger.warn('Failed to generate embedding, using default zero vector:', error);
-		// 	embeddingStr = new Array(1536).fill(0).join(',');
-		// }
-		
-		valuesArg.push(
-			r.redditId,
-			r.title,
-			r.selftext ?? null,
-			r.url ?? null,
-			r.permalink ?? null,
-			r.author ?? null,
-			r.subreddit ?? null,
-			r.ups ?? 0,
-			r.downs ?? 0,
-			r.score ?? 0,
-			r.numComments ?? 0,
-			r.createdUtc ?? null,
-			r.categoryId ?? null,
-			null, //embeddingStr.join(',')
-			nanoid()   // 最后一个对应 $15
-		  );
-		cursor += 15;
-	  }
-  
-	  const stmt = `
-		INSERT INTO reddit_post (
-		  "redditId","title","selftext","url","permalink","author",
-		  "subreddit","ups","downs","score","numComments","createdUtc",
-		  "categoryId","embedding","recordCreatedAt","recordUpdatedAt","id"
-		) VALUES ${valuesSql.join(',')};
-	  `;
-  
-	  const res: { '?column?': number }[] = await db.$queryRawUnsafe(stmt, ...valuesArg);
-	  inserted += res.length;
+		const chunk = rows.slice(i, i + batchSize);
+		const createMany = await db.redditPost.createMany({
+			data: chunk,
+		});
+		inserted += createMany.count;
 	}
+  
+	// let inserted = 0;
+	// for (let i = 0; i < rows.length; i += batchSize) {
+	//   const chunk = rows.slice(i, i + batchSize);
+	//   const valuesSql: string[] = [];
+	//   const valuesArg: any[]    = [];
+	//   let cursor = 1;
+  
+	//   for (const r of chunk) {
+	// 	valuesSql.push(`(
+	// 		$${cursor},$${cursor+1},$${cursor+2},$${cursor+3},$${cursor+4},$${cursor+5},$${cursor+6},
+	// 		$${cursor+7}::int,$${cursor+8}::int,$${cursor+9}::int,$${cursor+10}::int,
+	// 		$${cursor+11}::timestamp ,
+	// 		$${cursor+12},$${cursor+13}::vector,
+	// 		NOW(),NOW(),$${cursor+14}
+	// 	  )`);
+	// 	// 生成默认的1536维零向量，或者使用 OpenAI embedding
+	// 	//let embeddingStr: string;
+	// 	// try {
+	// 	// 	// 尝试生成真实的 embedding
+	// 	// 	const embedding = await openaiService.generateEmbedding('reddit-embedding', '', `${r.title} ${r.selftext ?? ""}`);
+	// 	// 	embeddingStr = embedding.join(',');
+	// 	// } catch (error) {
+	// 	// 	// 如果 embedding 生成失败，使用默认的1536维零向量
+	// 	// 	logger.warn('Failed to generate embedding, using default zero vector:', error);
+	// 	// 	embeddingStr = new Array(1536).fill(0).join(',');
+	// 	// }
+		
+	// 	valuesArg.push(
+	// 		r.redditId,
+	// 		r.title,
+	// 		r.selftext ?? null,
+	// 		r.url ?? null,
+	// 		r.permalink ?? null,
+	// 		r.author ?? null,
+	// 		r.subreddit ?? null,
+	// 		r.ups ?? 0,
+	// 		r.downs ?? 0,
+	// 		r.score ?? 0,
+	// 		r.numComments ?? 0,
+	// 		r.createdUtc ?? null,
+	// 		r.categoryId ?? null,
+	// 		null, //embeddingStr.join(',')
+	// 		nanoid()   // 最后一个对应 $15
+	// 	  );
+	// 	cursor += 15;
+	//   }
+  
+	//   const stmt = `
+	// 	INSERT INTO reddit_post (
+	// 	  "redditId","title","selftext","url","permalink","author",
+	// 	  "subreddit","ups","downs","score","numComments","createdUtc",
+	// 	  "categoryId","embedding","recordCreatedAt","recordUpdatedAt","id"
+	// 	) VALUES ${valuesSql.join(',')};
+	//   `;
+  
+	//   const res: { '?column?': number }[] = await db.$queryRawUnsafe(stmt, ...valuesArg);
+	//   inserted += res.length;
+	// }
 	return inserted;
   }
 

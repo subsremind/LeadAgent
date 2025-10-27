@@ -1,9 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 // 配置客户端打印insert 的 sql 语句
 const prismaClientSingleton = () => {
-	return new PrismaClient({
-		log: [{ emit: "stdout", level: "query" }],
-	});
+	return new PrismaClient();
 };
 
 declare global {

@@ -21,6 +21,8 @@ import { leadAgentRouter } from "./routes/leadagent/router";
 import { agentSettingRouter } from "./routes/agent-setting/router";
 import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
+import { scheduleRouter } from "./routes/schedule";
+//import { initializeTasks } from "./tasks";
 export const app = new Hono().basePath("/api");
 
 app.use(loggerMiddleware);
@@ -38,6 +40,7 @@ const appRouter = app
 	.route("/", adminRouter)
 	.route("/", healthRouter)
 	.route("/", leadAgentRouter)
+	.route("/", scheduleRouter)
 	.route("/", leadAgentCategoryRouter)
 	.route("/", agentSettingRouter);
 
@@ -84,4 +87,6 @@ app.get(
 );
 
 export type AppRouter = typeof appRouter;
+
+//initializeTasks();
 

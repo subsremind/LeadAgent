@@ -41,7 +41,8 @@ async function fetchUnanalyzedPosts(): Promise<UnanalyzedPostData[]> {
   logger.info("执行SQL查询获取未分析的Reddit帖子");
   
   const unanalyzedPosts = await db.$queryRaw<UnanalyzedPostData[]>`
-    SELECT 
+select * from  (
+      SELECT 
       rp."redditId", 
       rp.title, 
       rp.selftext, 
@@ -49,23 +50,23 @@ async function fetchUnanalyzedPosts(): Promise<UnanalyzedPostData[]> {
       ca.path, 
       aset."userId", 
       aset.query, 
-      aset.subreddit 
-    FROM agent_setting aset 
-    LEFT JOIN category ca 
-      ON aset.subreddit LIKE '%' || ca.name || '%' 
-    INNER JOIN reddit_post rp 
-      ON rp."categoryId" = ca.id	  
-	  WHERE 
-   Not EXISTS (
-    SELECT 1 
-    FROM ai_analyze_record aar 
-    WHERE aar.reddit_id = rp."redditId" 
-      AND aar."userId" = aset."userId"
-) and rp.selftext is not null and rp.selftext <> ''`;
+      aset.subreddit,
+      aset.subreddit ~ rp.subreddit as include
+    FROM reddit_post rp       
+    cross JOIN  agent_setting aset 
+    LEFT JOIN  ai_analyze_record aar 
+    on rp."redditId" = aar.reddit_id AND aar."userId" =aset."userId" 
+       LEFT JOIN category ca 
+      on ca.id =rp."categoryId"
+    where aar."userId"  is null  and rp.selftext is not null and rp.selftext <> '' 
+) as abc 
+where include = true
+order by abc."redditId"`;
   return unanalyzedPosts;
 }
 
 export async function getNoAnalyzePost() {
+  logger.info(`start to ai analyze post=============================`);
   try {
     // 1. 获取未分析的帖子
 	const aiAnalyze = config.aiAnalyze?.enabled
@@ -81,10 +82,9 @@ export async function getNoAnalyzePost() {
     }
 
     // 2. 批量处理帖子
-    const batchSize = 10;
-    const result = await processBatchPosts(unanalyzedPosts, batchSize);
-
-    logger.info(`AI分析完成，总共处理: ${result.processed}/${result.total} 条帖子`);
+    const batchSize = 30;
+	const totalPosts = unanalyzedPosts.length;
+    const result = await processBatchPosts(unanalyzedPosts, batchSize,totalPosts);
 
     return {
       success: true,
@@ -170,7 +170,6 @@ async function saveAnalysisResult(records: AIAnalyzeRecord[]): Promise<boolean> 
       skipDuplicates: true // 跳过重复记录，避免唯一约束冲突
     });
     
-    logger.info(`成功批量保存 ${records.length} 条分析结果`);
     return true;
   } catch (error) {
     logger.error('批量保存分析结果失败:', error);
@@ -186,8 +185,6 @@ async function saveAnalysisResult(records: AIAnalyzeRecord[]): Promise<boolean> 
  */
 async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisResult | null> {
   try {
-    logger.info(`开始AI分析帖子，ID: ${post.redditId}`);
-    
     // 生成AI分析提示
     const prompt = promptAiAnalyzeQuery(
       post.title ?? '',
@@ -208,8 +205,7 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisRe
 	const result = parseAndValidateAIResult(analysisResult, post.redditId);
     return result;
 
-  } catch (error) {
-    logger.error(`AI分析过程中发生错误，帖子ID: ${post.redditId}`, error);
+  } catch (error) {  
     return null;
   }
 }
@@ -221,22 +217,19 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisRe
  * @param batchSize 批次大小
  * @returns 处理结果统计
  */
-async function processBatchPosts(posts: UnanalyzedPostData[], batchSize: number = 10): Promise<{
-  processed: number;
-  total: number;
-}> {
-  let processedCount = 0;
-  const allRecords: AIAnalyzeRecord[] = [];
+async function processBatchPosts(posts: UnanalyzedPostData[], batchSize: number = 10,totalPosts: number): Promise<{ processed: number;total: number;}> {
+	let processedCount = 0;
 
   // 分批处理帖子
   for (let i = 0; i < posts.length; i += batchSize) {
     const batch = posts.slice(i, i + batchSize);
     const batchNumber = Math.floor(i / batchSize) + 1;
     
-    logger.info(`处理第 ${batchNumber} 批，共 ${batch.length} 条帖子`);
+    logger.info(`处理第 ${batchNumber} / ${totalPosts} 批`);
 	
     // 处理当前批次的帖子
     const batchPromises = batch.map(async (post) => {
+      await new Promise(resolve => setTimeout(resolve, 1500));
       const analysisResult = await analyzePostWithAI(post);
       if (analysisResult) {
         return {
@@ -270,23 +263,19 @@ async function processBatchPosts(posts: UnanalyzedPostData[], batchSize: number 
       }
     }));
 
-    // 添加到总记录数组
-    allRecords.push(...batchRecords);
     processedCount += successfulResults.length;
     
     logger.info(`第 ${batchNumber} 批处理完成，成功: ${successfulResults.length}/${batch.length}`);
-
+	  // 批量保存所有成功的分析结果
+	if (batchRecords.length > 0) {
+		const saveSuccess = await saveAnalysisResult(batchRecords);
+		if (!saveSuccess) {
+		  throw new Error('批量保存分析结果失败');
+		}
+	}
     // 批次间稍作延迟，避免API限流
     if (i + batchSize < posts.length) {
       await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-
-  // 批量保存所有成功的分析结果
-  if (allRecords.length > 0) {
-    const saveSuccess = await saveAnalysisResult(allRecords);
-    if (!saveSuccess) {
-      throw new Error('批量保存分析结果失败');
     }
   }
 

@@ -23,7 +23,7 @@ export default function UserStart() {
 				<CardContent>
 					<Alert className="mb-4">
 						<Badge
-							className="bg-green-300 text-white dark:bg-green-600 flex items-center gap-1 max-w-[fit-content]"
+							className="bg-sky-600 text-white flex items-center gap-1 max-w-[fit-content] mb-2"
 							>
 							<CheckCircle2Icon size={12} />
 							Step 1
@@ -35,7 +35,7 @@ export default function UserStart() {
 					</Alert>
 					<Alert className="mb-4" variant="default">
 						<Badge
-							className="bg-green-300 text-white dark:bg-green-600 flex items-center gap-1 max-w-[fit-content]"
+							className="bg-sky-600 text-white flex items-center gap-1 max-w-[fit-content] mb-2"
 							>
 							<CheckCircle2Icon size={12} />
 							Step 2
@@ -47,7 +47,7 @@ export default function UserStart() {
 					</Alert>
 					<Alert className="mb-4">
 						<Badge
-							className="bg-green-300 text-white dark:bg-green-600 flex items-center gap-1 max-w-[fit-content]"
+							 className="bg-sky-600 text-white flex items-center gap-1 max-w-[fit-content] mb-2"
 							>
 							<CheckCircle2Icon size={12} />
 							Step 3

@@ -1,6 +1,7 @@
 import { scheduler } from "@repo/scheduler";
 import { getRedditPost } from "../lib/task-redditpost";
 import { getNoAnalyzePost } from "../lib/ai-analyzepost";
+import { cleanData } from "../lib/clean-data";
 import { config } from "@repo/config";
 import { logger } from "@repo/logs";
 
@@ -9,14 +10,14 @@ import { logger } from "@repo/logs";
  * 这些任务会在API服务启动时自动开始执行
  */
 export function initializeTasks() {
-  logger.info("=============initialize tasks");
+  //logger.info("=============initialize tasks");
   // 获取Reddit帖子的定时任务
   scheduler.schedule({
     id: "sync-reddit-post",
     cronExpression: config.syncPost?.cronExpression,
     task: async () => {
       try {
-        logger.info("=============start to sync reddit post", new Date());
+        //logger.info("=============start to sync reddit post", new Date());
         await getRedditPost();
       } catch (error) {
         console.error("Failed to sync Reddit posts:", error);
@@ -26,14 +27,27 @@ export function initializeTasks() {
 
   // 可以在这里添加更多的定时任务
   scheduler.schedule({
-    id: "get-no-analyze-post",
+    id: "ai-analyze-reddit-post",
     cronExpression: config.aiAnalyze?.cronExpression,
     task: async () => {
        try {
-		logger.info("=============start to get no analyze post", new Date());
-		await getNoAnalyzePost();
+		//logger.info("=============start to get no analyze post", new Date());
+		    await getNoAnalyzePost();
       } catch (error) {
         console.error("Failed to get no analyze posts:", error);
+      }
+    },
+  });
+
+  scheduler.schedule({
+    id: "clean-data",
+    cronExpression: config.cleanData?.cronExpression,
+    task: async () => {
+       try {
+        
+		    await cleanData();
+      } catch (error) {
+        console.error("Failed to clean data:", error);
       }
     },
   });
