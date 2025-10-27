@@ -139,5 +139,5 @@ Constraints:
 Each post’s content (content field) must be 600-800 characters.
 Include 5 company-centric posts (focused on company mission, culture, values, community efforts, or team stories) and 5 product-centric posts (focused on product benefits, features, usage scenarios, customer testimonials, or problem-solving capabilities).
 At least 2 of the 10 posts must include a question or poll trigger (in the content field).
-No explanatory text, labels, or markdown outside the JSON array.
+No explanatory text, labels, or markdown outside the JSON array. Do not include any labels or markdown
 `
