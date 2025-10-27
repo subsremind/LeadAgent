@@ -66,7 +66,16 @@ export function LeadAgentDraftList() {
 			// 		customPrompt: agentSetting.description || "",
 			// 	},
 			// });
-			const response = await fetch("/api/leadagent/draft/generate");
+			// const response = await fetch("/api/leadagent/draft/generate");
+			const response = await fetch("/api/leadagent/draft/generate", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					customPrompt: agentSetting.description || "",
+				}),
+			});
 			if (!response.ok) {
 				throw new Error("Failed to fetch draft-list");
 			}
