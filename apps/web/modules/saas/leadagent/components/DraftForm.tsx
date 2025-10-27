@@ -62,8 +62,8 @@ export function DraftForm({
 					return;
 				}
 				const result = await response.json();
-				// 生成成功后，将数据传给leadAgentDraftList
-				onGenerateSuccess(false, true, result || []);
+				// 确保传递正确格式的数组给onGenerateSuccess
+				onGenerateSuccess(false, true, Array.isArray(result) ? result : []);
 			} catch (error: any) {
 				toast.error(error.message || t("leadAgent.form.generateFailed"));
 			} finally {

@@ -82,7 +82,6 @@ export function AgentSetupForm({
 				},
 				body: JSON.stringify({
 					description: form.getValues("description"),
-					organizationId,
 				}),
 			});
 			if (!response.ok) {

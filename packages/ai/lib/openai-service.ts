@@ -110,7 +110,7 @@ export class OpenAIService {
       // 这里简化处理，实际项目中应该有对应的表模型
       // 示例：await db.aiRequestLog.create({ data: logData });
       //console.log('AI Request Log:', logData);
-      await db.aIRequestLog.create({ data: logData });
+      await db.aiRequestLog.create({ data: logData });
     } catch (error) {
       console.error('Failed to log AI request:', error);
       // 记录失败不应影响主流程

@@ -5,7 +5,7 @@ import { logger } from "@repo/logs";
 export async function userCreditCount() {
   logger.info("=====userCreditCount running=====");
   
-  const userCreditUsage = await db.aIRequestLog.groupBy({
+  const userCreditUsage = await db.aiRequestLog.groupBy({
     by: ['userId'],
     where: {
       business: 'ai-analyze-post',

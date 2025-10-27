@@ -36,12 +36,12 @@ export const aiPromptRouter = new Hono()
 			try {
 				const { business, description, prompt } = c.req.valid("json");
 				await db.aiPrompt.create({
-					data: {
-						business,
-						description,
-						prompt,
-					}
-				});
+						data: {
+								business,
+								description: description || "", // 确保description总是一个字符串
+								prompt,
+						}
+					});
 
 				return c.json({
 					message: "AI prompt created successfully"
@@ -66,25 +66,25 @@ export const aiPromptRouter = new Hono()
 			tags: ["AI Prompt"],
 		}),
 		validator("json", z.object({
-			business: z.string(),
+			business: z.string().optional(),
 			description: z.string().optional(),
-			prompt: z.string(),
+			prompt: z.string().optional(),
 		})),
 		async (c) => {
 			try {
-				const { prompt } = c.req.valid("json");
+				const { business, description, prompt } = c.req.valid("json");
 				const id = c.req.param("id");
 				
 					await db.aiPrompt.update({
-						where: {
-							id
-						},
-						data: {
-							business,
-							description,
-							prompt,
-						}
-					});
+								where: {
+										id
+								},
+								data: {
+										business,
+										description: description || "", // 确保description总是一个字符串
+										prompt,
+								}
+						});
 
 				return c.json({
 					message: "AI prompt updated successfully"

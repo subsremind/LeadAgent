@@ -142,7 +142,8 @@ export function LeadAgentDraftList() {
 					{t("common.loading")}
 				</div>
 			) : (
-				draftList.map((item: any, item_index: number) => (
+				// 确保draftList是数组且不为空，避免map调用错误
+				(Array.isArray(draftList) ? draftList : []).map((item: any, item_index: number) => (
 					// <Link key={item_index} rel="noopener noreferrer">
 						<Card key={item_index} className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] cursor-pointer"
 							onClick={() => {

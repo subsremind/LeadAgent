@@ -331,9 +331,8 @@ export function UserList() {
 
 									<DropdownMenuItem
 									onClick={() =>
-											userCreditSetting(row.original.id, row.original)
-									}
-							>
+											userCreditSetting(row.original.id)
+									}>
 								<CreditCardIcon className="mr-2 size-4" />
 									{t("admin.users.credit.creditSetting")}
 							</DropdownMenuItem>

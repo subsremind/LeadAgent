@@ -20,7 +20,10 @@ export const userCreditSettingRouter = new Hono()
 			const userCreditSettings = await db.userCreditSetting.findMany();
 			// 从 key, value 的结构整理成 { key: value } 的对象
 			const settings = userCreditSettings.reduce((acc, cur) => {
-				acc[cur.userId] = cur.credit;
+				// 确保userId不为null再用作对象索引
+				if (cur.userId !== null) {
+					acc[cur.userId] = cur.credit;
+				}
 				return acc;
 			}, {} as Record<string, number>);
 			return c.json(settings);

@@ -42,9 +42,9 @@ export function PromptList() {
 		queryFn: async () => {
 			try {
 				// 尝试使用apiClient
-				const res = await apiClient.admin.aiPrompt.$get("/ai_prompt");
-				if (!res.ok) throw new Error("Failed to fetch prompts");
-				return await res.json();
+				// const res = await apiClient.admin.aiPrompt.$get("/ai_prompt");
+				// if (!res.ok) throw new Error("Failed to fetch prompts");
+				// return await res.json();
 			} catch (error) {
 				// 备用方案：使用fetch
 				const response = await fetch("/api/admin/ai_prompt");
