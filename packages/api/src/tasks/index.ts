@@ -9,8 +9,8 @@ import { userCreditCount } from "../lib/user_credit_count";
 const tasks = [
   {
     id: "sync-reddit-post",
-    cronExpression: "0 40 */2 * * *",
-    enabled: false,
+    cronExpression: "0 10 */2 * * *",
+    enabled: true,
     task: async () => {
       try {
         await getRedditPost();
@@ -21,8 +21,8 @@ const tasks = [
   },
   {
     id: "ai-analyze-reddit-post",
-    cronExpression: "0 50 */2 * * *",
-    enabled: false,
+    cronExpression: "0 30 */2 * * *",
+    enabled: true,
     task: async () => {
       try {
 		    await getNoAnalyzePost();
@@ -45,7 +45,7 @@ const tasks = [
   },
   {
     id: "credit-usage",
-    cronExpression: "0/10 * * * * *",
+    cronExpression: "20 20 * * * *",
     enabled: true,
     task: async () => {
       try {
