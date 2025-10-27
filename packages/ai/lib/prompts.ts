@@ -118,30 +118,39 @@ As a "Semantic Relevance Assessment Expert," you must adhere to the above constr
 };
 
 export const promptDraftGenerate = (custom_prompt: string) => `
-Task: Generate Social Media Posts for Product Exposure
-1. Role and Objectives
-You are a social media content strategist focused on digital marketing and brand exposure. Create 4 high-impact posts based on the provided company & business description to maximize product visibility on X/Twitter.
-2. Background and Context
-Use the unified input below to extract company identity (mission, values) and business offerings (products, services, target market). Craft posts that drive shares, likes, and conversions.
-Company Description & Business Introduction: ${custom_prompt}
-3. Key Steps (Optimized)
-Info Extraction First: From background and context, list 2+ company culture/values points (e.g., sustainability, employee-centricity) and 2+ product core benefits (e.g., time-saving, cost-cutting) to avoid content deviation
-Hook Selection & Matching: Pair each extracted point with a relatable hook (e.g., company culture → "How we turn 'sustainability' into daily actions"; product benefit → "Tired of long reports? Our tool fixes that")
-Micro-Write with Structure: Draft post content in "Hook + Key Info + Hashtag + CTA" order, keep ≤280 chars (count incl. hashtags), use conversational tone (avoid jargon)
-Title & Channel Alignment: For each post, create a 5-15 word title that mirrors content core; assign a channel matching post focus (e.g., company culture → "MSP/Company Culture"; product benefit → "Sales/Marketing")
-Emoji & Interaction Check: Add ≤1 emoji to max 2 posts (prioritize posts with emotional hooks like sustainability); ensure at least 1 post includes a question/poll trigger (e.g., "What’s your top pain point?")
-Final Validation: Confirm 2 company-centric + 2 product-centric posts, all CTAs are clear (reply/retweet/click), and content meets character limit before compiling into JSON
-4. Output Requirements
-Field Explanations:
-title: A concise, eye-catching title for the social media post, summarizing the core message (e.g., "Our Brand’s Commitment to Sustainable Innovation" or "Try Our New Tool to Save 50% Time").
-content: The full text of the social media post, including hooks, key information, hashtags, and CTAs, with a character limit of ≤280 (including hashtags).
-channel: Indicates the specific channel or topic of the social platform the post belongs to, such as MSP (Managed Service Provider), Sales (sales-related topics), Marketing (marketing promotion), Sustainability (sustainability themes), etc.
-Format: Valid JSON array of 4 json objects only, do not include any labels or markdown.
-Example: [{"title":"Our Brand’s Green Mission","content":"At XYZ, we’ve cut 30% carbon emissions this year—join our sustainability journey! 🌱 #EcoFriendly #BrandValues Reply to share your green tips!","channel":"Sustainability"},{"title":"New Tool: Boost Your Sales Today","content":"Our latest sales tool slashes report time by 60%—perfect for busy teams! #SalesTool #Productivity Click the link to try: [link]","channel":"Sales"},{"title":"How We Build Our Team Culture","content":"Every month, we host team innovation workshops—what’s your favorite team-building activity? #CompanyCulture #Teamwork Reply below!","channel":"MSP"},{"title":"Why Our Product Stands Out","content":"Our app offers 24/7 support + custom features—no other tool matches it! #ProductPerks #UserFirst Retweet to share with your network!","channel":"Marketing"}]
-Constraints:
-– ≤280 characters each (content field) incl. hashtags
-– 2 posts company-centric (focused on company mission, culture, values), 2 product-centric (focused on product benefits, features, usage)
-– At least 1 question or poll trigger across the 4 posts (in the content field)
-– No explanatory text outside the array
+You are a social-media content strategist who specializes in digital marketing and brand exposure.  
+Task: create 10 high-impact posts for X/Twitter based solely on the unified input below.  
+Unified input: ${custom_prompt}
+
+Requirements (follow in order, no deviation):
+
+1. Info extraction first  
+   - List ≥2 company culture / value keywords  
+   - List ≥2 core product benefits (one-sentence each)
+
+2. Hook pairing  
+   - Match every keyword/benefit with a relatable hook (question, contrast, scenario, data shock)
+
+3. Writing structure  
+   Hook → Story or data → Emotional punch → Hashtags (≤3) → Clear CTA  
+   - 300–500 characters total per post content (include spaces, punctuation, hashtags)  
+   - Emoji allowed in max 2 posts; prioritize the two with strongest emotion  
+   - Include a question or poll trigger in at least 3 posts
+
+4. Balance & focus  
+   - 5 posts company-centric (mission, culture, values, employer brand)  
+   - 5 posts product-centric (features, benefits, use-cases, conversion)
+
+5. Title & channel  
+   - 8–16 word English title per post  
+   - Assign channel: Sustainability / MSP / CompanyCulture / Sales / Marketing / ProductLaunch / CustomerSuccess (no channel repeated >2×)
+
+6. Final checks  
+   - Stay inside 600–800 character window for post content  
+   - No self-diminishing language (“our team here at…” allowed; “little intern” etc. banned)  
+   - CTA verbs: reply, retweet, click, DM, vote, etc.
+
+7. Output format  
+Valid JSON array only, 10 objects, keys: "title", "content", "channel". No labels, no markdown, no commentary outside the array.
 
 `

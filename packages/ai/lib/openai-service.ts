@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { nanoid } from "nanoid";
 import { db } from "@repo/database";
+import { logger } from "@repo/logs";
 
 // 请求配置接口
 export interface OpenAIRequestConfig {
@@ -223,8 +224,12 @@ export class OpenAIService {
       userId: options?.userId,
       organizationId: options?.organizationId,
     });
-
-    return response.choices[0].message?.content || '';
+    const result = response.choices[0].message?.content || '';
+    logger.info('generateText === ', {
+      business,
+      result,
+    });
+    return result;
   }
 
   // 生成查询文本的向量表示
