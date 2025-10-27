@@ -11,14 +11,10 @@ import { AgentSetupForm } from "./AgentSetupForm";
 
 export function AgentSetupDialog({
 	open,
-	categoryId,
-	organizationId,
 	agentSetting,
 	onSuccess,
 }: {
 	open: boolean;
-	categoryId?: string;
-	organizationId?: string;
 	agentSetting?: any;
 	onSuccess: (open: boolean, isReload: boolean) => void;
 }) {
@@ -42,8 +38,6 @@ export function AgentSetupDialog({
 				</DialogHeader>
 				<AgentSetupForm
 					agentSetting={agentSetting}
-					categoryId={categoryId}
-					organizationId={organizationId}
 					onSuccess={onSuccess}
 				/>
 			</DialogContent>

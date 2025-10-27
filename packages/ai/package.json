@@ -6,7 +6,8 @@
 		"ai": "^4.1.46",
 		"nanoid": "^5.1.2",
 		"openai": "^4.85.4",
-		"@repo/database": "workspace:*"
+		"@repo/database": "workspace:*",
+		"@repo/logs": "workspace:*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",

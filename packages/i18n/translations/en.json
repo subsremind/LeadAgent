@@ -4,8 +4,8 @@
 			"organizations": "Organizations",
 			"users": "Users",
 			"usage": "Usage",
-			"settings": "Settings",
-			"config": "Config"
+			"setting": "Setting",
+			"prompt": "Prompt"
 		},
 		"organizations": {
 			"backToList": "Back to organizations",
@@ -44,6 +44,12 @@
 				"message": "Are you sure you want to delete this user? This action cannot be undone.",
 				"title": "Delete user"
 			},
+			"credit": {
+				"creditSetting": "Credit Setting",
+				"creditTotal": "Total Credit",
+				"user": "User",
+				"creditUsed": "Used Credit"
+			},
 			"delete": "Delete",
 			"deleteUser": {
 				"deleted": "User has been deleted successfully!",
@@ -72,22 +78,25 @@
 		},
 		"description": "Manage your application.",
 		"usage": {
-			"dailyAnalytics": "Daily Analytics",
 			"usageAnalysis": "Usage Analysis",
 			"totalUsers": "Total Users",
 			"totalTokens": "Total Tokens",
 			"totalCategorys": "Total Categorys",
 			"totalPosts": "Total Posts",
-			"postAnalysis": "Post Analysis",
-			"userTokens": "User Token Usage",
+			"userUsage": "User Usage Analysis",
 			"tokens": "Tokens",
 			"posts": "Posts",
 			"date": "Date",
-			"viewDetails": "View Details"
+			"viewDetails": "View Details",
+			"usageDetails": "Usage Details",
+			"user": "User",
+			"userTokens": "User Tokens",
+			"userPosts": "User Posts"
 		},
-		"config": {
+		"setting": {
 			"reddit": {
 				"title": "Reddit",
+				"description": "Connect your Reddit account to enable access to Reddit's API for Lead Agent.",
 				"status": {
 					"checking": "Checking authorization status...",
 					"connected": "Connected",
@@ -107,7 +116,9 @@
 					"disconnectFailed": "Failed to disconnect",
 					"getStatusFailed": "Failed to get authorization status"
 				}
-			}
+			},
+			"credit_title":  "Tokens-Credit Setting",
+			"credit_description": "This value defines how many tokens correspond to one credit."
 		}
 	},
 	"app": {
@@ -236,7 +247,8 @@
 			"cancel": "Cancel",
 			"confirm": "Confirm",
 			"delete": "Delete",
-			"save": "Save"
+			"save": "Save",
+			"submitting": "Submitting"
 		},
 		"actions": {
 			"new": "New",
@@ -856,28 +868,12 @@
 		}
 	},
 	"leadAgent": {
-		"title": "Lead Agent",
+		"title": "Reddit Agent",
 		"descriptionLabel": "AI-Powered Reddit Marking Opportunity Finder",
-		"categories": {
-			"loading": "Loading categories...",
-			"error": "Error loading categories",
-			"tryAgain": "Try again",
-			"empty": "No categories available",
-			"title": "Categories",
-			"addNew": "Add New Category",
-			"categoryName": "Category Name",
-			"confirm": "Confirm",
-			"confirmDelete": "Confirm Delete",
-			"adding": "Adding Category",
-			"addSuccess": "Category added successfully",
-			"addFailed": "Failed to add category",
-			"updateFailed": "Failed to update category",
-			"updateSuccess": "Category updated successfully",
-			"deleteSuccess": "Category deleted successfully",
-			"deleteFailed": "Failed to delete category",
-			"edit": "Edit",
-			"deleteConfirmMessage": "Are you sure you want to delete this category?",
-			"duplicate": "Category name already exists"
+		"menu": {
+			"suggestion": "AI Suggestion",
+			"draft": "AI Draft",
+			"title": "Jobs"
 		},
 		"list": {
 			"title": "Resource List",
@@ -900,6 +896,11 @@
 			"generateFailed": "Failed to generate prompt",
 			"query": "Query keywords",
 			"subreddit": "Subreddit"
+		},
+		"draft": {
+			"generate": "Generate Draft",
+			"form_title": "Draft Generation",
+			"customPrompt": "Company Description & Business Introduction "
 		}
 	}
 }

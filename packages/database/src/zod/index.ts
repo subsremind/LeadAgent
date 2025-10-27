@@ -76,7 +76,15 @@ export const PurchaseScalarFieldEnumSchema = z.enum(['id','organizationId','user
 
 export const AiChatScalarFieldEnumSchema = z.enum(['id','organizationId','userId','title','messages','createdAt','updatedAt']);
 
-export const AIRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp']);
+export const AiRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp','credit']);
+
+export const AiPromptScalarFieldEnumSchema = z.enum(['id','business','description','prompt','createdAt','updatedAt']);
+
+export const AdminSettingScalarFieldEnumSchema = z.enum(['id','key','value','updatedBy','createdAt','updatedAt']);
+
+export const UserCreditUsageScalarFieldEnumSchema = z.enum(['id','userId','credit','createdAt']);
+
+export const UserCreditSettingScalarFieldEnumSchema = z.enum(['id','date','userId','credit','createdAt','updatedAt']);
 
 export const CategoryScalarFieldEnumSchema = z.enum(['id','name','path','platform','createdAt','updatedAt']);
 
@@ -297,7 +305,7 @@ export type AiChat = z.infer<typeof AiChatSchema>
 // AI REQUEST LOG SCHEMA
 /////////////////////////////////////////
 
-export const AIRequestLogSchema = z.object({
+export const AiRequestLogSchema = z.object({
   id: z.string().cuid(),
   userId: z.string().nullable(),
   organizationId: z.string().nullable(),
@@ -311,9 +319,68 @@ export const AIRequestLogSchema = z.object({
   success: z.boolean(),
   error: z.string().nullable(),
   timestamp: z.coerce.date(),
+  credit: z.number().int(),
 })
 
-export type AIRequestLog = z.infer<typeof AIRequestLogSchema>
+export type AiRequestLog = z.infer<typeof AiRequestLogSchema>
+
+/////////////////////////////////////////
+// AI PROMPT SCHEMA
+/////////////////////////////////////////
+
+export const AiPromptSchema = z.object({
+  id: z.string().cuid(),
+  business: z.string(),
+  description: z.string(),
+  prompt: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AiPrompt = z.infer<typeof AiPromptSchema>
+
+/////////////////////////////////////////
+// ADMIN SETTING SCHEMA
+/////////////////////////////////////////
+
+export const AdminSettingSchema = z.object({
+  id: z.string().cuid(),
+  key: z.string(),
+  value: z.string(),
+  updatedBy: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AdminSetting = z.infer<typeof AdminSettingSchema>
+
+/////////////////////////////////////////
+// USER CREDIT USAGE SCHEMA
+/////////////////////////////////////////
+
+export const UserCreditUsageSchema = z.object({
+  id: z.string().cuid(),
+  userId: z.string().nullable(),
+  credit: z.number().int(),
+  createdAt: z.coerce.date(),
+})
+
+export type UserCreditUsage = z.infer<typeof UserCreditUsageSchema>
+
+/////////////////////////////////////////
+// USER CREDIT SETTING SCHEMA
+/////////////////////////////////////////
+
+export const UserCreditSettingSchema = z.object({
+  id: z.string().cuid(),
+  date: z.coerce.date(),
+  userId: z.string().nullable(),
+  credit: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type UserCreditSetting = z.infer<typeof UserCreditSettingSchema>
 
 /////////////////////////////////////////
 // CATEGORY SCHEMA

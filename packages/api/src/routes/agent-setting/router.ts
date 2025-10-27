@@ -4,10 +4,9 @@ import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
 
-import { utcnow } from "@repo/utils";
 import { authMiddleware } from "../../middleware/auth";
-import { AgentSettingCreateInput, AgentSettingUpdateInput } from "./types";
-import { openaiService, promptLeadAgentSubreddit, promptLeadAgentQuery} from "@repo/ai";
+import { AgentSettingCreateInput } from "./types";
+import { openaiService, promptLeadAgentSubreddit, promptLeadAgentQuery, BUSINESS} from "@repo/ai";
 import { nanoid } from "nanoid";
 
 export const agentSettingRouter = new Hono()
@@ -59,7 +58,7 @@ export const agentSettingRouter = new Hono()
 			const { description } = c.req.valid("json");
 			const user = c.get("user");
 			const promptSubreddit = promptLeadAgentSubreddit(description);
-			const responseSubreddit = await openaiService.generateText('subreddit-prompt', promptSubreddit, {
+			const responseSubreddit = await openaiService.generateText(BUSINESS.SUGGESTION_SUBREDDIT_GENERATE, promptSubreddit, {
 				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
@@ -69,7 +68,7 @@ export const agentSettingRouter = new Hono()
 			}
 
 			const promptQuery = promptLeadAgentQuery(description);
-			const responseQuery = await openaiService.generateText('query-prompt', promptQuery, {
+			const responseQuery = await openaiService.generateText(BUSINESS.SUGGESTION_QUERY_GENERATE, promptQuery, {
 				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
