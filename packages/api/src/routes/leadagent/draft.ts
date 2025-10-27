@@ -33,8 +33,18 @@ export const draftRouterRouter = new Hono()
 				userId: user.id,
 			  });
 			try {
-				const draftList = JSON.parse(analysisResult);
-				return c.json(draftList);
+				// 如果有 ```json， 处理
+				if (analysisResult) {
+					// 移除's'标志，使用[\s\S]替代'.'以匹配包括换行符在内的所有字符
+					const jsonMatch = analysisResult.match(/```json([\s\S]*?)```/);
+					if (jsonMatch) {
+						const jsonStr = jsonMatch[1].trim();
+						const draftList = JSON.parse(jsonStr);
+						return c.json(draftList);
+					}
+					const draftList = JSON.parse(analysisResult);
+					return c.json(draftList);
+				}
 			} catch (error) {
 				console.error('Error parsing JSON:', error);
 			}
