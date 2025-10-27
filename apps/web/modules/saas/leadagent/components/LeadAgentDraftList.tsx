@@ -61,10 +61,20 @@ export function LeadAgentDraftList() {
 		queryKey: ["draft-list"],
 		enabled: !!agentSetting,
 		queryFn: async () => {
-			const response = await apiClient.leadagent.draft["generate"].$post({
-				json: {
-					customPrompt: agentSetting.description || "",
+			// const response = await apiClient.leadagent.draft["generate"].$post({
+			// 	json: {
+			// 		customPrompt: agentSetting.description || "",
+			// 	},
+			// });
+			// const response = await fetch("/api/leadagent/draft/generate");
+			const response = await fetch("/api/leadagent/draft/generate", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
 				},
+				body: JSON.stringify({
+					customPrompt: agentSetting.description || "",
+				}),
 			});
 			if (!response.ok) {
 				throw new Error("Failed to fetch draft-list");
