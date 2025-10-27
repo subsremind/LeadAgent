@@ -118,39 +118,26 @@ As a "Semantic Relevance Assessment Expert," you must adhere to the above constr
 };
 
 export const promptDraftGenerate = (custom_prompt: string) => `
-You are a social-media content strategist who specializes in digital marketing and brand exposure.  
-Task: create 10 high-impact posts for X/Twitter based solely on the unified input below.  
-Unified input: ${custom_prompt}
-
-Requirements (follow in order, no deviation):
-
-1. Info extraction first  
-   - List ≥2 company culture / value keywords  
-   - List ≥2 core product benefits (one-sentence each)
-
-2. Hook pairing  
-   - Match every keyword/benefit with a relatable hook (question, contrast, scenario, data shock)
-
-3. Writing structure  
-   Hook → Story or data → Emotional punch → Hashtags (≤3) → Clear CTA  
-   - 300–500 characters total per post content (include spaces, punctuation, hashtags)  
-   - Emoji allowed in max 2 posts; prioritize the two with strongest emotion  
-   - Include a question or poll trigger in at least 3 posts
-
-4. Balance & focus  
-   - 5 posts company-centric (mission, culture, values, employer brand)  
-   - 5 posts product-centric (features, benefits, use-cases, conversion)
-
-5. Title & channel  
-   - 8–16 word English title per post  
-   - Assign channel: Sustainability / MSP / CompanyCulture / Sales / Marketing / ProductLaunch / CustomerSuccess (no channel repeated >2×)
-
-6. Final checks  
-   - Stay inside 600–800 character window for post content  
-   - No self-diminishing language (“our team here at…” allowed; “little intern” etc. banned)  
-   - CTA verbs: reply, retweet, click, DM, vote, etc.
-
-7. Output format  
-Valid JSON array only, 10 objects, keys: "title", "content", "channel". No labels, no markdown, no commentary outside the array.
-
+Task: Generate Social Media Posts for Product Exposure
+Role and ObjectivesYou are a social media content strategist specializing in digital marketing and brand exposure. Create 10 high-impact posts based on the provided company & business description to maximize product visibility on X/Twitter.
+Background and ContextUse the unified input below to extract the company’s identity (mission, values) and business offerings (products, services, target market). Craft posts that drive shares, likes, and conversions, with content that resonates deeply with the target audience.Company Description & Business Introduction: ${custom_prompt}
+Key Steps (Optimized)
+Info Extraction First: From the background and context, list at least 3 company culture/values points (e.g., sustainability, employee-centricity, innovation) and at least 3 product core benefits (e.g., time-saving, cost-cutting, user-friendly design) to avoid content deviation.
+Hook Selection & Matching: Pair each extracted point with a relatable, engaging hook (e.g., company culture → "How we turn our 'sustainability' promise into tangible, daily actions for the planet"; product benefit → "Tired of spending hours on tedious data entry? Our tool eliminates that frustration entirely").
+Micro-Write with Structure: Draft post content in the order of "Hook + Detailed Key Info + Relevant Hashtags + Clear CTA". Ensure content length ranges from 600 to 800 characters (count includes hashtags), use a conversational tone (avoid industry jargon), and add specific details (e.g., product use cases, company initiative results) to boost authenticity.
+Title & Channel Alignment: For each post, create a 8-20 word title that mirrors the content’s core. Assign a channel matching the post’s focus (e.g., company culture → "MSP/Company Culture"; product benefit → "Sales/Marketing"; sustainability efforts → "Sustainability/Brand Impact").
+Emoji & Interaction Check: Add up to 2 emojis to a maximum of 4 posts (prioritize posts with emotional hooks like sustainability, community support, or customer success stories). Ensure at least 2 posts include a question/poll trigger (e.g., "What’s your biggest pain point when it comes to [relevant task]? Let us know below"; "Would you prioritize cost or speed when choosing a [product category]? Vote in the comments!").
+Final Validation: Confirm there are 5 company-centric posts (focused on company mission, culture, values, community efforts, or team stories) and 5 product-centric posts (focused on product benefits, features, usage scenarios, customer testimonials, or problem-solving capabilities). Verify all CTAs are clear (reply/retweet/click a link/share with a colleague) and content meets the 600-800 character limit before compiling into JSON.
+Output Requirements
+Field Explanations:
+title: A concise, eye-catching title that summarizes the post’s core message (e.g., "How Our Company Turns Sustainability Vows Into Real-World Change" or "Our New Tool Cuts Your Work Time by 40%—Here’s How It Works").
+content: The full text of the social media post, including the hook, detailed key information, relevant hashtags, and a clear CTA. Must be 600-800 characters (including hashtags).
+channel: Indicates the specific channel or topic of the social platform the post belongs to, such as MSP (Managed Service Provider), Sales (sales-related topics), Marketing (marketing promotion), Sustainability (sustainability themes), Community (community engagement), or Customer Success (customer stories).
+Format: A valid JSON array containing 10 JSON objects only. Do not include any labels, markdown, or explanatory text outside the array.
+Example:[{"title":"How We’ve Reduced Carbon Emissions by 40% This Year","content":"At XYZ, sustainability isn’t just a buzzword—it’s a daily commitment. This year, we swapped single-use office supplies for reusable alternatives, switched to 100% renewable energy for our headquarters, and even launched a team volunteer program to plant 500 trees in local parks. The result? A 40% drop in our carbon footprint. We believe small, consistent actions add up to big change—and we want you to join us. Whether you’re a business or an individual, what’s one sustainable swap you’ve made lately? Share your ideas in the comments! #SustainabilityJourney #EcoFriendlyBusiness #BrandWithPurpose Let’s inspire each other to do better for the planet.","channel":"Sustainability"},{"title":"Our New Sales Tool Saves Teams 3+ Hours Daily—Here’s Proof","content":"If you’re a sales rep tired of drowning in manual data entry and endless report formatting, we get it. That’s why we built our latest sales tool: to take the tedious work off your plate so you can focus on what matters—closing deals. One of our beta users, a 10-person sales team at ABC Corp, reported saving over 3 hours per day after using the tool. It auto-syncs client data from your CRM, generates customizable reports in 2 minutes flat, and even sends follow-up reminders so you never miss a lead. Ready to stop wasting time on busywork? Click the link below to start your 14-day free trial. #SalesProductivity #TimeSavingTools #SalesTech For anyone already using sales tools—what’s your biggest frustration with them? We’re always looking to improve!","channel":"Sales"},{"title":"Inside Our Monthly Team Innovation Workshops","content":"At XYZ, we believe great ideas come from everyone—not just the leadership team. That’s why we host monthly innovation workshops where every employee, from interns to senior managers, gets to pitch ideas that could improve our products, processes, or company culture. Last month, a junior developer proposed a feature that’s now being tested for our main product—and it’s already getting rave reviews from beta users. These workshops aren’t just about ideas, though; they’re about building a team where everyone feels heard and valued. We start with a quick icebreaker, then dive into brainstorming, and end with a vote to pick the top 2 ideas to pursue. What’s one initiative your company has to foster team creativity? We’d love to hear! #CompanyCulture #TeamInnovation #EmployeeEngagement Retweet this if you think every team should have a space to share ideas.","channel":"MSP"},{"title":"Why Our App’s 24/7 Support Makes Us Stand Out","content":"When you’re using a tool for work, nothing’s more frustrating than hitting a roadblock at 8 PM and having to wait until 9 AM the next day for help. That’s why our app comes with 24/7 customer support—no exceptions. Whether it’s 2 AM on a Sunday or a holiday, you can reach a real support agent via chat, email, or phone who’s trained to solve your problem fast. One of our customers, a small business owner named Lisa, recently said, “I had an issue with my account at 11 PM before a big deadline, and support fixed it in 15 minutes. That’s why I’ll never switch to another tool.” We don’t just sell a product—we sell peace of mind. #CustomerSupport #UserFirst #AppPerks Click here to learn more about our support services, or reply with your biggest pet peeve about customer service!","channel":"Marketing"},{"title":"How We Support Local Small Businesses This Year","content":"As a small business ourselves, we know how hard it is to thrive—especially in a competitive market. That’s why this year, we launched our “Small Business Spotlight” program, where we feature 1 local small business on our social media every month, offer them a free year of our product, and even promote their services to our customer base. Last month, we highlighted a family-owned café downtown, and their foot traffic increased by 25% thanks to the exposure. We also donate 5% of our monthly profits to a local small business grant fund. Supporting the community that supports us isn’t just a choice—it’s a responsibility. Do you follow any brands that go the extra mile for local businesses? Share them in the comments! #CommunitySupport #SmallBusinessLove #LocalImpact Let’s lift each other up!","channel":"Community"}]
+Constraints:
+Each post’s content (content field) must be 600-800 characters.
+Include 5 company-centric posts (focused on company mission, culture, values, community efforts, or team stories) and 5 product-centric posts (focused on product benefits, features, usage scenarios, customer testimonials, or problem-solving capabilities).
+At least 2 of the 10 posts must include a question or poll trigger (in the content field).
+No explanatory text, labels, or markdown outside the JSON array.
 `

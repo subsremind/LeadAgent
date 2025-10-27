@@ -211,7 +211,7 @@ export class OpenAIService {
     const config: OpenAIRequestConfig = {
       model: options?.model || 'gpt-4.1',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: options?.maxTokens || 1000,
+      max_tokens: options?.maxTokens,
       temperature: options?.temperature || 0.7,
     };
 
