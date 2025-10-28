@@ -10,7 +10,7 @@ RUN apk add --no-cache libc6-compat
 RUN apk update
 
 # 复制项目文件
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json turbo.json .env ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json turbo.json .env.production ./
 COPY config ./config
 
 # 只复制必要的包目录

@@ -24,7 +24,7 @@ RUN pnpm install
  
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
-COPY .env .env
+COPY .env.production .env.production
  
 RUN pnpm turbo run build --filter=@repo/web...
  
