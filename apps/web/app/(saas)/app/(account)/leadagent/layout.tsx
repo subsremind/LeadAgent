@@ -39,23 +39,6 @@ export default async function LeadAgentLayout({ children }: PropsWithChildren) {
 
   return (
     <>
-      {/* <div>
-        <PageHeader
-          title={t("leadAgent.title")}
-          subtitle={t("leadAgent.descriptionLabel")}
-        />
-        <Button
-					variant="primary"
-					className="bg-sky-600 border-0 hover:bg-sky-600 hover:opacity-90"
-					onClick={() => {
-						// setEditOpen(true);
-					}}
-				>
-					<SettingsIcon className="size-4" />
-					{t("leadAgent.list.agentSetting")}
-				</Button>
-
-      </div> */}
       <AgentSettingHeader/>
       <SidebarContentLayout
         sidebar={

@@ -1,19 +1,11 @@
 "use client";
 
 import { Button } from "@ui/components/button";
-import {
-	Item,
-	ItemActions,
-	ItemContent,
-	ItemDescription,
-	ItemTitle,
-} from "@ui/components/item";
 import { Input } from "@ui/components/input";
 import { Textarea } from "@ui/components/textarea";
 import {
 	EditIcon,
 	PlusIcon,
-	TrashIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -22,6 +14,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@shared/lib/api-client";
 import { Label } from "@ui/components/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@ui/components/table";
 
 export function PromptList() {
 	const t = useTranslations();
@@ -42,14 +35,11 @@ export function PromptList() {
 		queryFn: async () => {
 			try {
 				// 尝试使用apiClient
-				// const res = await apiClient.admin.aiPrompt.$get("/ai_prompt");
-				// if (!res.ok) throw new Error("Failed to fetch prompts");
-				// return await res.json();
+				const res = await apiClient.admin.aiPrompt.$get("/aiPrompt");
+				if (!res.ok) throw new Error("Failed to fetch prompts");
+				return await res.json();
 			} catch (error) {
-				// 备用方案：使用fetch
-				const response = await fetch("/api/admin/ai_prompt");
-				if (!response.ok) throw new Error("Failed to fetch prompts");
-				return await response.json();
+				throw new Error("Failed to fetch prompts");
 			}
 		},
 	});
@@ -58,7 +48,7 @@ export function PromptList() {
 	const savePromptMutation = useMutation({
 		mutationFn: async (promptData: any) => {
 			try {
-				const url = editingPrompt ? `/api/admin/ai_prompt/${editingPrompt.id}` : "/api/admin/ai_prompt";
+				const url = editingPrompt ? `/api/admin/aiPrompt/${editingPrompt.id}` : "/api/admin/aiPrompt";
 				const method = editingPrompt ? "PUT" : "POST";
 				
 				const response = await fetch(url, {
@@ -90,23 +80,6 @@ export function PromptList() {
 		},
 	});
 
-	// 删除prompt的mutation
-	const deletePromptMutation = useMutation({
-		mutationFn: async (id: string) => {
-			const response = await fetch(`/api/admin/ai_prompt/${id}`, {
-				method: "DELETE",
-			});
-			if (!response.ok) throw new Error("Failed to delete prompt");
-			return await response.json();
-		},
-		onSuccess: () => {
-			toast.success(t("common.status.success"));
-			queryClient.invalidateQueries({ queryKey: ["promptList"] });
-		},
-		onError: () => {
-			toast.error(t("common.status.failure"));
-		},
-	});
 
 	// 处理表单输入变化
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -161,40 +134,39 @@ export function PromptList() {
 				</Button>
 			</div>
 
-			<div className="space-y-4">
-				{promptList.map((item: any) => (
-					<Item key={item.id} className="border rounded-lg overflow-hidden transition-all hover:shadow-md">
-						<ItemContent className="p-4">
-							<div className="flex justify-between items-start">
-								<>
-									<ItemTitle className="text-lg font-semibold mb-1">
-										{item.business || ""}
-									</ItemTitle>
-									<ItemDescription className="mb-2">
-										{item.description || ""}
-									</ItemDescription>
-								</>
-								<ItemActions>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => handleEditPrompt(item)}
-										className="h-8 w-8 p-0 rounded-full"
-									>
-										<EditIcon className="h-4 w-4" />
-									</Button>
-								</ItemActions>
-							</div>
-							<div className="mt-2 text-sm text-slate-600 whitespace-pre-wrap break-words">
-								{item.prompt || t("common.table.empty")}
-							</div>
-							<div className="mt-3 text-xs text-slate-400">
-								Created: {item.createdAt ? new Date(item.createdAt).toLocaleString() : "-"}
-							</div>
-						</ItemContent>
-					</Item>
-				))}
-			</div>
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead className="w-[200px]">Business</TableHead>
+						<TableHead>Description</TableHead>
+						<TableHead className="max-w-xs">Prompt Preview</TableHead>
+						<TableHead className="text-right">Actions</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{promptList.map((item: any) => (
+						<TableRow key={item.id} className="hover:bg-slate-50">
+							<TableCell className="font-medium">{item.business || "-"}</TableCell>
+							<TableCell>{item.description || "-"}</TableCell>
+							<TableCell className="max-w-xs truncate">
+								<div className="text-sm text-slate-600 line-clamp-2" title={item.prompt}>
+									{item.prompt || t("common.table.empty")}
+								</div>
+							</TableCell>
+							<TableCell className="flex justify-end">
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => handleEditPrompt(item)}
+									className="h-8 w-8 p-0 rounded-full"
+								>
+									<EditIcon className="h-4 w-4" />
+								</Button>
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
 
 			{promptList.length === 0 && (
 				<div className="text-center py-12 text-slate-500">
@@ -202,8 +174,8 @@ export function PromptList() {
 				</div>
 			)}
 
-			<Dialog open={dialogOpen} >
-				<DialogContent className="sm:max-w-lg" onInteractOutside={(e) => e.preventDefault()} >
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+				<DialogContent className="w-full max-w-3xl min-h-[90vh] max-h-[90vh] overflow-auto flex flex-col" onInteractOutside={(e) => e.preventDefault()} >
 					<DialogHeader>
 						<DialogTitle>
 							{editingPrompt ? t("common.actions.edit") : t("common.actions.new")} {t("admin.menu.prompt")}
@@ -224,12 +196,13 @@ export function PromptList() {
 						
 						<div className="space-y-2">
 							<Label htmlFor="description">Description</Label>
-							<Input
+							<Textarea
 								id="description"
 								name="description"
 								value={formData.description}
 								onChange={handleInputChange}
 								placeholder="Enter description"
+								className="min-h-[80px]"
 								required
 							/>
 						</div>
@@ -242,7 +215,7 @@ export function PromptList() {
 								value={formData.prompt}
 								onChange={handleInputChange}
 								placeholder="Enter prompt content"
-								className="min-h-[150px]"
+								className="min-h-[500px]"
 								required
 							/>
 						</div>

@@ -52,7 +52,7 @@ export function AgentSettingHeader() {
                         }}
                     >
                         <SettingsIcon className="size-4" />
-                        {t("leadAgent.list.agentSetting")}
+                        {t("leadAgent.agentSetting")}
                     </Button>
                 </div>
             </div>
