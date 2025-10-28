@@ -46,20 +46,19 @@ export function LeadAgentDraftList() {
 	const [isGenerating, setIsGenerating] = useState<boolean>(false);
 	const queryClient = useQueryClient();
 
-	const { data: agentSetting, isLoading: isAgentSettingLoading } = useQuery({
-		queryKey: ["agent-setting"],
-		queryFn: async () => {
-			const response = await fetch("/api/agent-setting/my");
-			if (!response.ok) {
-				throw new Error("Failed to fetch agent-setting");
-			}
-			return await response.json();
-		},
-	});
+	// const { data: agentSetting, isLoading: isAgentSettingLoading } = useQuery({
+	// 	queryKey: ["agent-setting"],
+	// 	queryFn: async () => {
+	// 		const response = await fetch("/api/agent-setting/my");
+	// 		if (!response.ok) {
+	// 			throw new Error("Failed to fetch agent-setting");
+	// 		}
+	// 		return await response.json();
+	// 	},
+	// });
 
 	const {data: draftList = [], isLoading: isDraftListLoading} = useQuery({
 		queryKey: ["draft-list"],
-		enabled: !!agentSetting,
 		queryFn: async () => {
 			// const response = await apiClient.leadagent.draft["generate"].$post({
 			// 	json: {
@@ -72,14 +71,16 @@ export function LeadAgentDraftList() {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
-					customPrompt: agentSetting.description || "",
-				}),
 			});
 			if (!response.ok) {
-				throw new Error("Failed to fetch draft-list");
+				const result = await response.json();
+				toast.error(result.error || "Failed to fetch draft-list");
+				return [];
+			} else {
+				const result = await response.json();
+				return result || [];
 			}
-			return await response.json();
+			
 		},
 	});
 
@@ -131,13 +132,13 @@ export function LeadAgentDraftList() {
 				<Button
 					variant="primary"
 					className="bg-sky-600 border-0 hover:bg-sky-600 hover:opacity-90"
-					disabled={isAgentSettingLoading || isDraftListLoading || isGenerating}
+					disabled={isDraftListLoading || isGenerating}
 					onClick={() => {
 						// setGenerateOpen(true);
 						handleGenerateClick();
 					}}
 				>
-					{isAgentSettingLoading || isDraftListLoading || isGenerating ? (
+					{isDraftListLoading || isGenerating ? (
 						<Spinner className="mr-2 size-4" />
 					) : (
 						<BotMessageSquareIcon className="size-4" />
@@ -146,14 +147,19 @@ export function LeadAgentDraftList() {
 				</Button>
 			</div>
 
-			{isAgentSettingLoading || isDraftListLoading || isGenerating ? (
+			{isDraftListLoading || isGenerating ? (
 				<div className="flex justify-center items-center h-64">
 					<Spinner className="mr-2 size-4 text-primary" />
 					{t("common.loading")}
 				</div>
+			) : draftList.length === 0 ? (
+				<div className="flex flex-col items-center justify-center h-64 border border-dashed rounded-lg">
+					<InfoIcon className="size-12 text-muted-foreground mb-4" />
+					<p className="text-muted-foreground mb-2">{t("common.table.empty")}</p>
+				</div>
 			) : (
 				// 确保draftList是数组且不为空，避免map调用错误
-				(Array.isArray(draftList) ? draftList : []).map((item: any, item_index: number) => (
+				draftList.map((item: any, item_index: number) => (
 					// <Link key={item_index} rel="noopener noreferrer">
 						<Card key={item_index} className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] cursor-pointer"
 							onClick={() => {

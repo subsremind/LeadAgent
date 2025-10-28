@@ -9,9 +9,7 @@ export function SuggestionPage({
 }) {
 	return (
 			<div className="w-full overflow-auto">
-				<LeadAgentSuggestionList
-					organizationId={organizationId}
-				/>
+				<LeadAgentSuggestionList/>
 			</div>
 	);
 }

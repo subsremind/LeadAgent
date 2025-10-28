@@ -2,32 +2,62 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { db } from "@repo/database";
 
 import { authMiddleware } from "../../middleware/auth";
-import { openaiService, BUSINESS, promptDraftGenerate } from "@repo/ai";
+import { openaiService, BUSINESS, formatPrompt } from "@repo/ai";
 
 export const draftRouterRouter = new Hono()
 	.basePath("/draft")
 	.use(authMiddleware)
 	.post(
 		"/generate",
-		validator(
-			"json",
-			z.object({
-				customPrompt: z.string().optional(),
-			}),
-		),
+		// validator(
+		// 	"json",
+		// 	z.object({
+		// 		customPrompt: z.string().optional(),
+		// 	}),
+		// ),
 		describeRoute({
 			summary: "Generate draft using prompt",
 			tags: ["LeadAgent"],
 		}),
 		async (c) => {
-			const { customPrompt } = c.req.valid("json");
+			// const { customPrompt } = c.req.valid("json");
 			const user = c.get("user");
-			const draftPrompt = promptDraftGenerate(customPrompt ?? '');
-			  
+			// const draftPrompt = promptDraftGenerate(customPrompt ?? '');
 
-			const analysisResult = await openaiService.generateText(BUSINESS.DRAFT_GENERATE, draftPrompt, {
+			const draftPrompt = await db.aiPrompt.findFirst({
+				select: {
+					prompt: true,
+				},
+				where: {
+					business: BUSINESS.DRAFT_GENERATE,
+				},
+			});
+
+			if (!draftPrompt || !draftPrompt?.prompt) {
+				return c.json({ error: "Draft prompt not found" }, 404);
+			}
+
+			const agentSetting = await db.agentSetting.findUnique({
+				where: { userId: user.id },
+			});
+
+
+			if (!agentSetting) {
+				return c.json({ error: "AgentSetting not found" }, 404);
+			}
+
+			const prompt = formatPrompt(draftPrompt.prompt, {
+				agent_setting_description: agentSetting.description ?? '',
+			});
+
+			console.log("draftPrompt", prompt);
+
+			// return c.json([]);
+
+			const analysisResult = await openaiService.generateText(BUSINESS.DRAFT_GENERATE, prompt, {
 				model: 'gpt-4o',
 				temperature: 0.7,
 				userId: user.id,
@@ -35,7 +65,6 @@ export const draftRouterRouter = new Hono()
 			try {
 				// 如果有 ```json， 处理
 				if (analysisResult) {
-					// 移除's'标志，使用[\s\S]替代'.'以匹配包括换行符在内的所有字符
 					const jsonMatch = analysisResult.match(/```json([\s\S]*?)```/);
 					if (jsonMatch) {
 						const jsonStr = jsonMatch[1].trim();

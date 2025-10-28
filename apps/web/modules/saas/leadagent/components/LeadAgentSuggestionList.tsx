@@ -29,12 +29,9 @@ import { useState, useEffect, useRef } from "react";
 import { LeadAgentPagination } from "./LeadAgentPagination";
 import { Label } from "@ui/components/label";
 import { Slider } from "@ui/components/slider";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip";
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip";
 
-export function LeadAgentSuggestionList({
-	categoryId,
-	organizationId,
-}: { categoryId?: string; organizationId?: string }) {
+export function LeadAgentSuggestionList() {
 	const t = useTranslations();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
@@ -105,12 +102,25 @@ export function LeadAgentSuggestionList({
             }
         };
     }, []);
+
+	
 	
 	return (
 		<div className="p-6">
 			<div className="flex justify-between items-center mb-4">
 				<div className="flex items-center space-x-2">
-					<Label className="whitespace-nowrap">{t("leadAgent.list.embeddingRate")}</Label>
+					<Label className="whitespace-nowrap">{t("leadAgent.suggestion.embeddingRate")}</Label>
+					<TooltipProvider>
+						
+						<Tooltip>
+						<TooltipTrigger asChild>
+						<InfoIcon size={16} />
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>{t("leadAgent.suggestion.embeddingRateTooltip")}</p>
+						</TooltipContent>
+						</Tooltip>
+						</TooltipProvider>
 					<Slider
 						className="w-32"
 						defaultValue={[embeddingRate]} 
@@ -128,8 +138,10 @@ export function LeadAgentSuggestionList({
 								setEmbeddingRate(value[0]);
 							}, 300);
 						}} />
-					<span className="text-sm text-muted-foreground min-w-[40px] text-left">{displayEmbeddingRate.toFixed(1)}</span>
+					<span className="text-sm text-muted-foreground min-w-[40px] text-left">{displayEmbeddingRate * 100}%</span>
 					{/* <Label className="whitespace-nowrap text-sm text-muted-foreground">{total} Records</Label> */}
+
+					
 				</div>
 				
 			</div>
@@ -142,7 +154,7 @@ export function LeadAgentSuggestionList({
 			) : currentData.length === 0 ? (
 				<div className="flex flex-col items-center justify-center h-64 border border-dashed rounded-lg">
 					<InfoIcon className="size-12 text-muted-foreground mb-4" />
-					<p className="text-muted-foreground mb-2">{t("leadAgent.list.noDataPrompt")}</p>
+					<p className="text-muted-foreground mb-2">{t("common.table.empty")}</p>
 				</div>
 			) : (
 				currentData.map((item: any) => (

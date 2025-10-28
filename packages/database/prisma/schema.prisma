@@ -293,7 +293,6 @@ model RedditPost {
   score         Int      @default(0)
   numComments   Int      @default(0) 
   createdUtc    DateTime? 
-  embedding     Unsupported("vector(1536)")? 
   recordCreatedAt DateTime @default(now()) 
   recordUpdatedAt DateTime @updatedAt 
 
@@ -309,7 +308,6 @@ model AgentSetting {
   description String   @db.Text
   subreddit   String?  @db.Text
   query       String   @db.Text
-  embedding   Unsupported("vector(1536)")? 
   createdAt   DateTime @default(now()) 
   updatedAt   DateTime @updatedAt 
 
