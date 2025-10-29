@@ -165,7 +165,7 @@ export const config = {
 				isEnterprise: true,
 			},
 		},
-	},
+	}
 } as const satisfies Config;
 
 export type { Config };
