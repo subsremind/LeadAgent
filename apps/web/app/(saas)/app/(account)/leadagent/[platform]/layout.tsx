@@ -14,8 +14,17 @@ import { AgentSetupDialog } from "@saas/leadagent/components/AgentSetupDialog";
 import { AgentSettingHeader } from "@saas/leadagent/components/AgentSettingHeader";
 // import { apiClient } from "@shared/lib/api-client";
 
-export default async function LeadAgentLayout({ children }: PropsWithChildren) {
+export default async function LeadAgentLayout({
+  children,
+  params,
+}: PropsWithChildren & {
+  params: {
+    platform: string;
+  };
+}) {
   const t = await getTranslations();
+  const { platform } = params;
+  
   // const [editOpen, setEditOpen] = useState<boolean>(false);
 
   // const { data: agentSetting, isLoading: isAgentSettingLoading } = useQuery({
@@ -55,14 +64,14 @@ export default async function LeadAgentLayout({ children }: PropsWithChildren) {
                 items: [
                   {
                     title: t("leadAgent.menu.suggestion"),
-                    href: "/app/leadagent/suggestion",
+                    href: `/app/leadagent/${platform}/suggestion`,
                     icon: (
                       <ContainerIcon  className="size-4 opacity-50" />
                     ),
                   },
                   {
                     title: t("leadAgent.menu.draft"),
-                    href: "/app/leadagent/draft",
+                    href: `/app/leadagent/${platform}/draft`,
                     icon: (
                       <SendIcon className="size-4 opacity-50" />
                     ),
@@ -73,7 +82,8 @@ export default async function LeadAgentLayout({ children }: PropsWithChildren) {
           />
         }
       >
-        {children}
+        {/* 如果没有子组件（即直接访问 /app/leadagent/[platform]），则显示DraftPage */}
+        {children }
       </SidebarContentLayout>
       {/* {<AgentSetupDialog
 				open={false}
