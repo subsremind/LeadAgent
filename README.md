@@ -57,7 +57,7 @@ For example to add the skeleton component you would run:
 `pnpm --filter scripts create:user`
 
 ## docker deploy
-
+docker-compose down
 cd /data/git/LeadAgent
 # 拉取代码，分支是 docker-deploy
 git pull
