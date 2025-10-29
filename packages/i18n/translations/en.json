@@ -131,7 +131,8 @@
 			"leadAgent": {
 				"reddit": "Lead Agent - Reddit",
 				"x": "Lead Agent - X",
-				"linkedin": "Lead Agent - LinkedIn"
+				"linkedin": "Lead Agent - LinkedIn",
+				"facebook": "Lead Agent - Facebook"
 			}
 		},
 		"userMenu": {

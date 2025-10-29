@@ -38,8 +38,8 @@ const nextConfig: NextConfig = {
 				permanent: true,
 			},
 			{
-				source: "/app/leadagent",
-				destination: "/app/leadagent/suggestion",
+				source: "/app/leadagent/:platform",
+				destination: "/app/leadagent/:platform/suggestion",
 				permanent: true,
 			},
 		];

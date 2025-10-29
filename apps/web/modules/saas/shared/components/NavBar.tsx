@@ -6,7 +6,7 @@ import { UserMenu } from "@saas/shared/components/UserMenu";
 import { Logo } from "@shared/components/Logo";
 import { cn } from "@ui/lib";
 import {
-	BotMessageSquareIcon,
+	Bot,
 	ChevronRightIcon,
 	HomeIcon,
 	SettingsIcon,
@@ -50,7 +50,7 @@ export function NavBar() {
 			href: activeOrganization
 				? `/app/${activeOrganization.slug}/leadagent/reddit`
 				: "/app/leadagent/reddit",
-			icon: SettingsIcon,
+			icon: Bot,
 			isActive: pathname.includes("/leadagent/reddit")
 		},
 		{
@@ -58,8 +58,17 @@ export function NavBar() {
 			href:  activeOrganization
 				? `/app/${activeOrganization.slug}/leadagent/x`
 				: "/app/leadagent/x",
-			icon: SettingsIcon,
+			icon: Bot,
 			isActive: pathname.includes("/leadagent/x"),
+			enabled: false
+		},
+		{
+			label: t("app.menu.leadAgent.facebook"),
+			href:  activeOrganization
+				? `/app/${activeOrganization.slug}/leadagent/x`
+				: "/app/leadagent/facebook",
+			icon: Bot,
+			isActive: pathname.includes("/leadagent/facebook"),
 			enabled: false
 		},
 		{
@@ -67,7 +76,7 @@ export function NavBar() {
 			href: activeOrganization
 				? `/app/${activeOrganization.slug}/leadagent/linkedin`
 				: "/app/leadagent/linkedin",
-			icon: SettingsIcon,
+			icon: Bot,
 			isActive: pathname.includes("/leadagent/linkedin"),
 			enabled: false
 		},
