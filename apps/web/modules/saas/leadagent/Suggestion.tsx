@@ -3,15 +3,13 @@
 import { LeadAgentSuggestionList } from "./components/LeadAgentSuggestionList";
 
 export function SuggestionPage({
-	organizationId,
+	platform,
 }: {
-	organizationId?: string;
+	platform: string;
 }) {
 	return (
 			<div className="w-full overflow-auto">
-				<LeadAgentSuggestionList
-					organizationId={organizationId}
-				/>
+				<LeadAgentSuggestionList platform={platform} />
 			</div>
 	);
 }

@@ -101,10 +101,10 @@ export function AgentSetupForm({
 
 	const onSubmit = form.handleSubmit(async (data) => {
 		try {
-			const url = agentSetting
+			const url = agentSetting?.id
 				? `/api/agent-setting/${agentSetting.id}`
 				: "/api/agent-setting";
-			const method = agentSetting ? "PUT" : "POST";
+			const method = agentSetting?.id ? "PUT" : "POST";
 
 			const response = await fetch(url, {
 				method,

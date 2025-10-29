@@ -6,7 +6,7 @@ import { UserMenu } from "@saas/shared/components/UserMenu";
 import { Logo } from "@shared/components/Logo";
 import { cn } from "@ui/lib";
 import {
-	BotMessageSquareIcon,
+	Bot,
 	ChevronRightIcon,
 	HomeIcon,
 	SettingsIcon,
@@ -46,12 +46,39 @@ export function NavBar() {
 		// 	isActive: pathname.includes("/chatbot"),
 		// },
 		{
-			label: t("app.menu.leadAgent"),
+			label: t("app.menu.leadAgent.reddit"),
 			href: activeOrganization
-				? `/app/${activeOrganization.slug}/leadagent`
-				: "/app/leadagent",
-			icon: SettingsIcon,
-			isActive: pathname.includes("/leadagent"),
+				? `/app/${activeOrganization.slug}/leadagent/reddit`
+				: "/app/leadagent/reddit",
+			icon: Bot,
+			isActive: pathname.includes("/leadagent/reddit")
+		},
+		{
+			label: t("app.menu.leadAgent.x"),
+			href:  activeOrganization
+				? `/app/${activeOrganization.slug}/leadagent/x`
+				: "/app/leadagent/x",
+			icon: Bot,
+			isActive: pathname.includes("/leadagent/x"),
+			enabled: false
+		},
+		{
+			label: t("app.menu.leadAgent.facebook"),
+			href:  activeOrganization
+				? `/app/${activeOrganization.slug}/leadagent/x`
+				: "/app/leadagent/facebook",
+			icon: Bot,
+			isActive: pathname.includes("/leadagent/facebook"),
+			enabled: false
+		},
+		{
+			label: t("app.menu.leadAgent.linkedin"),
+			href: activeOrganization
+				? `/app/${activeOrganization.slug}/leadagent/linkedin`
+				: "/app/leadagent/linkedin",
+			icon: Bot,
+			isActive: pathname.includes("/leadagent/linkedin"),
+			enabled: false
 		},
 		...(activeOrganization
 			? [
@@ -154,30 +181,56 @@ export function NavBar() {
 				>
 					{menuItems.map((menuItem) => (
 						<li key={menuItem.href}>
-							<Link
-								href={menuItem.href}
-								className={cn(
-									"flex items-center gap-2 whitespace-nowrap border-b-2 px-1 pb-3",
-									[
-										menuItem.isActive
-											? "border-primary font-bold"
-											: "border-transparent",
-									],
-									{
-										"md:-mx-6 md:border-b-0 md:border-l-2 md:px-6 md:py-2":
-											useSidebarLayout,
-									},
-								)}
-							>
-								<menuItem.icon
-									className={`size-4 shrink-0 ${
-										menuItem.isActive
-											? "text-primary"
-											: "opacity-50"
-									}`}
-								/>
-								<span>{menuItem.label}</span>
-							</Link>
+							{menuItem.enabled === false ? (
+								<div
+									className={cn(
+										"flex items-center gap-2 whitespace-nowrap border-b-2 px-1 pb-3 cursor-not-allowed",
+										[
+											menuItem.isActive
+												? "border-primary font-bold"
+												: "border-transparent opacity-50",
+										],
+										{
+											"md:-mx-6 md:border-b-0 md:border-l-2 md:px-6 md:py-2":
+												useSidebarLayout,
+										},
+									)}
+								>
+									<menuItem.icon
+										className={`size-4 shrink-0 ${
+											menuItem.isActive
+												? "text-primary"
+												: "opacity-30"
+										}`}
+									/>
+									<span>{menuItem.label}</span>
+								</div>
+							) : (
+								<Link
+									href={menuItem.href}
+									className={cn(
+										"flex items-center gap-2 whitespace-nowrap border-b-2 px-1 pb-3",
+										[
+											menuItem.isActive
+												? "border-primary font-bold"
+												: "border-transparent",
+										],
+										{
+											"md:-mx-6 md:border-b-0 md:border-l-2 md:px-6 md:py-2":
+												useSidebarLayout,
+										},
+									)}
+								>
+									<menuItem.icon
+										className={`size-4 shrink-0 ${
+											menuItem.isActive
+												? "text-primary"
+												: "opacity-50"
+										}`}
+									/>
+									<span>{menuItem.label}</span>
+								</Link>
+							)}
 						</li>
 					))}
 				</ul>

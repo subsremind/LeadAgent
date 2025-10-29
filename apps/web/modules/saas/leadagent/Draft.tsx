@@ -2,11 +2,14 @@
 
 import { LeadAgentDraftList } from "./components/LeadAgentDraftList";
 
-export function DraftPage() {
+export function DraftPage({
+  platform,
+}: {
+  platform?: string;
+}) {
 	return (
 			<div className="w-full overflow-auto">
-				<LeadAgentDraftList
-				/>
+				<LeadAgentDraftList platform={platform || "linkedin"} />
 			</div>
 	);
 }

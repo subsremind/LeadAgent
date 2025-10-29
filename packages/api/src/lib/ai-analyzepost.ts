@@ -1,8 +1,7 @@
 import { db, RedditPost } from "@repo/database";
 import { logger } from "@repo/logs";
 import { config } from "@repo/config";
-import { BUSINESS, openaiService } from "@repo/ai";
-import { promptAiAnalyzeQuery } from "@repo/ai";
+import { BUSINESS, openaiService, formatPrompt } from "@repo/ai";
 
 // 定义查询结果的接口
 interface UnanalyzedPostData {
@@ -185,12 +184,25 @@ async function saveAnalysisResult(records: AIAnalyzeRecord[]): Promise<boolean> 
  */
 async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisResult | null> {
   try {
-    // 生成AI分析提示
-    const prompt = promptAiAnalyzeQuery(
-      post.title ?? '',
-      post.selftext ?? '',
-      post.query ?? ''
-    );
+    const settingPrompt = await db.aiPrompt.findFirst({
+      select: {
+        prompt: true,
+      },
+      where: {
+        business: BUSINESS.REDDIT_POST_ANALYZE,
+      },
+    });
+
+    if (!settingPrompt || !settingPrompt?.prompt) {
+      logger.error("Reddit post analyze prompt not found");
+      return null;
+    }
+
+    const prompt = formatPrompt(settingPrompt.prompt, {
+      post_title: post.title ?? '',
+      post_selftext: post.selftext ?? '',
+      agent_setting_query: post.query ?? '',
+    });
 
     // 调用AI服务进行分析
     const analysisResult = await openaiService.generateText(BUSINESS.REDDIT_POST_ANALYZE, prompt, {

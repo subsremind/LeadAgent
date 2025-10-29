@@ -128,7 +128,12 @@
 			"aiChatbot": "AI Chatbot",
 			"organizationSettings": "Organization settings",
 			"start": "Start",
-			"leadAgent": "Lead Agent"
+			"leadAgent": {
+				"reddit": "Lead Agent - Reddit",
+				"x": "Lead Agent - X",
+				"linkedin": "Lead Agent - LinkedIn",
+				"facebook": "Lead Agent - Facebook"
+			}
 		},
 		"userMenu": {
 			"accountSettings": "Account settings",
@@ -869,13 +874,14 @@
 	},
 	"leadAgent": {
 		"title": "Reddit Agent",
-		"descriptionLabel": "AI-Powered Reddit Marking Opportunity Finder",
+		"descriptionLabel": "AI-Powered Reddit Marketing Opportunity Finder",
 		"menu": {
 			"suggestion": "AI Suggestion",
 			"draft": "AI Draft",
 			"title": "Jobs"
 		},
-		"list": {
+		"agentSetting": "Agent Setting",
+		"suggestion": {
 			"title": "Resource List",
 			"actions": {
 				"alert": "Alert",
@@ -883,11 +889,10 @@
 				"delete": "Delete"
 			},
 			"empty": "No data available",
-			"agentSetting": "Agent Setting",
-			"noQueryPrompt": "Please set your search query first",
 			"setQuery": "Set Query",
 			"noDataPrompt": "No data available",
-			"embeddingRate": "Accuracy"
+			"embeddingRate": "Relevance",
+			"embeddingRateTooltip": "Adjust how closely the results match your needs. Higher relevance shows only the most related resources."
 		},
 		"form": {
 			"description": "Description of product or service",
