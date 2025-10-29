@@ -96,7 +96,7 @@
 		"setting": {
 			"reddit": {
 				"title": "Reddit",
-				"description": "Connect your Reddit account to enable access to Reddit's API for Lead Agent.",
+				"description": "Connect your Reddit account to enable access to Reddit's API for LeadsAgent.",
 				"status": {
 					"checking": "Checking authorization status...",
 					"connected": "Connected",
@@ -129,9 +129,10 @@
 			"organizationSettings": "Organization settings",
 			"start": "Start",
 			"leadAgent": {
-				"reddit": "Lead Agent - Reddit",
-				"x": "Lead Agent - X",
-				"linkedin": "Lead Agent - LinkedIn"
+				"reddit": "Reddit Agent",
+				"x": "X Agent",
+				"linkedin": "LinkedIn Agent",
+				"facebook": "Facebook Agent"
 			}
 		},
 		"userMenu": {
@@ -334,17 +335,17 @@
 			"subject": "Reset your password"
 		},
 		"magicLink": {
-			"body": "Hey,\nyou requested a login email from LeadAgent\n\nClick the link below to login.",
+			"body": "Hey,\nyou requested a login email from LeadsAgent\n\nClick the link below to login.",
 			"login": "Login",
-			"subject": "Login to LeadAgent"
+			"subject": "Login to LeadsAgent"
 		},
 		"newUser": {
-			"body": "Hey,\nthanks for signing up for LeadAgent.\n\nTo start using our app, please confirm your email address by clicking the link below.",
+			"body": "Hey,\nthanks for signing up for LeadsAgent.\n\nTo start using our app, please confirm your email address by clicking the link below.",
 			"confirmEmail": "Confirm email",
 			"subject": "Confirm your email"
 		},
 		"newsletterSignup": {
-			"body": "Thank you for signing up for the LeadAgent newsletter. We will keep you updated with the latest news and updates.",
+			"body": "Thank you for signing up for the LeadsAgent newsletter. We will keep you updated with the latest news and updates.",
 			"subject": "Welcome to our newsletter"
 		},
 		"organizationInvitation": {
@@ -366,7 +367,7 @@
 			}
 		},
 		"submit": "Subscribe",
-		"subtitle": "Be among the first to get access to LeadAgent.",
+		"subtitle": "Be among the first to get access to LeadsAgent.",
 		"title": "Get early access"
 	},
 	"onboarding": {

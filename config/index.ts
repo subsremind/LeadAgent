@@ -165,20 +165,7 @@ export const config = {
 				isEnterprise: true,
 			},
 		},
-	},
-	syncPost:{
-		enabled: true, // disable by sync post
-		cronExpression: "0 1/10 2/2 * * *",//"0 * * * * *" 
-	},
-	
-	aiAnalyze:{
-		enabled: true, // disable by ai analyze
-		cronExpression: "0 8/10 2/2 * * *",
-	},
-	cleanData:{
-		enabled: true, // disable by sync post
-		cronExpression: "0 0 4 * * *",//"0 * * * * *" 
-	},
+	}
 } as const satisfies Config;
 
 export type { Config };

@@ -5,6 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import heroImageDark from "../../../../public/images/hero-image-dark.png";
 import heroImage from "../../../../public/images/hero-image.png";
+import homeImage from "../../../../public/images/home-image.png";
+import homeImageDark from "../../../../public/images/home-image-dark.png";
+
 
 export function Hero() {
 	return (
@@ -24,20 +27,9 @@ export function Hero() {
 				</div> */}
 
 				<h1 className="mx-auto max-w-3xl text-balance font-bold text-5xl lg:text-5xl">
-					Lead Agent – AI-Powered Reddit Marking Opportunity Finder
+					LeadsAgent – AI-Powered Reddit Marking Opportunity Finder
 				</h1>
 
-				{/* <p className="mx-auto mt-4 md:mt-6 max-w-lg md:max-w-2xl lg:max-w-3xl text-balance whitespace-pre-line leading-relaxed text-foreground/60 text-base md:text-lg lg:text-xl text-center">
-                Product Overview
-                Lead Agent is an AI-driven platform designed to help businesses discover hidden sales opportunities on Reddit. By leveraging advanced AI agents, the product automatically scans, analyzes, and interprets millions of Reddit discussions to surface the most relevant leads for your business.
-                Core Features
-                AI Opportunity Detection: Continuously monitors Reddit communities, identifying posts and comments that signal purchase intent, product interest, or unmet needs.
-                Contextual Relevance Filtering: Uses natural language understanding to filter out noise and prioritize opportunities aligned with your product or service.
-                Lead Enrichment: Provides actionable insights, including the context of the discussion, potential customer needs, and engagement trends.
-                Customizable Tracking: Allows users to define keywords, industries, and buyer intent signals tailored to their business goals.
-                Value Proposition
-                Lead Agent transforms Reddit into a powerful lead-generation channel by automating the discovery of sales opportunities. Instead of manually browsing forums, sales and marketing teams gain instant visibility into conversations where potential customers are actively seeking solutions—making outreach more timely, relevant, and effective.
-                </p> */}
 
 				<div className="mt-6 flex flex-col items-center justify-center gap-3 md:flex-row">
 					<Button size="lg" variant="primary" asChild>
@@ -98,13 +90,13 @@ export function Hero() {
 
 				<div className="mx-auto mt-16 max-w-5xl rounded-2xl border bg-card/50 p-2 shadow-lg dark:shadow-foreground/10">
 					<Image
-						src={heroImage}
+						src={homeImage}
 						alt="Our application"
 						className="block rounded-xl dark:hidden"
 						priority
 					/>
 					<Image
-						src={heroImageDark}
+						src={homeImageDark}
 						alt="Our application"
 						className="hidden rounded-xl dark:block"
 						priority

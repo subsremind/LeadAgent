@@ -68,11 +68,6 @@ export async function getNoAnalyzePost() {
   logger.info(`start to ai analyze post=============================`);
   try {
     // 1. 获取未分析的帖子
-	const aiAnalyze = config.aiAnalyze?.enabled
-	if (!aiAnalyze) {
-		logger.info(`ai analyze is disabled`);
-		return;
-	}
     const unanalyzedPosts = await fetchUnanalyzedPosts();
     logger.info(`找到 ${unanalyzedPosts.length} 条未分析的帖子`);
 
