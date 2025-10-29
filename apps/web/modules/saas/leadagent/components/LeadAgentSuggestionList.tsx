@@ -26,19 +26,16 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef } from "react";
 
-import { AgentSetupDialog } from "./AgentSetup";
 import { LeadAgentPagination } from "./LeadAgentPagination";
 import { Label } from "@ui/components/label";
 import { Slider } from "@ui/components/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip";
 
-export function LeadAgentList({
+export function LeadAgentSuggestionList({
 	categoryId,
 	organizationId,
 }: { categoryId?: string; organizationId?: string }) {
 	const t = useTranslations();
-	const queryClient = useQueryClient();
-	const [editOpen, setEditOpen] = useState<boolean>(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
 	const [embeddingRate, setEmbeddingRate] = useState<number>(0.7);
@@ -56,23 +53,13 @@ export function LeadAgentList({
 		},
 	});
 
-	const onEditSuccess = (open: boolean, isReload: boolean) => {
-		setEditOpen(open);
-		if (isReload) {
-			reload();
-		}
-	};
 
-
-	const reload = () => {
-		queryClient.invalidateQueries({ queryKey: ["agent-setting"] });
-	};
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["lead-agent", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit, embeddingRate],
+		queryKey: ["leadagent-setting", currentPage, pageSize, agentSetting?.query, agentSetting?.subreddit, embeddingRate],
 		enabled: !!agentSetting?.query && !!agentSetting?.subreddit,
 		queryFn: async () => {
-		let url = "/api/lead-agent/search";
+		let url = "/api/leadagent/suggestion/search";
 		//改为post请求
 		const response = await fetch(url, {
 			method: "POST",
@@ -145,16 +132,6 @@ export function LeadAgentList({
 					{/* <Label className="whitespace-nowrap text-sm text-muted-foreground">{total} Records</Label> */}
 				</div>
 				
-				<Button
-					variant="primary"
-					className="bg-sky-600 border-0"
-					onClick={() => {
-						setEditOpen(true);
-					}}
-				>
-					<SettingsIcon className="size-4" />
-					{t("leadAgent.list.agentSetting")}
-				</Button>
 			</div>
 
 			{isAgentSettingLoading || isLoading ? (
@@ -230,14 +207,6 @@ export function LeadAgentList({
 				canPreviousPage={canPreviousPage}
 				canNextPage={canNextPage}
 			/>
-			{<AgentSetupDialog
-				open={editOpen}
-				categoryId={categoryId}
-				organizationId={organizationId}
-				agentSetting={agentSetting}
-				onSuccess={onEditSuccess}
-			/>
-			}
 		</div>
 	);
 }

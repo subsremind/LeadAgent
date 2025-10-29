@@ -23,7 +23,8 @@ import {
 	DropdownMenuTrigger,
 } from "@ui/components/dropdown-menu";
 import { Input } from "@ui/components/input";
-import { Table, TableBody, TableCell, TableRow } from "@ui/components/table";
+import { Slider } from "@ui/components/slider";
+import { Table, TableHeader, TableBody, TableCell, TableRow } from "@ui/components/table";
 import {
 	MoreVerticalIcon,
 	Repeat1Icon,
@@ -31,11 +32,13 @@ import {
 	ShieldXIcon,
 	SquareUserRoundIcon,
 	TrashIcon,
+	CreditCardIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@ui/components/dialog";
 import { useDebounceValue } from "usehooks-ts";
 import { EmailVerified } from "../EmailVerified";
 
@@ -61,6 +64,12 @@ export function UserList() {
 			trailing: false,
 		},
 	);
+	const [showCreditModal, setShowCreditModal] = useState(false);
+	const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+	const [selectedUserName, setSelectedUserName] = useState("");
+	const [creditTotal, setCreditTotal] = useState("");
+	const [creditUsed, setCreditUsed] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	useEffect(() => {
 		setDebouncedSearchTerm(searchTerm);
@@ -153,6 +162,51 @@ export function UserList() {
 		});
 	};
 
+	const userCreditSetting = (id: string) => {
+		const user = users.find(u => u.id === id);
+		setSelectedUserId(id);
+		setSelectedUserName(user?.name || '');
+		setCreditTotal(user?.userCreditSetting?.credit?.toString() || "0");
+		setCreditUsed(user?.userCreditUsage?.credit?.toString() || "0");
+		setShowCreditModal(true);
+	};
+
+	const saveUserCredit = async () => {
+		// 防止重复提交
+		if (!selectedUserId || isSubmitting) return;
+
+		try {
+			// 设置提交状态为true
+			setIsSubmitting(true);
+			
+			// 调用新的API端点保存用户积分设置
+			const response = await fetch('/api/admin/user_credit_setting/save', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					credit: parseInt(creditTotal) || 0,
+					userId: selectedUserId // 添加用户ID参数
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to save credit setting');
+			}
+
+			toast.success(t("common.status.success"));
+			// 刷新用户列表
+			await queryClient.invalidateQueries({ queryKey: adminUsersQueryKey });
+		} catch (error) {
+			toast.error(t("common.status.failure"));
+		} finally {
+			// 无论成功失败，都重置提交状态
+			setIsSubmitting(false);
+			setShowCreditModal(false);
+		}
+	};
+
 	const columns: ColumnDef<
 		NonNullable<
 			Awaited<ReturnType<typeof authClient.admin.listUsers>>["data"]
@@ -161,7 +215,7 @@ export function UserList() {
 		() => [
 			{
 				accessorKey: "user",
-				header: "",
+				header: "User",
 				accessorFn: (row) => row.name,
 				cell: ({ row }) => (
 					<div className="flex items-center gap-2">
@@ -187,6 +241,32 @@ export function UserList() {
 								</strong>
 							</small>
 						</div>
+					</div>
+				),
+			},
+			{
+				accessorKey: "user_credit",
+				header: "Credit Usage",
+				accessorFn: (row) => row.userCredit,
+				cell: ({ row }) => (
+					<div className="flex items-center ">
+						{(() => {
+							const used = row.original.userCreditUsage?.credit || 0;
+							const total = row.original.userCreditSetting?.credit || 0;
+							let colorClass = 'text-emerald-600'; 
+							
+							if (used > total) {
+								colorClass = 'text-red-600'; 
+							} else if (total > 0 && used / total >= 0.8) {
+								colorClass = 'text-amber-600';
+							}
+							
+							return (
+								<span className={colorClass}>
+									{used} / {total}
+								</span>
+							);
+						})()}
 					</div>
 				),
 			},
@@ -250,6 +330,14 @@ export function UserList() {
 									)}
 
 									<DropdownMenuItem
+									onClick={() =>
+											userCreditSetting(row.original.id)
+									}>
+								<CreditCardIcon className="mr-2 size-4" />
+									{t("admin.users.credit.creditSetting")}
+							</DropdownMenuItem>
+
+									<DropdownMenuItem
 										onClick={() =>
 											confirm({
 												title: t(
@@ -274,9 +362,9 @@ export function UserList() {
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
-						</div>
-					);
-				},
+							</div>
+						);
+					},
 			},
 		],
 		[],
@@ -307,6 +395,25 @@ export function UserList() {
 
 			<div className="rounded-md border">
 				<Table>
+					<TableHeader>
+						{table.getHeaderGroups().map((headerGroup) => (
+							<TableRow key={headerGroup.id}>
+								{headerGroup.headers.map((header) => (
+									<TableCell
+										key={header.id}
+										className="font-medium"
+									>
+										{header.isPlaceholder
+											? null
+											: flexRender(
+													header.column.columnDef.header,
+													header.getContext(),
+											  )}
+									</TableCell>
+								))}
+							</TableRow>
+						))}
+					</TableHeader>
 					<TableBody>
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
@@ -351,15 +458,55 @@ export function UserList() {
 				</Table>
 			</div>
 
-			{data?.total && data.total > ITEMS_PER_PAGE && (
-				<Pagination
-					className="mt-4"
-					totalItems={data.total}
-					itemsPerPage={ITEMS_PER_PAGE}
-					currentPage={currentPage}
-					onChangeCurrentPage={setCurrentPage}
-				/>
-			)}
-		</Card>
-	);
+		{data?.total && data.total > ITEMS_PER_PAGE && (
+			<Pagination
+				className="mt-4"
+				totalItems={data.total}
+				itemsPerPage={ITEMS_PER_PAGE}
+				currentPage={currentPage}
+				onChangeCurrentPage={setCurrentPage}
+			/>
+		)}
+
+		<Dialog open={showCreditModal} onOpenChange={setShowCreditModal}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>{t("admin.users.credit.creditSetting")}</DialogTitle>
+				</DialogHeader>
+				<div className="space-y-4 py-4">
+					<div className="flex items-center space-x-4">
+						<label className="text-sm font-medium min-w-[100px]">{t("admin.users.credit.user")}</label>
+						<p className="text-sm font-semibold flex-1">{selectedUserName || ''}</p>
+					</div>
+					<div className="flex items-center space-x-4">
+						<label className="text-sm font-medium min-w-[100px]">{t("admin.users.credit.creditUsed")}</label>
+						<p className="text-sm font-semibold flex-1">{creditUsed || 0}</p>
+					</div>
+					<div className="flex items-center space-x-4">
+						<label className="text-sm font-medium min-w-[100px]">{t("admin.users.credit.creditTotal")}</label>
+						<div className="flex-1 max-w-xs flex items-center space-x-4">
+							<Slider
+								min={0}
+								max={2000}
+								step={50}
+								value={[Number(creditTotal) || 0]}
+								onValueChange={(value) => setCreditTotal(value[0].toString())}
+								className="flex-1"
+							/>
+							<span className="text-sm font-semibold whitespace-nowrap">{creditTotal}</span>
+						</div>
+					</div>
+				</div>
+				<DialogFooter>
+					<Button onClick={() => setShowCreditModal(false)} variant="ghost">
+						{t("common.confirmation.cancel")}
+					</Button>
+					<Button onClick={saveUserCredit} disabled={isSubmitting}>
+						{isSubmitting ? t("common.confirmation.submitting") : t("common.confirmation.save")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	</Card>
+);
 }

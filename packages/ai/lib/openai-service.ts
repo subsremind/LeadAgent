@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { nanoid } from "nanoid";
 import { db } from "@repo/database";
+import { logger } from "@repo/logs";
 
 // 请求配置接口
 export interface OpenAIRequestConfig {
@@ -64,6 +65,13 @@ const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
   // 可以添加更多模型的价格
 };
 
+export const BUSINESS: Record<string, string> = {
+  REDDIT_POST_ANALYZE: 'reddit-post-analyze',
+  SUGGESTION_SUBREDDIT_GENERATE: 'suggestion-subreddit-generate',
+  SUGGESTION_QUERY_GENERATE: 'suggestion-query-generate',
+  DRAFT_GENERATE: 'draft-generate',
+}
+
 /**
  * OpenAI服务类 - 提供通用的OpenAI接口请求方法
  */
@@ -102,7 +110,7 @@ export class OpenAIService {
       // 这里简化处理，实际项目中应该有对应的表模型
       // 示例：await db.aiRequestLog.create({ data: logData });
       //console.log('AI Request Log:', logData);
-      await db.aIRequestLog.create({ data: logData });
+      await db.aiRequestLog.create({ data: logData });
     } catch (error) {
       console.error('Failed to log AI request:', error);
       // 记录失败不应影响主流程
@@ -203,7 +211,7 @@ export class OpenAIService {
     const config: OpenAIRequestConfig = {
       model: options?.model || 'gpt-4.1',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: options?.maxTokens || 1000,
+      max_tokens: options?.maxTokens,
       temperature: options?.temperature || 0.7,
     };
 
@@ -216,8 +224,12 @@ export class OpenAIService {
       userId: options?.userId,
       organizationId: options?.organizationId,
     });
-
-    return response.choices[0].message?.content || '';
+    const result = response.choices[0].message?.content || '';
+    logger.info('generateText === ', {
+      business,
+      result,
+    });
+    return result;
   }
 
   // 生成查询文本的向量表示

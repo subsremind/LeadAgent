@@ -1,12 +1,12 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card } from "@ui/components/card";
-import { Button } from "@ui/components/button";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { Spinner } from "@shared/components/Spinner";
 import { getRedditAuthUrl } from "@repo/api/src/lib/task-redditpost";
+import { Card } from "@ui/components/card";
+import { Button } from "@ui/components/button";
 
 const REDDIT_ICON = (
 	<svg className="h-4 w-4 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 24 24">
@@ -14,7 +14,7 @@ const REDDIT_ICON = (
 	</svg>
 );
 
-export function Config() {
+export function RedditAuth() {
 	const t = useTranslations();
 	const queryClient = useQueryClient();
 
@@ -27,9 +27,9 @@ export function Config() {
 	} = useQuery({
 		queryKey: ["admin-config-status"],
 		queryFn: async () => {
-			const response = await fetch("/api/admin/config/status");
+			const response = await fetch("/api/admin/integration/reddit/status");
 			if (!response.ok) {
-				throw new Error("Failed to fetch config status");
+				throw new Error("Failed to fetch integration status");
 			}
 			return await response.json();
 		},
@@ -40,7 +40,7 @@ export function Config() {
 	// 断开连接 mutation
 	const disconnectMutation = useMutation({
 		mutationFn: async () => {
-			const response = await fetch("/api/admin/config/delete", {
+			const response = await fetch("/api/admin/integration/reddit/delete", {
 				method: "DELETE"
 			});
 			if (!response.ok) {
@@ -49,11 +49,11 @@ export function Config() {
 			return await response.json();
 		},
 		onSuccess: () => {
-			toast.success(t("admin.config.reddit.notifications.disconnectSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["admin-config-status"] });
+			toast.success(t("admin.setting.reddit.notifications.disconnectSuccess"));
+			queryClient.invalidateQueries({ queryKey: ["admin-integration-reddit-status"] });
 		},
 		onError: (error) => {
-			toast.error(`${t("admin.config.reddit.notifications.disconnectFailed")}: ${error instanceof Error ? error.message : t("common.status.error")}`);
+			toast.error(`${t("admin.setting.reddit.notifications.disconnectFailed")}: ${error instanceof Error ? error.message : t("common.status.error")}`);
 		}
 	});
 
@@ -63,7 +63,7 @@ export function Config() {
 	// 处理授权状态错误
 	useEffect(() => {
 		if (statusError) {
-			toast.error(`${t("admin.config.reddit.notifications.getStatusFailed")}: ${statusError.message}`);
+			toast.error(`${t("admin.setting.reddit.notifications.getStatusFailed")}: ${statusError.message}`);
 		}
 	}, [statusError, t]);
 
@@ -71,7 +71,7 @@ export function Config() {
 		try {
 			const authUrl = await getRedditAuthUrl();
 			if (!authUrl) {
-				toast.error(t("admin.config.reddit.notifications.getAuthUrlFailed"));
+				toast.error(t("admin.setting.reddit.notifications.getAuthUrlFailed"));
 				return;
 			}
 
@@ -82,7 +82,7 @@ export function Config() {
 			);
 
 			if (popup) {
-				toast.info(t("admin.config.reddit.notifications.authWindowOpened"));
+				toast.info(t("admin.setting.reddit.notifications.authWindowOpened"));
 				
 				const checkClosed = setInterval(() => {
 					if (popup.closed) {
@@ -93,16 +93,16 @@ export function Config() {
 					}
 				}, 1000);
 			} else {
-				toast.error(t("admin.config.reddit.notifications.popupBlocked"));
+				toast.error(t("admin.setting.reddit.notifications.popupBlocked"));
 			}
 		} catch (error) {
-			toast.error(`${t("admin.config.reddit.notifications.getAuthUrlFailed")}: ${error instanceof Error ? error.message : t("common.status.error")}`);
+			toast.error(`${t("admin.setting.reddit.notifications.getAuthUrlFailed")}: ${error instanceof Error ? error.message : t("common.status.error")}`);
 		}
 	};
 
 	const getStatusText = () => {
-		if (isStatusLoading) return t("admin.config.reddit.status.checking");
-		return isAuthorized ? t("admin.config.reddit.status.connected") : t("admin.config.reddit.status.disconnected");
+		if (isStatusLoading) return t("admin.setting.reddit.status.checking");
+		return isAuthorized ? t("admin.setting.reddit.status.connected") : t("admin.setting.reddit.status.disconnected");
 	};
 
 	const getActionButton = () => {
@@ -117,10 +117,10 @@ export function Config() {
 					{disconnectMutation.isPending ? (
 						<>
 							<Spinner className="mr-2 h-4 w-4" />
-							{t("admin.config.reddit.actions.disconnecting")}
+							{t("admin.setting.reddit.actions.disconnecting")}
 						</>
 					) : (
-						t("admin.config.reddit.actions.disconnect")
+						t("admin.setting.reddit.actions.disconnect")
 					)}
 				</Button>
 			);
@@ -136,35 +136,33 @@ export function Config() {
 				{isLoading ? (
 					<>
 						<Spinner className="mr-2 h-4 w-4" />
-						{t("admin.config.reddit.actions.gettingAuthUrl")}
+						{t("admin.setting.reddit.actions.gettingAuthUrl")}
 					</>
 				) : (
-					t("admin.config.reddit.actions.authorize")
+					t("admin.setting.reddit.actions.authorize")
 				)}
 			</Button>
 		);
 	};
 
 	return (
-		<Card className="p-6">
-			<div className="grid grid-cols-1 gap-2">
-				<div className="flex justify-between gap-4">
-					<div className="flex gap-2">
-						<div className="rounded-full h-6 w-6 bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center shrink-0">
-							{REDDIT_ICON}
-						</div>
-						<div>
-							<strong className="block text-sm">
-								{t("admin.config.reddit.title")}
-							</strong>
-							<small className="block text-foreground/60 text-xs leading-tight">
-								{getStatusText()}
-							</small>
-						</div>
+		<div className="grid grid-cols-1 gap-2">
+			<div className="flex justify-between gap-4">
+				<div className="flex gap-2">
+					<div className="rounded-full h-6 w-6 bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center shrink-0">
+						{REDDIT_ICON}
 					</div>
-					{getActionButton()}
+					<div>
+						<strong className="block text-sm">
+							{t("admin.setting.reddit.title")}
+						</strong>
+						<small className="block text-foreground/60 text-xs leading-tight">
+							{getStatusText()}
+						</small>
+					</div>
 				</div>
+				{getActionButton()}
 			</div>
-		</Card>
+		</div>
 	);
 }

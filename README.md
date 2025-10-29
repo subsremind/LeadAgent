@@ -46,5 +46,28 @@ tsconfig
 tailwind
 utils
 
+To use the shadcn/ui CLI in your supastarter project simply run the following command from your projects root:
+
+`pnpm --filter web shadcn-ui [command]`
+For example to add the skeleton component you would run:
+
+`pnpm --filter=web shadcn-ui add skeleton`
+
 **Create admin user**
 `pnpm --filter scripts create:user`
+
+## docker deploy
+
+cd /data/git/LeadAgent
+# 拉取代码，分支是 docker-deploy
+git pull
+
+docker build -f apps/web/Dockerfile-task . --no-cache -t leadagent-task
+
+docker build -f apps/web/Dockerfile . --no-cache -t leadagent
+
+docker-compose up -d
+
+docker logs -f -n 200 leadagent-task
+docker logs -f -n 200 leadagent
+`
