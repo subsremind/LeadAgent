@@ -31,7 +31,7 @@ import { Label } from "@ui/components/label";
 import { Slider } from "@ui/components/slider";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/tooltip";
 
-export function LeadAgentSuggestionList() {
+export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 	const t = useTranslations();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);

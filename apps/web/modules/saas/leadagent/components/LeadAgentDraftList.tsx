@@ -37,7 +37,11 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@shared/components/Spinner";
 
-export function LeadAgentDraftList() {
+export function LeadAgentDraftList({
+  platform = "linkedin",
+}: {
+  platform: string;
+}) {
 	const t = useTranslations();
 	const [generateOpen, setGenerateOpen] = useState<boolean>(false);
 	const [viewOpen, setViewOpen] = useState<boolean>(false);
@@ -58,7 +62,7 @@ export function LeadAgentDraftList() {
 	// });
 
 	const {data: draftList = [], isLoading: isDraftListLoading} = useQuery({
-		queryKey: ["draft-list"],
+		queryKey: ["draft-list", platform], // 将platform添加到queryKey中，确保不同平台的数据缓存是独立的
 		queryFn: async () => {
 			// const response = await apiClient.leadagent.draft["generate"].$post({
 			// 	json: {
@@ -71,6 +75,7 @@ export function LeadAgentDraftList() {
 				headers: {
 					"Content-Type": "application/json",
 				},
+				body: JSON.stringify({ platform }), // 传递platform参数
 			});
 			if (!response.ok) {
 				const result = await response.json();
@@ -85,18 +90,18 @@ export function LeadAgentDraftList() {
 	});
 
 		const handleGenerateClick = async () => {
-			// 使用isGenerating状态来确保按钮在invalidateQueries期间显示loading效果
-			setIsGenerating(true);
-			try {
-				// 触发数据重新加载
-				await queryClient.invalidateQueries({ queryKey: ["draft-list"] });
-				// 等待数据加载完成
-				// await queryClient.refetchQueries({ queryKey: ["draft-list"] });
-			} finally {
-				// 无论成功失败，都在最后重置状态
-				setIsGenerating(false);
-			}
+		// 使用isGenerating状态来确保按钮在invalidateQueries期间显示loading效果
+		setIsGenerating(true);
+		try {
+			// 触发数据重新加载，包含platform参数
+			await queryClient.invalidateQueries({ queryKey: ["draft-list", platform] });
+			// 等待数据加载完成
+			// await queryClient.refetchQueries({ queryKey: ["draft-list"] });
+		} finally {
+			// 无论成功失败，都在最后重置状态
+			setIsGenerating(false);
 		}
+	}
 
 
 	// 	const onGenerateSuccess = (open: boolean, isReload: boolean, draftList: any[]) => {
