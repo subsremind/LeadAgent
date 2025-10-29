@@ -5,9 +5,9 @@ import "cropperjs/dist/cropper.css";
 
 export const metadata: Metadata = {
 	title: {
-		absolute: "LeadAgent - Application",
-		default: "LeadAgent- Application",
-		template: "%s | LeadAgent - Application",
+		absolute: "LeadsAgent - Application",
+		default: "LeadsAgent- Application",
+		template: "%s | LeadsAgent - Application",
 	},
 };
 

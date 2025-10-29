@@ -160,12 +160,6 @@ export async function saveRedditToken(tokenData: any): Promise<void> {
 
 export async function getRedditPost() {
 	try {
-		logger.info(`sync-posts tart to sync post enable ${config.syncPost?.enabled}`);
-		const syncPost = config.syncPost?.enabled
-		if (!syncPost) {
-			logger.info(`sync post is disabled`);
-			return;
-		}
 		const sortType = "new";
 		const channelList = await db.category.findMany({
 			select: {

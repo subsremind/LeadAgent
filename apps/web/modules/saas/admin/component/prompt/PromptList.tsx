@@ -175,7 +175,7 @@ export function PromptList() {
 			)}
 
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent className="w-full max-w-3xl min-h-[90vh] max-h-[90vh] overflow-auto flex flex-col" onInteractOutside={(e) => e.preventDefault()} >
+				<DialogContent className="w-full max-w-3xl min-h-[90vh] max-h-[90vh] flex flex-col" onInteractOutside={(e) => e.preventDefault()} >
 					<DialogHeader>
 						<DialogTitle>
 							{editingPrompt ? t("common.actions.edit") : t("common.actions.new")} {t("admin.menu.prompt")}
@@ -215,7 +215,7 @@ export function PromptList() {
 								value={formData.prompt}
 								onChange={handleInputChange}
 								placeholder="Enter prompt content"
-								className="min-h-[500px]"
+								className="min-h-[430px]"
 								required
 							/>
 						</div>

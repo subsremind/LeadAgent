@@ -52,6 +52,7 @@ export interface AIRequestLog {
   success: boolean;
   error?: string;
   timestamp: Date;
+  credit?: number;
 }
 
 // 价格表（美元/1000 tokens）
@@ -145,8 +146,23 @@ export class OpenAIService {
 
       // 计算成本
       const cost = this.calculateCost(config.model, response.usage?.prompt_tokens || 0, response.usage?.completion_tokens || 0);
+      // 查询 token 和 credit 的关系，计算 credit
+      const tokenCreditRate = await db.adminSetting.findFirst({
+        where: {
+          key: 'token_credit_mapping',
+        },
+        select: {
+          value: true,
+        },
+      });
 
-      // 记录请求
+      // 如果没有设置，默认无论多少 tokens 都为 1 credit，计算 credit, totalTokens/creditRate 向上取整数
+      let credit = 1;
+      const tokenCreditMapping = tokenCreditRate?.value;
+      if (tokenCreditMapping) {
+        credit = Math.ceil(response.usage?.total_tokens || 0 / Number(tokenCreditMapping));
+      } 
+
       await this.logRequest({
         id: requestId,
         userId: logOptions?.userId,
@@ -160,6 +176,7 @@ export class OpenAIService {
         duration,
         success: true,
         timestamp: new Date(),
+        credit,
       });
 
       return response;
@@ -181,6 +198,7 @@ export class OpenAIService {
         success: false,
         error: errorMessage,
         timestamp: new Date(),
+        credit: 0,
       });
 
       throw error;
@@ -245,6 +263,22 @@ export class OpenAIService {
       
       // 计算成本（使用正确的embedding模型价格）
       const cost = this.calculateCost("text-embedding-3-small", promptTokens, 0);
+      // 查询 token 和 credit 的关系，计算 credit
+      const tokenCreditRate = await db.adminSetting.findFirst({
+        where: {
+          key: 'token_credit_mapping',
+        },
+        select: {
+          value: true,
+        },
+      });
+
+      // 如果没有设置，默认无论多少 tokens 都为 1 credit，计算 credit, totalTokens/creditRate 向上取整数
+      let credit = 1;
+      const tokenCreditMapping = tokenCreditRate?.value;
+      if (tokenCreditMapping) {
+        credit = Math.ceil(totalTokens / Number(tokenCreditMapping));
+      } 
       
       // 记录请求
       await this.logRequest({
@@ -259,6 +293,7 @@ export class OpenAIService {
         duration,
         success: true,
         timestamp: new Date(),
+        credit,
       });
       
       // 获取embedding结果
@@ -286,6 +321,7 @@ export class OpenAIService {
         success: false,
         error: errorMessage,
         timestamp: new Date(),
+        credit: 0,
       });
       
       console.error("Error generating query embedding:", error);
@@ -373,6 +409,7 @@ export class OpenAIService {
         success: false,
         error: errorMessage,
         timestamp: new Date(),
+        credit: 0,
       });
 
       throw error;

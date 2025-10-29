@@ -82,16 +82,4 @@ export type Config = {
 			};
 		};
 	};
-	syncPost:{
-		enabled: boolean;
-		cronExpression: string;
-	};
-	aiAnalyze:{
-		enabled: boolean;
-		cronExpression: string;
-	};
-	cleanData:{
-		enabled: boolean;
-		cronExpression: string;
-	};
 };
