@@ -6,8 +6,9 @@ import { z } from "zod";
 
 import { authMiddleware } from "../../middleware/auth";
 import { AgentSettingCreateInput } from "./types";
-import { openaiService, promptLeadAgentSubreddit, promptLeadAgentQuery, BUSINESS} from "@repo/ai";
+import { openaiService, formatPrompt, BUSINESS} from "@repo/ai";
 import { nanoid } from "nanoid";
+import { logger } from "@repo/logs";
 
 export const agentSettingRouter = new Hono()
 	.basePath("/agent-setting")
@@ -57,24 +58,64 @@ export const agentSettingRouter = new Hono()
 		async (c) => {
 			const { description } = c.req.valid("json");
 			const user = c.get("user");
-			const promptSubreddit = promptLeadAgentSubreddit(description);
-			const responseSubreddit = await openaiService.generateText(BUSINESS.SUGGESTION_SUBREDDIT_GENERATE, promptSubreddit, {
+			
+			const settingPrompts = await db.aiPrompt.findMany({
+				select: {
+					business: true,
+				  	prompt: true,
+				},
+				where: {
+					OR: [
+						{ business: BUSINESS.SUGGESTION_SUBREDDIT_GENERATE },
+						{ business: BUSINESS.SUGGESTION_QUERY_GENERATE },
+					],
+				},
+			});
+		
+			if (!settingPrompts || settingPrompts.length === 0) {
+				logger.error("Suggestion subreddit generate prompt not found");
+				return c.json({ error: "No prompt found" }, 500);
+			}
+			
+			const subredditPrompt = settingPrompts.find(prompt => prompt.business === BUSINESS.SUGGESTION_SUBREDDIT_GENERATE)?.prompt;
+			const queryPrompt = settingPrompts.find(prompt => prompt.business === BUSINESS.SUGGESTION_QUERY_GENERATE)?.prompt;
+			
+			if (!subredditPrompt || !queryPrompt) {
+				logger.error("Suggestion subreddit generate prompt not found");
+				return c.json({ error: `Subreddit generate prompt not found. Please check ${BUSINESS.SUGGESTION_SUBREDDIT_GENERATE} or ${BUSINESS.SUGGESTION_QUERY_GENERATE}` }, 500);
+			}
+			
+			const subredditPromptFormatted = formatPrompt(subredditPrompt, {
+				agent_setting_description: description ?? '',
+			});
+
+			logger.info("Suggestion subreddit generate prompt", { prompt: subredditPromptFormatted });
+
+			// const promptSubreddit = promptLeadAgentSubreddit(description);
+
+
+			const responseSubreddit = await openaiService.generateText(BUSINESS.SUGGESTION_SUBREDDIT_GENERATE, subredditPromptFormatted, {
 				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
 			});
 			if (!responseSubreddit) {
-				return c.json({ error: "Failed to generate prompt" }, 500);
+				return c.json({ error: "Failed to generate subreddit" }, 500);
 			}
 
-			const promptQuery = promptLeadAgentQuery(description);
-			const responseQuery = await openaiService.generateText(BUSINESS.SUGGESTION_QUERY_GENERATE, promptQuery, {
+			const queryPromptFormatted = formatPrompt(queryPrompt, {
+				agent_setting_description: description ?? '',
+			});
+
+			logger.info("Suggestion query generate prompt", { prompt: queryPromptFormatted });
+
+			const responseQuery = await openaiService.generateText(BUSINESS.SUGGESTION_QUERY_GENERATE, queryPromptFormatted, {
 				model: 'gpt-4.1',
 				temperature: 0.7,
 				userId: user.id, 
 			});
 			if (!responseQuery) {
-				return c.json({ error: "Failed to generate prompt" }, 500);
+				return c.json({ error: "Failed to generate query" }, 500);
 			}
 			return c.json({ subreddit: responseSubreddit, query: responseQuery });
 		},
@@ -92,7 +133,7 @@ export const agentSettingRouter = new Hono()
 			});
 
 			if (!record) {
-				return c.json({ error: "AgentSetting not found" }, 404);
+				return c.json({ error: "AgentSetting not found" });
 			}
 
 			return c.json(record);
