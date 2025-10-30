@@ -202,7 +202,7 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisRe
 
     // 调用AI服务进行分析
     const analysisResult = await openaiService.generateText(BUSINESS.REDDIT_POST_ANALYZE, prompt, {
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
       temperature: 0.7,
       userId: post.userId,
     });
