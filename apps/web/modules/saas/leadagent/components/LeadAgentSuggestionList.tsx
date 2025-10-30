@@ -19,7 +19,7 @@ import {
 	MessageCircleMore,
 	SettingsIcon,
 	InfoIcon,
-	CheckCheckIcon,
+	ShieldQuestionIcon,
 	
 } from "lucide-react";
 import Link from "next/link";
@@ -103,6 +103,8 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
         };
     }, []);
 
+
+
 	
 	
 	return (
@@ -158,8 +160,8 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 				</div>
 			) : (
 				currentData.map((item: any) => (
-					<Link key={item.id} href={item.url} target="_blank" rel="noopener noreferrer">
-						<Card className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] cursor-pointer">
+					<Card key={item.id} className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02]">
+						<Link href={item.url} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
 							<CardHeader>
 								<div>
 									<Label className="ml-auto text-xs text-muted-foreground justify-start">{item.author} · {formatRelativeTime(new Date(item.createdUtc))} </Label>
@@ -169,44 +171,63 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 								</CardTitle>
 								<CardDescription className="mb-2 overflow-hidden text-ellipsis" style={{display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', lineHeight: '1.5'}}>{item.selftext}</CardDescription>
 							</CardHeader>
-							<CardFooter>
-								<div className="flex w-full flex-wrap gap-2">
+						</Link>
+						<CardFooter>
+							<div className="flex w-full flex-wrap gap-2">
+								{/* 显示 reason 字段 */}
+								{item.reason && (
+									<Badge
+										status="info" 
+										className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-800"
+									>
+										{item.reason}
+									</Badge>
+								)}
 
-									{/* <Badge
-										status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
+								<Badge
+								status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
+								>
+									<ArrowBigUp size={16}/>
+									{item.ups}
+								</Badge>
+								<Badge
+								status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
+								>
+									<ArrowBigDown size={16}/>
+									{item.downs}
+								</Badge>
+
+								<Badge
+								status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
+								>
+									<MessageCircleMore size={16}/>
+									{item.numComments}
+								</Badge>
+
+								<Badge
+								status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums bg-slate-600 text-white normal-case"
+								>
+									{item.subreddit}
+								</Badge>
+								
+								<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Badge
+										status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums cursor-help"
 										>
-											<CheckCheckIcon size={16}/>
-											{item.aiAnalyzeRecords[0].confidence}
-									</Badge> */}
-									<Badge
-									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
-									>
-										<ArrowBigUp size={16}/>
-										{item.ups}
-									</Badge>
-									<Badge
-									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
-									>
-										<ArrowBigDown size={16}/>
-										{item.downs}
-									</Badge>
-
-									<Badge
-									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums"
-									>
-										<MessageCircleMore size={16}/>
-										{item.numComments}
-									</Badge>
-
-									<Badge
-									status="info" className="flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums bg-slate-600 text-white normal-case"
-									>
-										{item.subreddit}
-									</Badge>
-								</div>
-							</CardFooter>
-						</Card>
-					</Link>
+											<ShieldQuestionIcon size={16}/>
+											{item.aiAnalyzeRecords[0]?.confidence * 100}%
+										</Badge>
+									</TooltipTrigger>
+									<TooltipContent className="w-[280px] max-h-96 overflow-auto">
+										<p className="whitespace-pre-wrap">{item.aiAnalyzeRecords[0]?.result?.reason || '暂无原因说明'}</p>
+									</TooltipContent>
+								</Tooltip>
+								</TooltipProvider>
+							</div>
+						</CardFooter>
+					</Card>
 				))
 			)}
 			<LeadAgentPagination

@@ -60,6 +60,7 @@ const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
   'gpt-3.5-turbo': { prompt: 0.0015, completion: 0.002 },
   'gpt-3.5-turbo-1106': { prompt: 0.001, completion: 0.002 },
   'gpt-4o': { prompt: 0.005, completion: 0.015 },
+  'gpt-4o-mini': { prompt: 0.005, completion: 0.015 },
   'gpt-4-turbo': { prompt: 0.01, completion: 0.03 },
   'gpt-4': { prompt: 0.03, completion: 0.06 },
   'text-embedding-3-small': { prompt: 0.02, completion: 0 }, // embedding模型价格
