@@ -160,7 +160,7 @@ export class OpenAIService {
       let credit = 1;
       const tokenCreditMapping = tokenCreditRate?.value;
       if (tokenCreditMapping) {
-        credit = Math.ceil(response.usage?.total_tokens || 0 / Number(tokenCreditMapping));
+        credit = Math.ceil((response.usage?.total_tokens || 0) / Number(tokenCreditMapping));
       } 
 
       await this.logRequest({
@@ -277,7 +277,7 @@ export class OpenAIService {
       let credit = 1;
       const tokenCreditMapping = tokenCreditRate?.value;
       if (tokenCreditMapping) {
-        credit = Math.ceil(totalTokens / Number(tokenCreditMapping));
+        credit = Math.ceil((response.usage?.total_tokens || 0) / Number(tokenCreditMapping));
       } 
       
       // 记录请求
