@@ -183,6 +183,7 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisRe
     const settingPrompt = await db.aiPrompt.findFirst({
       select: {
         prompt: true,
+        model: true,
       },
       where: {
         business: BUSINESS.REDDIT_POST_ANALYZE,
@@ -202,7 +203,7 @@ async function analyzePostWithAI(post: UnanalyzedPostData): Promise<AIAnalysisRe
 
     // 调用AI服务进行分析
     const analysisResult = await openaiService.generateText(BUSINESS.REDDIT_POST_ANALYZE, prompt, {
-      model: 'gpt-4o-mini',
+      model: settingPrompt.model,
       temperature: 0.7,
       userId: post.userId,
     });

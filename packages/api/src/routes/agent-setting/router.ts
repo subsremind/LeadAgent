@@ -63,6 +63,7 @@ export const agentSettingRouter = new Hono()
 				select: {
 					business: true,
 				  	prompt: true,
+					model: true,
 				},
 				where: {
 					OR: [
@@ -95,7 +96,7 @@ export const agentSettingRouter = new Hono()
 
 
 			const responseSubreddit = await openaiService.generateText(BUSINESS.SUGGESTION_SUBREDDIT_GENERATE, subredditPromptFormatted, {
-				model: 'gpt-4.1',
+				model: settingPrompts.find(prompt => prompt.business === BUSINESS.SUGGESTION_SUBREDDIT_GENERATE)?.model,
 				temperature: 0.7,
 				userId: user.id, 
 			});
@@ -110,7 +111,7 @@ export const agentSettingRouter = new Hono()
 			logger.info("Suggestion query generate prompt", { prompt: queryPromptFormatted });
 
 			const responseQuery = await openaiService.generateText(BUSINESS.SUGGESTION_QUERY_GENERATE, queryPromptFormatted, {
-				model: 'gpt-4.1',
+				model: settingPrompts.find(prompt => prompt.business === BUSINESS.SUGGESTION_QUERY_GENERATE)?.model,
 				temperature: 0.7,
 				userId: user.id, 
 			});

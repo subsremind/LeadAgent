@@ -30,6 +30,7 @@ export const draftRouterRouter = new Hono()
 			const draftPrompt = await db.aiPrompt.findFirst({
 				select: {
 					prompt: true,
+					model: true,
 				},
 				where: {
 					business: BUSINESS.DRAFT_GENERATE,
@@ -58,7 +59,7 @@ export const draftRouterRouter = new Hono()
 			// return c.json([]);
 
 			const analysisResult = await openaiService.generateText(BUSINESS.DRAFT_GENERATE, prompt, {
-				model: 'gpt-4o',
+				model: draftPrompt.model,
 				temperature: 0.7,
 				userId: user.id,
 			  });
