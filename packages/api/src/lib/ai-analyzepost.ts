@@ -50,7 +50,8 @@ select * from  (
       aset."userId", 
       aset.query, 
       aset.subreddit,
-      aset.subreddit ~ rp.subreddit as include
+      aset.subreddit ~ rp.subreddit as include,
+	  rp."createdUtc"
     FROM reddit_post rp       
     cross JOIN  agent_setting aset 
     LEFT JOIN  ai_analyze_record aar 
@@ -59,7 +60,7 @@ select * from  (
       on ca.id =rp."categoryId"
     where aar."userId"  is null  and rp.selftext is not null and rp.selftext <> '' 
 ) as abc 
-where include = true
+where include = true and "createdUtc" >= NOW() - INTERVAL '2 days'
 order by abc."redditId"`;
   return unanalyzedPosts;
 }
