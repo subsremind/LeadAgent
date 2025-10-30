@@ -62,11 +62,14 @@ cd /data/git/LeadAgent
 # 拉取代码，分支是 docker-deploy
 git pull
 
-docker build -f apps/web/Dockerfile-task . --no-cache -t leadagent-task
+# 一次性构建两个镜像并启动
+docker compose up --build -d
 
-docker build -f apps/web/Dockerfile . --no-cache -t leadagent
+# 只重新构建 task 服务
+docker compose build leadagent-task --no-cache
 
-docker-compose up -d
+# 查看镜像
+docker images leadagent:latest leadagent-task:latest
 
 docker logs -f -n 200 leadagent-task
 docker logs -f -n 200 leadagent
