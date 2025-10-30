@@ -7,9 +7,9 @@ export function getBaseUrl() {
 		return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 	}
 	
-	// if (typeof window !== 'undefined') {
-	// 	return window.location.origin;
-	// }
+	if (typeof window !== 'undefined') {
+		return window.location.origin;
+	}
 	
 	// 仅在服务器端回退到localhost
 	return `http://localhost:${process.env.PORT ?? 3000}`;
