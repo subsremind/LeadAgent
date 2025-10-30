@@ -33,6 +33,8 @@ import {
 	SquareUserRoundIcon,
 	TrashIcon,
 	CreditCardIcon,
+	RefreshCcwDot,
+	ChartNetwork
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
@@ -207,6 +209,40 @@ export function UserList() {
 		}
 	};
 
+	const handleSyncRedditPosts = async (userId: string) => {
+		try {
+			const response = await fetch('/api/admin/users/sync-reddit-posts', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+			if (!response.ok) {
+				throw new Error('Failed to sync Reddit posts');
+			}
+			toast.success(t("common.status.success"));			
+		} catch (error) {
+			toast.error(t("common.status.failure"));
+		}
+		await refetch();
+	};
+	const startAnalysis = async (userId: string) => {
+		try {
+			const response = await fetch('/api/admin/users/start-analysis', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+			if (!response.ok) {
+				throw new Error('Failed to sync Reddit posts');
+			}
+			toast.success(t("common.status.success"));			
+		} catch (error) {
+			toast.error(t("common.status.failure"));
+		}
+		await refetch();
+	};
 	const columns: ColumnDef<
 		NonNullable<
 			Awaited<ReturnType<typeof authClient.admin.listUsers>>["data"]
@@ -335,8 +371,21 @@ export function UserList() {
 									}>
 								<CreditCardIcon className="mr-2 size-4" />
 									{t("admin.users.credit.creditSetting")}
+								</DropdownMenuItem>
+										<DropdownMenuItem
+										onClick={() =>
+											handleSyncRedditPosts(row.original.id)	
+										}>
+									<RefreshCcwDot className="mr-2 size-4" />
+										{t("admin.users.action.syncPost")}
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() =>
+											startAnalysis(row.original.id)	
+									}>
+								<ChartNetwork className="mr-2 size-4" />
+									{t("admin.users.action.startAnalysis")}
 							</DropdownMenuItem>
-
 									<DropdownMenuItem
 										onClick={() =>
 											confirm({
