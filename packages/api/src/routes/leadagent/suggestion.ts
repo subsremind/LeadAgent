@@ -98,6 +98,7 @@ export const suggestionRouterRouter = new Hono()
 					aiAnalyzeRecords: {
 						select: {
 							confidence: true,
+							result: true,
 						},
 						where: {
 							userId: user.id,
@@ -124,6 +125,23 @@ export const suggestionRouterRouter = new Hono()
 				}
 			});
 
+			// 转换数据结构，从result字段中提取reason，确保result是一个有效的JSON对象
+			const transformedRecords = records.map(record => {
+				const aiRecord = record.aiAnalyzeRecords[0]; // 假设每个post只有一个分析记录
+				return {
+					...record,
+					aiAnalyzeRecords: aiRecord ? [{
+						confidence: aiRecord.confidence,
+						result: {
+							// 添加类型检查确保result是对象且有reason属性
+							reason: typeof aiRecord.result === 'object' && aiRecord.result !== null && 'reason' in aiRecord.result 
+								? String(aiRecord.result.reason) 
+								: ""
+						}
+					}] : []
+				};
+			});
+
 			const total = await db.redditPost.count({
 				where: {
 					categoryId: {
@@ -142,7 +160,7 @@ export const suggestionRouterRouter = new Hono()
 			  
 
 			return c.json({
-				records,
+				records: transformedRecords,
 				total,
 			});
 		},
