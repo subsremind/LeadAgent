@@ -87,15 +87,21 @@
 			"totalTokens": "Total Tokens",
 			"totalCategorys": "Total Categorys",
 			"totalPosts": "Total Posts",
-			"userUsage": "User Usage Analysis",
+			"noCreditUsersCount": "No Credit Users Count",
+			"user": "User",
 			"tokens": "Tokens",
 			"posts": "Posts",
 			"date": "Date",
 			"viewDetails": "View Details",
 			"usageDetails": "Usage Details",
-			"user": "User",
-			"userTokens": "User Tokens",
-			"userPosts": "User Posts"
+			"tokenUsage": "Token Usage",
+			"postUsage": "Post Usage",
+			"creditUsage": "Credit Usage",
+			"userCreditUsage": "Credit Usage",
+			"creditUsageRate": "Credit Usage Rate",
+			"remainingCredits": "Remaining Credits",
+			"usageRate": "Credit Usage Rate",
+			"creditUsageDesc": "This table shows the credit usage of each user, including the total credits, used credits, remaining credits, and the credit usage rate. "
 		},
 		"setting": {
 			"reddit": {

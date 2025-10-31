@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@ui/components/button";
-import { Card } from "@ui/components/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@ui/components/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@ui/components/dialog";
 import {
 	BarChart4Icon,
@@ -13,10 +13,19 @@ import {
 	CreditCardIcon,
 	BoxIcon,
 	MessageCircleIcon,
-	XIcon
+	XIcon,
+	TypeOutlineIcon
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@ui/components/chart";
 
 
 export function Usage() {
@@ -41,7 +50,21 @@ export function Usage() {
 		totalCategorys: usage?.totalCategorys || 0,
 		totalPosts: usage?.totalPosts || 0,
 		userUsageStats: usage?.userUsageStats || [],
+		userCreditStats: usage?.userCreditStats || [],
+		noCreditUsersCount: usage?.noCreditUsersCount || 0,
 	};
+
+	// 准备用户信用额度数据
+	const prepareCreditData = () => {
+		// 完全从API响应获取用户信用数据，不需要计算剩余量
+		const rawData = stats.userCreditStats || [];
+		return rawData;
+	};
+
+	// 为信用额度图表准备的数据
+	const creditData = prepareCreditData();
+
+
 
 	// 格式化大数字
 	const formatNumber = (num: number) => {
@@ -125,8 +148,11 @@ export function Usage() {
 		return chartData;
 	};
 
+
 	// 为图表准备的数据
 	const chartData = prepareChartData();
+
+
 
 	// 打开详情模态框
 	const handleViewDetails = () => {
@@ -162,11 +188,11 @@ export function Usage() {
 	return (
 		<Card className="p-6">
 			<h2 className="mb-6 font-semibold text-2xl">
-				{t("admin.usage.userUsage")}
+				{t("admin.usage.usageAnalysis")}
 			</h2>
 
 			{/* 顶部数字卡片 */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
 				<StatCard 
 					title={t("admin.usage.totalUsers")} 
 					value={formatNumber(stats.totalUsers)} 
@@ -176,7 +202,7 @@ export function Usage() {
 				<StatCard 
 					title={t("admin.usage.totalTokens")} 
 					value={formatNumber(stats.totalTokens)} 
-					icon={<CreditCardIcon className="text-white" />}
+					icon={<TypeOutlineIcon className="text-white" />}
 					color="bg-purple-600 text-white"
 				/>
 				<StatCard 
@@ -191,60 +217,115 @@ export function Usage() {
 					icon={<MessageCircleIcon className="text-white" />}
 					color="bg-orange-600 text-white"
 				/>
+				<StatCard 
+					title={t("admin.usage.noCreditUsersCount")} 
+					value={formatNumber(stats.noCreditUsersCount)} 
+					icon={<CreditCardIcon className="text-white" />}
+					color="bg-red-600 text-white"
+				/>
 			</div>
-
-			{/* 合并的折线图：同时展示Token消耗和帖子分析 */}
-		<Card className="p-6 mb-8">
-			<div className="flex justify-between items-center mb-4">
-				<h3 className="text-xl font-semibold">
-					{t("admin.usage.userUsage")}
-				</h3>
-				<Button variant="ghost" size="sm" className="text-primary" onClick={handleViewDetails}>
-					<BarChart4Icon className="mr-2 h-4 w-4" />
-					{t("admin.usage.viewDetails") }
-				</Button>
-			</div>
-			<div className="h-120">
-				<ResponsiveContainer width="100%" height="100%">
-					<LineChart
-							data={chartData}
-							margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
-						>
-						<CartesianGrid strokeDasharray="3 3" vertical={false} />
-						<XAxis 
-							dataKey="date"
-							tick={{ fontSize: 12 }}
-							angle={-45}
-							textAnchor="end"
-							height={70}
-						/>
-						{/* Y轴用于Token数据 */}
-						<YAxis 
-							tickFormatter={formatNumber}
-							label={{ value: t("admin.usage.tokens") || "Tokens",  position: 'top', offset: 20, style: { textAnchor: 'middle' } }}
-							domain={[0, 'auto']}
-						/>
-						<Tooltip 
-							content={renderSortedTooltip} 
-						/>
-						<Legend verticalAlign="top" height={36} />
-						{/* 只显示Token数据线条 */}
-						{uniqueUsers.map((user, index) => (
-							<Line 
-								key={`token-${user}`}
-								dataKey={`${user}Tokens`}
-								name={String(user)}
-								stroke={getUserColor(index)}
-								strokeWidth={2}
-								dot={{ r: 4, strokeWidth: 1, fill: '#fff' }}
-								activeDot={{ r: 6, strokeWidth: 0 }}
-								animationDuration={1500}
+			<Card className="p-6 mb-8">
+				<div className="flex justify-between items-center mb-4">
+					<h3 className="text-xl font-semibold">
+						{t("admin.usage.tokenUsage")}
+					</h3>
+					<Button variant="ghost" size="sm" className="text-primary" onClick={handleViewDetails}>
+						<BarChart4Icon className="mr-2 h-4 w-4" />
+						{t("admin.usage.viewDetails") }
+					</Button>
+				</div>
+				<div className="h-120">
+					<ResponsiveContainer width="100%" height="100%">
+						<LineChart
+								data={chartData}
+								margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
+							>
+							<CartesianGrid strokeDasharray="3 3" vertical={false} />
+							<XAxis 
+								dataKey="date"
+								tick={{ fontSize: 12 }}
+								angle={-45}
+								textAnchor="end"
+								height={70}
 							/>
-						))}
-					</LineChart>
-				</ResponsiveContainer>
-			</div>
-		</Card>
+							{/* Y轴用于Token数据 */}
+							<YAxis 
+								tickFormatter={formatNumber}
+								label={{ value: t("admin.usage.tokens") || "Tokens",  position: 'top', offset: 20, style: { textAnchor: 'middle' } }}
+								domain={[0, 'auto']}
+							/>
+							<Tooltip 
+								content={renderSortedTooltip} 
+							/>
+							<Legend verticalAlign="top" height={36} />
+							{/* 只显示Token数据线条 */}
+							{uniqueUsers.map((user, index) => (
+								<Line 
+									key={`token-${user}`}
+									dataKey={`${user}Tokens`}
+									name={String(user)}
+									stroke={getUserColor(index)}
+									strokeWidth={2}
+									dot={{ r: 4, strokeWidth: 1, fill: '#fff' }}
+									activeDot={{ r: 6, strokeWidth: 0 }}
+									animationDuration={1500}
+								/>
+							))}
+						</LineChart>
+					</ResponsiveContainer>
+				</div>
+			</Card>
+			{/* 用户信用额度表格 */}
+			<Card className="p-6 mb-8">
+					<CardHeader>
+						<CardTitle>{t("admin.usage.creditUsage")}</CardTitle>
+						<CardDescription>{t("admin.usage.creditUsageDesc")}</CardDescription>
+					</CardHeader>
+					<CardContent>
+			{creditData.length > 0 ? (
+				<div className="overflow-x-auto">
+					<table className="min-w-full divide-y divide-gray-200">
+						<thead className="bg-gray-50">
+							<tr>
+								<th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+									{t("admin.usage.user")}
+								</th>
+								<th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider cursor-help" title="Used/Total/Remaining">
+									{t("admin.usage.userCreditUsage")}
+								</th>
+								<th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+									{t("admin.usage.usageRate")}
+								</th>
+							</tr>
+						</thead>
+						<tbody className="bg-white divide-y divide-gray-200">
+							{creditData.map((item: any, index: number) => (
+								<tr key={`credit-${item.user}-${index}`}>
+									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+										{item.user}
+									</td>
+									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" title={`Used: ${item.usedCredits || 0}\nTotal: ${item.totalCredits || 0}\nRemaining: ${item.remainingCredits || 0}`}>
+										{formatNumber(item.usedCredits || 0)}/{formatNumber(item.totalCredits || 0)}/{formatNumber(item.remainingCredits || 0)}
+									</td>
+									<td className="px-6 py-4 whitespace-nowrap">
+										<span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.usageRate > 80 ? 'bg-red-100 text-red-800' : item.usageRate > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+											{item.usageRate || 0}%
+										</span>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			) : (
+				<div className="flex items-center justify-center py-12 text-gray-500">
+					{t("common.table.empty")}
+				</div>
+			)}
+		</CardContent>
+	</Card>
+
+		
 
 		{/* 详情模态框 */}
 		<Dialog open={isDetailsOpen} onOpenChange={handleCloseDetails}>
@@ -262,16 +343,16 @@ export function Usage() {
 							<thead className="bg-gray-50">
 								<tr>
 									<th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{t("admin.usage.date") || "日期"}
+										{t("admin.usage.date")}
 									</th>
 									<th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										{t("admin.usage.user")}
 									</th>
 									<th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{t("admin.usage.userTokens")}
+										{t("admin.usage.creditUsage")}
 									</th>
 									<th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										{t("admin.usage.userPosts")}
+										{t("admin.usage.postUsage")}
 									</th>
 								</tr>
 							</thead>
