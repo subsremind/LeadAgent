@@ -5,7 +5,7 @@ import { z } from "zod";
 import { db } from "@repo/database";
 
 import { authMiddleware } from "../../middleware/auth";
-import { openaiService, BUSINESS, formatPrompt } from "@repo/ai";
+import { aiServiceManager, BUSINESS, formatPrompt } from "@repo/ai";
 
 export const draftRouterRouter = new Hono()
 	.basePath("/draft")
@@ -58,7 +58,7 @@ export const draftRouterRouter = new Hono()
 
 			// return c.json([]);
 
-			const analysisResult = await openaiService.generateText(BUSINESS.DRAFT_GENERATE, prompt, {
+			const analysisResult = await aiServiceManager.generateText(BUSINESS.DRAFT_GENERATE, prompt, {
 				model: draftPrompt.model,
 				temperature: 0.7,
 				userId: user.id,

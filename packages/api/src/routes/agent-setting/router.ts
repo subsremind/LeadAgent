@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { authMiddleware } from "../../middleware/auth";
 import { AgentSettingCreateInput } from "./types";
-import { openaiService, formatPrompt, BUSINESS} from "@repo/ai";
+import { aiServiceManager, formatPrompt, BUSINESS} from "@repo/ai";
 import { nanoid } from "nanoid";
 import { logger } from "@repo/logs";
 
@@ -95,7 +95,7 @@ export const agentSettingRouter = new Hono()
 			// const promptSubreddit = promptLeadAgentSubreddit(description);
 
 
-			const responseSubreddit = await openaiService.generateText(BUSINESS.SUGGESTION_SUBREDDIT_GENERATE, subredditPromptFormatted, {
+			const responseSubreddit = await aiServiceManager.generateText(BUSINESS.SUGGESTION_SUBREDDIT_GENERATE, subredditPromptFormatted, {
 				model: settingPrompts.find(prompt => prompt.business === BUSINESS.SUGGESTION_SUBREDDIT_GENERATE)?.model,
 				temperature: 0.7,
 				userId: user.id, 
@@ -110,7 +110,7 @@ export const agentSettingRouter = new Hono()
 
 			logger.info("Suggestion query generate prompt", { prompt: queryPromptFormatted });
 
-			const responseQuery = await openaiService.generateText(BUSINESS.SUGGESTION_QUERY_GENERATE, queryPromptFormatted, {
+			const responseQuery = await aiServiceManager.generateText(BUSINESS.SUGGESTION_QUERY_GENERATE, queryPromptFormatted, {
 				model: settingPrompts.find(prompt => prompt.business === BUSINESS.SUGGESTION_QUERY_GENERATE)?.model,
 				temperature: 0.7,
 				userId: user.id, 
@@ -151,7 +151,7 @@ export const agentSettingRouter = new Hono()
 			try {
 				const rawData = c.req.valid("json");
 				const user = c.get("user");
-				// const embedding = await openaiService.generateEmbedding('query-embedding', user.id, rawData.query);
+				// const embedding = await aiServiceManager.generateEmbedding('query-embedding', user.id, rawData.query);
 				// if (!embedding) {
 				// 	return c.json({ error: "Failed to generate embedding" }, 500);
 				// }

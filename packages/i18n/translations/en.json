@@ -128,7 +128,33 @@
 				}
 			},
 			"credit_title": "Tokens-Credit Setting",
-			"credit_description": "This value defines how many tokens correspond to one credit."
+			"credit_description": "This value defines how many tokens correspond to one credit.",
+			"ai_platform": {
+				"title": "AI Platform Settings",
+				"description": "Configure the AI platform (OpenAI or Azure OpenAI) for your application",
+				"platforms": {
+					"openai": "OpenAI",
+					"azure": "Azure OpenAI"
+				},
+				"openai": {
+					"api_key": "OpenAI API Key",
+					"api_key_placeholder": "sk-...",
+					"api_key_help": "Enter your OpenAI API key. You can get this from your OpenAI dashboard."
+				},
+				"azure": {
+					"api_key": "Azure OpenAI API Key",
+					"api_key_placeholder": "Your Azure API key",
+					"endpoint": "Azure OpenAI Endpoint",
+					"endpoint_placeholder": "https://your-resource.openai.azure.com/",
+					"api_version": "Azure API Version",
+					"api_version_placeholder": "2023-12-01-preview",
+					"api_version_help": "Default value: 2023-12-01-preview"
+				},
+				"actions": {
+					"save": "Save Settings",
+					"saving": "Saving..."
+				}
+			}
 		}
 	},
 	"app": {
@@ -292,6 +318,7 @@
 		},
 		"loading": "Loading...",
 		"status": {
+			"saving": "Saving",
 			"success": "Success",
 			"failure": "Failure",
 			"error": "Error",

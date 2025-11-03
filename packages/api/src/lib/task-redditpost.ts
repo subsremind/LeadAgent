@@ -443,7 +443,7 @@ async function saveBatchRedditPosts(
 	// 	//let embeddingStr: string;
 	// 	// try {
 	// 	// 	// 尝试生成真实的 embedding
-	// 	// 	const embedding = await openaiService.generateEmbedding('reddit-embedding', '', `${r.title} ${r.selftext ?? ""}`);
+	// 	// 	const embedding = await aiServiceManager.generateEmbedding('reddit-embedding', '', `${r.title} ${r.selftext ?? ""}`);
 	// 	// 	embeddingStr = embedding.join(',');
 	// 	// } catch (error) {
 	// 	// 	// 如果 embedding 生成失败，使用默认的1536维零向量
