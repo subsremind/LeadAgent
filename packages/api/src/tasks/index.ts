@@ -22,7 +22,7 @@ const tasks = [
   },
   {
     id: "summary-reddit-post",
-    cronExpression: "1/20 * * * * *",
+    cronExpression: "5 12 */2 * * *",
     enabled: true,
     task: async () => {
       try {
