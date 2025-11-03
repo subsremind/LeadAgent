@@ -158,7 +158,7 @@ export async function saveRedditToken(tokenData: any): Promise<void> {
 	}
 }
 
-export async function getRedditPost() {
+export async function syncRedditPost() {
 	try {
 		const sortType = "new";
 		const channelList = await db.category.findMany({
