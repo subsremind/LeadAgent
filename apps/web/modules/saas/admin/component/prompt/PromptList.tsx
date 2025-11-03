@@ -3,6 +3,7 @@
 import { Button } from "@ui/components/button";
 import { Input } from "@ui/components/input";
 import { Textarea } from "@ui/components/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/components/select";
 import {
 	EditIcon,
 	PlusIcon,
@@ -26,8 +27,18 @@ export function PromptList() {
 	const [formData, setFormData] = useState({
 		business: "",
 		description: "",
-		prompt: ""
+		prompt: "",
+		model: "gpt-4o-mini"
 	});
+
+	// 可用的模型选项
+	const modelOptions = [
+		{ value: "gpt-4.1", label: "GPT-4.1" },
+		{ value: "gpt-4", label: "GPT-4" },
+		{ value: "gpt-4o", label: "GPT-4o" },
+		{ value: "gpt-4o-mini", label: "GPT-4o-mini" },
+		{ value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" }
+	];
 
 	// 获取prompt列表
 	const { data: promptList = [], isLoading, error } = useQuery({
@@ -69,7 +80,7 @@ export function PromptList() {
 		onSuccess: () => {
 			toast.success(t("common.status.success"));
 			// 重置表单和关闭对话框
-			setFormData({ business: "", description: "", prompt: "" });
+			setFormData({ business: "", description: "", prompt: "", model: "gpt-4o-mini" });
 			setEditingPrompt(null);
 			setDialogOpen(false);
 			// 刷新列表
@@ -87,12 +98,17 @@ export function PromptList() {
 		setFormData(prev => ({ ...prev, [name]: value }));
 	};
 
+	// 处理下拉选择变化
+	const handleSelectChange = (name: string, value: string) => {
+		setFormData(prev => ({ ...prev, [name]: value }));
+	};
+
 
 
 	// 打开新增对话框
 	const handleAddPrompt = () => {
 		setEditingPrompt(null);
-		setFormData({ business: "", description: "", prompt: "" });
+		setFormData({ business: "", description: "", prompt: "", model: "gpt-4o-mini" });
 		setDialogOpen(true);
 	};
 
@@ -102,7 +118,8 @@ export function PromptList() {
 		setFormData({
 			business: prompt.business || "",
 			description: prompt.description || "",
-			prompt: prompt.prompt || ""
+			prompt: prompt.prompt || "",
+			model: prompt.model || "gpt-4o-mini"
 		});
 		setDialogOpen(true);
 	};
@@ -138,6 +155,7 @@ export function PromptList() {
 				<TableHeader>
 					<TableRow>
 						<TableHead className="w-[200px]">Business</TableHead>
+						<TableHead className="w-[150px]">Model</TableHead>
 						<TableHead>Description</TableHead>
 						<TableHead className="max-w-xs">Prompt Preview</TableHead>
 						<TableHead className="text-right">Actions</TableHead>
@@ -147,6 +165,7 @@ export function PromptList() {
 					{promptList.map((item: any) => (
 						<TableRow key={item.id} className="hover:bg-slate-50">
 							<TableCell className="font-medium">{item.business || "-"}</TableCell>
+							<TableCell className="w-[150px]">{item.model || "-"}</TableCell>
 							<TableCell>{item.description || "-"}</TableCell>
 							<TableCell className="max-w-xs truncate">
 								<div className="text-sm text-slate-600 line-clamp-2" title={item.prompt}>
@@ -182,16 +201,37 @@ export function PromptList() {
 						</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
-						<div className="space-y-2">
-							<Label htmlFor="business">Business</Label>
-							<Input
-								id="business"
-								name="business"
-								value={formData.business}
-								onChange={handleInputChange}
-								placeholder="Enter business name"
-								required
-							/>
+						<div className="flex space-x-4">
+							<div className="space-y-2 flex-1">
+								<Label htmlFor="business">Business</Label>
+								<Input
+									id="business"
+									name="business"
+									value={formData.business}
+									onChange={handleInputChange}
+									placeholder="Enter business name"
+									required
+								/>
+							</div>
+							
+							<div className="space-y-2 flex-1">
+								<Label htmlFor="model">AI Model</Label>
+								<Select
+									value={formData.model}
+									onValueChange={(value) => handleSelectChange("model", value)}
+								>
+									<SelectTrigger id="model">
+										<SelectValue placeholder="Select AI model" />
+									</SelectTrigger>
+									<SelectContent>
+										{modelOptions.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 						</div>
 						
 						<div className="space-y-2">
@@ -231,7 +271,7 @@ export function PromptList() {
 						<Button
 							variant="primary"
 							onClick={handleSubmit}
-							disabled={savePromptMutation.isPending || !formData.business || !formData.description || !formData.prompt}
+							disabled={savePromptMutation.isPending || !formData.business || !formData.description || !formData.prompt || !formData.model}
 						>
 							{t(savePromptMutation.isPending ? "common.confirmation.submitting" : "common.confirmation.save")}
 						</Button>

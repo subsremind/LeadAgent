@@ -243,7 +243,7 @@ export const suggestionRouterRouter = new Hono()
 			}
 
 			// 1. 生成查询文本的向量表示
-			// const embedding = await openaiService.generateQueryEmbedding(query);
+			// const embedding = await aiServiceManager.generateQueryEmbedding(query);
 			// 2. 使用pgvector进行向量搜索
 			try {
 				records = await db.$queryRawUnsafe(`

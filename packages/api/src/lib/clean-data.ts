@@ -21,19 +21,19 @@ export async function cleanData() {
       having bool_or(included) = false`;
 
     logger.info(`cleanData unUsedPath ${unUsedPath.length} `);
-    if (unUsedPath.length === 0) {
-      logger.info(`cleanData no unUsedPath`);
-      return;
-    }
+    // if (unUsedPath.length === 0) {
+    //   logger.info(`cleanData no unUsedPath`);
+    //   return;
+    // }
 
     // 删除未使用的分类路径
-    // await db.category.deleteMany({
-    //   where: {
-    //     path: {
-    //       in: unUsedPath.map((item) => item.path),
-    //     },
-    //   },
-    // });
+    await db.category.deleteMany({
+      where: {
+        path: {
+          in: unUsedPath.map((item) => item.path),
+        },
+      },
+    });
 
     logger.info(`cleanData delete ${unUsedPath.length}`);
   

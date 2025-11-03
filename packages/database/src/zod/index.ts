@@ -78,7 +78,7 @@ export const AiChatScalarFieldEnumSchema = z.enum(['id','organizationId','userId
 
 export const AiRequestLogScalarFieldEnumSchema = z.enum(['id','userId','organizationId','model','business','promptTokens','completionTokens','totalTokens','cost','duration','success','error','timestamp','credit']);
 
-export const AiPromptScalarFieldEnumSchema = z.enum(['id','business','description','prompt','createdAt','updatedAt']);
+export const AiPromptScalarFieldEnumSchema = z.enum(['id','business','description','prompt','model','createdAt','updatedAt']);
 
 export const AdminSettingScalarFieldEnumSchema = z.enum(['id','key','value','updatedBy','createdAt','updatedAt']);
 
@@ -333,6 +333,7 @@ export const AiPromptSchema = z.object({
   business: z.string(),
   description: z.string(),
   prompt: z.string(),
+  model: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
