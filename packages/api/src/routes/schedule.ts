@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { getRedditPost } from "../lib/task-redditpost";
+import { syncRedditPost } from "../lib/sync-reddit-post";
 import { getNoAnalyzePost } from "../lib/ai-analyzepost";
 import { logger } from "@repo/logs";
 
@@ -19,7 +19,7 @@ export const scheduleRouter = new Hono().get(
 		
 		// 异步执行任务，不等待完成
 		if (task === "sync-reddit-post") {
-			getRedditPost().catch(err => {
+			syncRedditPost().catch(err => {
 				logger.error(`Error executing sync-reddit-post task: ${err}`);
 			});
 		} else if (task === "ai-analyze-post") {

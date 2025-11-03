@@ -88,7 +88,7 @@ export const UserCreditSettingScalarFieldEnumSchema = z.enum(['id','date','userI
 
 export const CategoryScalarFieldEnumSchema = z.enum(['id','name','path','platform','createdAt','updatedAt']);
 
-export const RedditPostScalarFieldEnumSchema = z.enum(['id','categoryId','redditId','title','selftext','url','permalink','author','subreddit','ups','downs','score','numComments','createdUtc','recordCreatedAt','recordUpdatedAt']);
+export const RedditPostScalarFieldEnumSchema = z.enum(['id','categoryId','redditId','title','selftext','url','permalink','author','subreddit','ups','downs','score','numComments','createdUtc','recordCreatedAt','recordUpdatedAt','aiSummary']);
 
 export const AgentSettingScalarFieldEnumSchema = z.enum(['id','userId','description','subreddit','query','createdAt','updatedAt']);
 
@@ -419,6 +419,7 @@ export const RedditPostSchema = z.object({
   createdUtc: z.coerce.date().nullable(),
   recordCreatedAt: z.coerce.date(),
   recordUpdatedAt: z.coerce.date(),
+  aiSummary: z.string().nullable(),
 })
 
 export type RedditPost = z.infer<typeof RedditPostSchema>

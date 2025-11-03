@@ -161,15 +161,23 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 			) : (
 				currentData.map((item: any) => (
 					<Card key={item.id} className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02]">
+						
 						<Link href={item.url} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
 							<CardHeader>
 								<div>
 									<Label className="ml-auto text-xs text-muted-foreground justify-start">{item.author} · {formatRelativeTime(new Date(item.createdUtc))} </Label>
 								</div>
-								<CardTitle>
-									{item.title}
-								</CardTitle>
-								<CardDescription className="mb-2 overflow-hidden text-ellipsis" style={{display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', lineHeight: '1.5'}}>{item.selftext}</CardDescription>
+								{item.aiSummary && (
+									<div className="bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 p-2 rounded-r-lg mb-2 shadow-sm">
+										<p className="text-sm font-semibold text-amber-800 dark:text-amber-300 leading-tight">
+											{item.aiSummary}
+										</p>
+									</div>
+								)}
+								<CardTitle className="text-base font-bold text-muted-foreground">
+											{item.title}
+										</CardTitle>
+										<CardDescription className="mb-2 overflow-hidden text-ellipsis text-sm text-muted-foreground opacity-80" style={{display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', lineHeight: '1.5'}}>{item.selftext}</CardDescription>
 							</CardHeader>
 						</Link>
 						<CardFooter>

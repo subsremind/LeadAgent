@@ -1,19 +1,32 @@
 import { scheduler } from "@repo/scheduler";
-import { getRedditPost } from "../lib/task-redditpost";
+import { syncRedditPost } from "../lib/sync-reddit-post";
 import { getNoAnalyzePost } from "../lib/ai-analyzepost";
 import { cleanData } from "../lib/clean-data";
 import { config } from "@repo/config";
 import { logger } from "@repo/logs";
 import { userCreditCount } from "../lib/user_credit_count";
+import { summaryRedditPost } from "../lib/summary-reddit-post";
 
 const tasks = [
   {
     id: "sync-reddit-post",
-    cronExpression: "0 10 */2 * * *",
+    cronExpression: "5 10 */2 * * *",
     enabled: true,
     task: async () => {
       try {
-        await getRedditPost();
+        await syncRedditPost();
+      } catch (error) {
+        console.error("Failed to sync Reddit posts:", error);
+      }
+    },
+  },
+  {
+    id: "summary-reddit-post",
+    cronExpression: "5 12 */2 * * *",
+    enabled: true,
+    task: async () => {
+      try {
+        await summaryRedditPost();
       } catch (error) {
         console.error("Failed to sync Reddit posts:", error);
       }
@@ -21,7 +34,7 @@ const tasks = [
   },
   {
     id: "ai-analyze-reddit-post",
-    cronExpression: "0 30 */2 * * *",
+    cronExpression: "10 30 */2 * * *",
     enabled: true,
     task: async () => {
       try {
@@ -33,7 +46,7 @@ const tasks = [
   },
   {
     id: "clean-data",
-    cronExpression: "0 0 4 * * *",
+    cronExpression: "15 1/30 * * * *",
     enabled: true,
     task: async () => {
       try {
@@ -79,7 +92,7 @@ export function initializeTasks() {
   //   task: async () => {
   //     try {
   //       //logger.info("=============start to sync reddit post", new Date());
-  //       await getRedditPost();
+  //       await syncRedditPost();
   //     } catch (error) {
   //       console.error("Failed to sync Reddit posts:", error);
   //     }
