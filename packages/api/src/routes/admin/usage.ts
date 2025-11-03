@@ -21,6 +21,15 @@ type MergedUserUsage = {
   post_count: number;
 };
 
+// 用户信用统计类型
+type UserCreditStat = {
+  user: string;
+  usedCredits: number;
+  totalCredits: number;
+  usageRate: number;
+  remainingCredits: number;
+};
+
 export const usageRouter = new Hono()
 	.basePath("/usage")
 	.use(adminMiddleware)
@@ -81,6 +90,30 @@ export const usageRouter = new Hono()
 				ORDER BY a."date" ASC, a."user" ASC
 			`;
 
+			const userCreditStats = await db.$queryRaw<UserCreditStat[]>`
+					with de as (
+						select "value"::integer "default_credit" from admin_setting as2 where "key" = 'default_credit'
+					),
+					uc as (
+						select "userId", case when ucs.credit is null then (select "default_credit" from de)
+						else ucs.credit end "totalCredits"	
+						from user_credit_setting ucs
+					)
+
+					select u.name as "user",
+					ucu.credit "usedCredits",
+					"totalCredits",
+					ROUND((ucu.credit::numeric / "totalCredits") * 100, 2) as "usageRate",
+					"totalCredits" - ucu.credit as "remainingCredits"
+					from user_credit_usage ucu
+					left join uc on ucu."userId" = uc."userId"
+					left join public.user u on ucu."userId" = u.id
+					order by "usageRate" desc
+			`
+
+			// 统计一下没有额度的用户数量
+			const noCreditUsersCount = userCreditStats.filter(stat => stat.remainingCredits <= 0).length;
+
 			// 累加 token_usage 计算总token使用量
 			const totalTokens = userUsageStats.reduce((acc, cur) => acc + Number(cur.token_usage || 0), 0);
 			// 累加 post_count 计算总分析数量
@@ -100,8 +133,10 @@ export const usageRouter = new Hono()
 				totalCategorys: Number(totalCategorys),
 				totalPosts: Number(totalPosts),
 				totalTokens,
+				noCreditUsersCount,
 				totalAnalyzeCount,
-				userUsageStats: serializedUserUsageStats
+				userUsageStats: serializedUserUsageStats,
+				userCreditStats
 			});
 		},
 	);

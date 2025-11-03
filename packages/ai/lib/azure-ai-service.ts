@@ -2,70 +2,89 @@ import OpenAI from 'openai';
 import { nanoid } from "nanoid";
 import { db } from "@repo/database";
 import { logger } from "@repo/logs";
-
 import { CommonRequestConfig, CommonAIResponse, AIRequestLog } from './types';
 
-// OpenAI特定的请求配置接口
-export interface OpenAIRequestConfig extends CommonRequestConfig {}
+// Azure AI特定的请求配置接口
+export interface AzureAIRequestConfig extends CommonRequestConfig {}
 
-// OpenAI特定的响应结果接口
-export interface OpenAIResponse extends CommonAIResponse {}
+// Azure AI特定的响应结果接口
+export interface AzureAIResponse extends CommonAIResponse {}
 
-// 价格表（美元/1000 tokens）
+// Azure OpenAI 价格表（美元/1000 tokens）
 const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
-  'gpt-3.5-turbo': { prompt: 0.0015, completion: 0.002 },
-  'gpt-3.5-turbo-1106': { prompt: 0.001, completion: 0.002 },
-  'gpt-4o': { prompt: 0.005, completion: 0.015 },
-  'gpt-4o-mini': { prompt: 0.005, completion: 0.015 },
-  'gpt-4-turbo': { prompt: 0.01, completion: 0.03 },
+  'gpt-35-turbo': { prompt: 0.0015, completion: 0.002 },
+  'gpt-35-turbo-1106': { prompt: 0.001, completion: 0.002 },
   'gpt-4': { prompt: 0.03, completion: 0.06 },
-  'text-embedding-3-small': { prompt: 0.02, completion: 0 }, // embedding模型价格
-  // 可以添加更多模型的价格
+  'gpt-4-turbo': { prompt: 0.01, completion: 0.03 },
+  'gpt-4o': { prompt: 0.005, completion: 0.015 },
+  'text-embedding-ada-002': { prompt: 0.0001, completion: 0 }, // Azure embedding模型价格
+  'text-embedding-3-small': { prompt: 0.02, completion: 0 },
+  // 可以添加更多Azure模型的价格
 };
 
-
 /**
- * OpenAI服务类 - 提供通用的OpenAI接口请求方法
+ * Azure AI服务类 - 提供通用的Azure OpenAI接口请求方法
  */
-export class OpenAIService {
-  private apiKey?: string;
-  private _openaiClient: OpenAI | null = null;
+export class AzureAIService {
+  private options: {
+    apiKey?: string;
+    endpoint?: string;
+    apiVersion?: string;
+    deploymentName?: string;
+  } | undefined;
+  private _azureClient: OpenAI | null = null;
 
-  get openaiClient(): OpenAI {
-    if (!this._openaiClient) {
-      this._openaiClient = this.initializeClient();
+  get azureClient(): OpenAI {
+    if (!this._azureClient) {
+      this._azureClient = this.initializeClient();
     }
-    return this._openaiClient;
+    return this._azureClient;
   }
 
-  constructor(apiKey?: string) {
-    this.apiKey = apiKey;
+  constructor(options?: {
+    apiKey?: string;
+    endpoint?: string;
+    apiVersion?: string;
+    deploymentName?: string;
+  }) {
+    this.options = options;
   }
 
   /**
-   * 初始化OpenAI客户端，仅在实际使用时验证配置
+   * 初始化Azure OpenAI客户端，仅在实际使用时验证配置
    */
   private initializeClient(): OpenAI {
-    // 使用传入的API密钥或从环境变量获取
-    const key = this.apiKey || process.env.OPENAI_API_KEY || "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";
-    if (!key) {
-      throw new Error('OpenAI API key is required');
+    // 使用传入的配置或从环境变量获取
+    const apiKey = this.options?.apiKey || process.env.AZURE_OPENAI_API_KEY;
+    const endpoint = this.options?.endpoint || process.env.AZURE_OPENAI_ENDPOINT;
+    const apiVersion = this.options?.apiVersion || process.env.AZURE_OPENAI_API_VERSION || '2023-05-15';
+    const deploymentName = this.options?.deploymentName || process.env.AZURE_OPENAI_DEPLOYMENT || '';
+
+    if (!apiKey) {
+      throw new Error('Azure OpenAI API key is required');
+    }
+    
+    if (!endpoint) {
+      throw new Error('Azure OpenAI endpoint is required');
+    }
+    
+    if (!deploymentName) {
+      throw new Error('Azure OpenAI deployment name is required. Please provide a valid deployment ID.');
     }
 
-    // 初始化官方OpenAI客户端
     return new OpenAI({
-      apiKey: key,
+      apiKey: apiKey,
+      baseURL: `${endpoint}/openai/deployments/${deploymentName}`,
+      defaultQuery: { 'api-version': apiVersion },
       dangerouslyAllowBrowser: typeof window !== 'undefined',
     });
-
-
   }
 
   /**
    * 计算请求的成本
    */
   private calculateCost(model: string, promptTokens: number, completionTokens: number): number {
-    const pricing = MODEL_PRICING[model] || MODEL_PRICING['gpt-3.5-turbo'];
+    const pricing = MODEL_PRICING[model] || MODEL_PRICING['gpt-35-turbo'];
     return (promptTokens * pricing.prompt + completionTokens * pricing.completion) / 1000;
   }
 
@@ -74,9 +93,6 @@ export class OpenAIService {
    */
   private async logRequest(logData: AIRequestLog): Promise<void> {
     try {
-      // 这里简化处理，实际项目中应该有对应的表模型
-      // 示例：await db.aiRequestLog.create({ data: logData });
-      //console.log('AI Request Log:', logData);
       await db.aiRequestLog.create({ data: logData });
     } catch (error) {
       console.error('Failed to log AI request:', error);
@@ -85,11 +101,11 @@ export class OpenAIService {
   }
 
   /**
-   * 通用的OpenAI聊天完成请求方法
+   * 通用的Azure OpenAI聊天完成请求方法
    */
   async chatCompletion(
     business: string,
-    config: OpenAIRequestConfig,
+    config: AzureAIRequestConfig,
     logOptions?: {
       userId?: string;
       organizationId?: string;
@@ -100,7 +116,7 @@ export class OpenAIService {
     
     try {
       // 执行API请求 - 使用类型断言解决类型不匹配问题
-      const response = await this.openaiClient.chat.completions.create(config as any);
+      const response = await this.azureClient.chat.completions.create(config as any);
       const duration = Date.now() - startTime;
 
       // 构建提示文本用于日志记录
@@ -191,15 +207,15 @@ export class OpenAIService {
       organizationId?: string;
     }
   ): Promise<string> {
-    //如果model 是gpt-5, 不用max_tokens 和 temperature 参数
-    const config: OpenAIRequestConfig = {
-      model: options?.model || 'gpt-4.1',
+    // 如果model 是gpt-5, 不用max_tokens 和 temperature 参数
+    const config: AzureAIRequestConfig = {
+      model: options?.model || 'gpt-35-turbo', // Azure默认使用gpt-35-turbo
       messages: [{ role: 'user', content: prompt }],
       max_tokens: options?.maxTokens,
       temperature: options?.temperature || 0.7,
     };
 
-    if (config.model === 'gpt-5') {
+    if (config.model.includes('gpt-5')) {
       delete config.max_tokens;
       delete config.temperature;
     }
@@ -222,8 +238,8 @@ export class OpenAIService {
     const requestId = nanoid();
     
     try {
-      const response = await this.openaiClient.embeddings.create({
-        model: "text-embedding-3-small",
+      const response = await this.azureClient.embeddings.create({
+        model: "text-embedding-ada-002", // Azure默认使用的embedding模型
         input: text,
       });
       
@@ -233,8 +249,8 @@ export class OpenAIService {
       const promptTokens = response.usage?.prompt_tokens || 0;
       const totalTokens = response.usage?.total_tokens || 0;
       
-      // 计算成本（使用正确的embedding模型价格）
-      const cost = this.calculateCost("text-embedding-3-small", promptTokens, 0);
+      // 计算成本
+      const cost = this.calculateCost("text-embedding-ada-002", promptTokens, 0);
       // 查询 token 和 credit 的关系，计算 credit
       const tokenCreditRate = await db.adminSetting.findFirst({
         where: {
@@ -256,7 +272,7 @@ export class OpenAIService {
       await this.logRequest({
         id: requestId,
         userId,
-        model: "text-embedding-3-small",
+        model: "text-embedding-ada-002",
         business,
         promptTokens,
         completionTokens: 0,
@@ -284,7 +300,7 @@ export class OpenAIService {
       // 记录失败的请求
       await this.logRequest({
         id: requestId,
-        model: "text-embedding-3-small",
+        model: "text-embedding-ada-002",
         business,
         promptTokens: 0,
         completionTokens: 0,
@@ -306,7 +322,7 @@ export class OpenAIService {
    */
   async streamChatCompletion(
     business: string,
-    config: OpenAIRequestConfig,
+    config: AzureAIRequestConfig,
     onChunk: (chunk: string, isFinal: boolean) => void,
     logOptions?: {
       userId?: string;
@@ -327,7 +343,7 @@ export class OpenAIService {
       
       // 设置为流式响应
       const streamConfig = { ...config, stream: true };
-      const stream = await this.openaiClient.chat.completions.create(streamConfig as any);
+      const stream = await this.azureClient.chat.completions.create(streamConfig as any);
 
       // 处理流式响应
       const streamAsync = stream as any;
@@ -390,6 +406,6 @@ export class OpenAIService {
 }
 
 // 创建默认实例
-export const openaiService = new OpenAIService();
+export const azureAIService = new AzureAIService();
 
-export default openaiService;
+export default azureAIService;

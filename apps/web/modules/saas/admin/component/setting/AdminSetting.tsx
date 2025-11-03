@@ -6,7 +6,7 @@ import { Card } from "@ui/components/card";
 import { RedditAuth } from "./RedditAuth";
 import { useQuery } from "@tanstack/react-query";
 import { CreditSetting } from "./CreditSetting";
-
+import { AISetting } from "./AISetting";
 
 
 export function AdminSetting() {
@@ -24,10 +24,11 @@ export function AdminSetting() {
 		  
 		  return await response.json();
 		},
-	  });
+	});
 
 	return (
 		<SettingsList>
+			
 			<SettingsItem
 				title={t("admin.setting.reddit.title")}
 				description={t("admin.setting.reddit.description")}
@@ -41,6 +42,12 @@ export function AdminSetting() {
 				description={t("admin.setting.credit_description")}
 			>
 				<CreditSetting value={data?.token_credit_mapping || ""} />
+			</SettingsItem>
+			<SettingsItem
+				title={t("admin.setting.ai_platform.title")}
+				description={t("admin.setting.ai_platform.description")}
+			>
+				<AISetting value={data?.ai_platform || ""} />
 			</SettingsItem>
 		</SettingsList>
 	);

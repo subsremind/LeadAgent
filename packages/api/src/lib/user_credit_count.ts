@@ -7,9 +7,9 @@ export async function userCreditCount() {
   
   const userCreditUsage = await db.aiRequestLog.groupBy({
     by: ['userId'],
-    where: {
-      business: 'ai-analyze-post',
-    },
+    // where: {
+    //   business: 'ai-analyze-post',
+    // },
     _sum: {
       credit: true,
     },
