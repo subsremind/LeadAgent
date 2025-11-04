@@ -173,10 +173,9 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 											{item.title}
 								</CardTitle>
 								{item.aiSummary && (
-									<div className="bg-yellow-50 rounded-lg m-[0_0_0_0] p-[5px_5px] shadow-sm relative flex items-center gap-2">
-										<span className="text-[15px] font-semibold text-sky-600 leading-tight flex items-center gap-2">
-											<Sparkles className="size-4 text-[#FFC107] flex-shrink-0" /> 
-											{item.aiSummary}
+									<div className="bg-yellow-50 rounded-lg m-[0_0_0_0] p-[5px_5px] shadow-sm relative">
+										<span className="text-[15px] font-semibold text-sky-600 leading-tight">
+											<Sparkles className="size-4 text-[#FFC107] inline-block mr-2 align-text-bottom" /> {item.aiSummary}
 										</span>
 									</div>
 								)}
