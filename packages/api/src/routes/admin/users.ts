@@ -27,6 +27,12 @@ export const userRouter = new Hono()
 		async (c) => {
 			const { query, limit, offset } = c.req.valid("query");
 
+			// 获取default_credit设置值
+			const defaultCreditSetting = await db.adminSetting.findUnique({
+				where: { key: "default_credit" },
+			});
+			const defaultCredit = defaultCreditSetting ? parseInt(defaultCreditSetting.value || "0", 10) : 0;
+
 			const users = await db.user.findMany({
 				where: {
 					name: { contains: query, mode: "insensitive" },
@@ -47,9 +53,15 @@ export const userRouter = new Hono()
 				},
 			});
 
+			// 处理用户数据，当userCreditSetting为空时使用default_credit值
+			const processedUsers = users.map((user) => ({
+				...user,
+				userCreditSetting: user.userCreditSetting || { credit: defaultCredit },
+			}));
+
 			const total = await db.user.count();
 
-			return c.json({ users, total });
+			return c.json({ users: processedUsers, total });
 		},
 	)
 	.get('/start-analysis', async (c) => {
