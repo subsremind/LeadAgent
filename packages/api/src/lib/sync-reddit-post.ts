@@ -506,6 +506,7 @@ function extractPosts(json: any, categoryId?: string): RedditPost[] {
 		id: nanoid(),
 		recordCreatedAt: new Date(),
 		recordUpdatedAt: new Date(),
+		aiSummary: null,
 	  };
 		return redditPost;
 	});
