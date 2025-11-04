@@ -5,7 +5,8 @@ import { SettingsItem } from "@saas/shared/components/SettingsItem";
 import { Card } from "@ui/components/card";
 import { RedditAuth } from "./RedditAuth";
 import { useQuery } from "@tanstack/react-query";
-import { CreditSetting } from "./CreditSetting";
+import { CreditMappingSetting } from "./CreditMappingSetting";
+import { DefaultCreditSetting } from "./DefaultCreditSetting";
 import { AISetting } from "./AISetting";
 
 
@@ -41,7 +42,13 @@ export function AdminSetting() {
 				title={t("admin.setting.credit_title")}
 				description={t("admin.setting.credit_description")}
 			>
-				<CreditSetting value={data?.token_credit_mapping || ""} />
+				<CreditMappingSetting value={data?.token_credit_mapping || ""} />
+			</SettingsItem>
+			<SettingsItem
+				title={t("admin.setting.defaultCredit_title")}
+				description={t("admin.setting.defaultCredit_title_description")}
+			>
+				<DefaultCreditSetting value={data?.default_credit || ""} />
 			</SettingsItem>
 			<SettingsItem
 				title={t("admin.setting.ai_platform.title")}

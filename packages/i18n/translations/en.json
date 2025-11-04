@@ -129,6 +129,8 @@
 			},
 			"credit_title": "Tokens-Credit Setting",
 			"credit_description": "This value defines how many tokens correspond to one credit.",
+			"defaultCredit_title": "Default Credit Setting",
+			"defaultCredit_title_description": "This value defines the default credit for each user.",
 			"ai_platform": {
 				"title": "AI Platform Settings",
 				"description": "Configure the AI platform (OpenAI or Azure OpenAI) for your application",
