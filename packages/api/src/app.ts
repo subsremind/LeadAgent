@@ -23,10 +23,27 @@ import { uploadsRouter } from "./routes/uploads";
 import { webhooksRouter } from "./routes/webhooks";
 import { scheduleRouter } from "./routes/schedule";
 import { integrationRouter } from "./routes/admin/integration";
+import { InsufficientCreditsError } from "@repo/ai/lib/ai-service-manager";
+import { logger } from "@repo/logs";
 export const app = new Hono().basePath("/api");
 
 app.use(loggerMiddleware);
 app.use(corsMiddleware);
+
+// 全局错误处理中间件
+app.onError((err, c) => {
+  // 处理自定义的InsufficientCreditsError错误
+  if (err.name === 'InsufficientCreditsError' || err instanceof InsufficientCreditsError) {
+    // 返回400或402状态码和友好的错误信息
+    return c.json({ error: err.message }, 402);
+  }
+  
+  // 记录其他错误
+  logger.error("API Error:", err);
+  
+  // 对于其他错误，返回通用错误信息
+  return c.json({ error: "Something went wrong" }, 500);
+});
 
 const appRouter = app
 	.route("/", authRouter)
