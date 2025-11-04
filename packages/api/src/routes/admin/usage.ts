@@ -93,20 +93,16 @@ export const usageRouter = new Hono()
 			const userCreditStats = await db.$queryRaw<UserCreditStat[]>`
 					with de as (
 						select "value"::integer "default_credit" from admin_setting as2 where "key" = 'default_credit'
-					),
-					uc as (
-						select "userId", case when ucs.credit is null then (select "default_credit" from de)
-						else ucs.credit end "totalCredits"	
-						from user_credit_setting ucs
 					)
 
-					select u.name as "user",
-					ucu.credit "usedCredits",
-					"totalCredits",
-					ROUND((ucu.credit::numeric / "totalCredits") * 100, 2) as "usageRate",
-					"totalCredits" - ucu.credit as "remainingCredits"
+					select 
+						u.name as "user",
+						ucu.credit "usedCredits",
+						COALESCE(ucs.credit, (select "default_credit" from de), 0) as "totalCredits",
+						ROUND((ucu.credit::numeric / COALESCE(ucs.credit, (select "default_credit" from de), 1)) * 100, 2) as "usageRate",
+						COALESCE(ucs.credit, (select "default_credit" from de), 0) - ucu.credit as "remainingCredits"
 					from user_credit_usage ucu
-					left join uc on ucu."userId" = uc."userId"
+					left join user_credit_setting ucs on ucu."userId" = ucs."userId"
 					left join public.user u on ucu."userId" = u.id
 					order by "usageRate" desc
 			`
