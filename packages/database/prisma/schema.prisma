@@ -296,6 +296,7 @@ model RedditPost {
   createdUtc    DateTime? 
   recordCreatedAt DateTime @default(now()) 
   recordUpdatedAt DateTime @updatedAt 
+  aiSummary     String?  @db.Text
 
   aiAnalyzeRecords AiAnalyzeRecord[]
 

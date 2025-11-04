@@ -158,7 +158,7 @@ export async function saveRedditToken(tokenData: any): Promise<void> {
 	}
 }
 
-export async function getRedditPost() {
+export async function syncRedditPost() {
 	try {
 		const sortType = "new";
 		const channelList = await db.category.findMany({
@@ -506,6 +506,7 @@ function extractPosts(json: any, categoryId?: string): RedditPost[] {
 		id: nanoid(),
 		recordCreatedAt: new Date(),
 		recordUpdatedAt: new Date(),
+		aiSummary: null,
 	  };
 		return redditPost;
 	});

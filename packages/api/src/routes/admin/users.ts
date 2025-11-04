@@ -5,7 +5,7 @@ import { validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { adminMiddleware } from "../../middleware/admin";
 import { getNoAnalyzePost } from "../../lib/ai-analyzepost";
-import { getRedditPost } from "../../lib/task-redditpost";
+import { syncRedditPost } from "../../lib/sync-reddit-post";
 
 export const userRouter = new Hono()
 	.basePath("/users")
@@ -57,6 +57,6 @@ export const userRouter = new Hono()
 		return c.json({ success: true });
 	})
 	.get('/sync-reddit-posts', async (c) => {
-		await getRedditPost();
+		await syncRedditPost();
 		return c.json({ success: true });
 	});

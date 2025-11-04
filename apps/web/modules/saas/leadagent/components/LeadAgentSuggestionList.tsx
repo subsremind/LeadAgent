@@ -20,6 +20,7 @@ import {
 	SettingsIcon,
 	InfoIcon,
 	ShieldQuestionIcon,
+	Sparkles,
 	
 } from "lucide-react";
 import Link from "next/link";
@@ -161,15 +162,26 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 			) : (
 				currentData.map((item: any) => (
 					<Card key={item.id} className="mb-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02]">
+						
 						<Link href={item.url} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
 							<CardHeader>
+								
 								<div>
 									<Label className="ml-auto text-xs text-muted-foreground justify-start">{item.author} · {formatRelativeTime(new Date(item.createdUtc))} </Label>
 								</div>
-								<CardTitle>
-									{item.title}
+								<CardTitle className="text-base font-bold text-muted-foreground">
+											{item.title}
 								</CardTitle>
-								<CardDescription className="mb-2 overflow-hidden text-ellipsis" style={{display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', lineHeight: '1.5'}}>{item.selftext}</CardDescription>
+								{item.aiSummary && (
+									<div className="bg-yellow-50 rounded-lg m-[0_0_0_0] p-[5px_5px] shadow-sm relative flex items-center gap-2">
+										<span className="text-[15px] font-semibold text-sky-600 leading-tight flex items-center gap-2">
+											<Sparkles className="size-4 text-[#FFC107] flex-shrink-0" /> 
+											{item.aiSummary}
+										</span>
+									</div>
+								)}
+								
+								<CardDescription className="mb-2 overflow-hidden text-ellipsis text-sm text-muted-foreground opacity-80" style={{display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', lineHeight: '1.5'}}>{item.selftext}</CardDescription>
 							</CardHeader>
 						</Link>
 						<CardFooter>

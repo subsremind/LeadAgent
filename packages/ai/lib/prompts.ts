@@ -1,6 +1,7 @@
 
 export const BUSINESS: Record<string, string> = {
 	REDDIT_POST_ANALYZE: 'reddit-post-analyze',
+	REDDIT_POST_SUMMARY: 'reddit-post-summary',
 	SUGGESTION_SUBREDDIT_GENERATE: 'suggestion-subreddit-generate',
 	SUGGESTION_QUERY_GENERATE: 'suggestion-query-generate',
 	DRAFT_GENERATE: 'draft-generate',

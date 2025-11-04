@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { Spinner } from "@shared/components/Spinner";
-import { getRedditAuthUrl } from "@repo/api/src/lib/task-redditpost";
+import { getRedditAuthUrl } from "@repo/api/src/lib/sync-reddit-post";
 import { Card } from "@ui/components/card";
 import { Button } from "@ui/components/button";
 
