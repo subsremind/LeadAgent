@@ -1,6 +1,17 @@
 import { db } from "@repo/database";
 import { OpenAIService, OpenAIRequestConfig } from "./openai-service";
 import { AzureAIService, AzureAIRequestConfig } from "./azure-ai-service";
+import { logger } from "@repo/logs";
+
+// 自定义错误类，用于区分业务错误和服务器错误
+export class InsufficientCreditsError extends Error {
+  constructor(message: string = 'Insufficient credits to use AI service') {
+    super(message);
+    this.name = 'InsufficientCreditsError';
+    // 确保在继承链上正确设置原型
+    Object.setPrototypeOf(this, InsufficientCreditsError.prototype);
+  }
+}
 
 // 平台类型定义
 export type AIPlatform = 'openai' | 'azure' | 'auto';
@@ -103,6 +114,40 @@ export class AIServiceManager {
   }
 
   /**
+   * 检查用户是否有足够的 credits 可用
+   */
+  private async hasAvailableCredits(logOptions?: {
+    userId?: string;
+    organizationId?: string;
+  }): Promise<boolean> {
+    try {
+      
+      if (logOptions?.userId) {
+        const creditStatus = await db.$queryRaw<{hasCredits: boolean}>`
+                  with de as (
+                    select "value"::integer "default_credit" from admin_setting as2 where "key" = 'default_credit'
+                  )
+                  select coalesce(ucu.credit,0) <
+                  coalesce(ucs.credit, (select "default_credit" from de)) as "hasCredits"
+                  from public.user u
+                  left join user_credit_usage ucu on u.id = ucu."userId" 
+                  left join user_credit_setting ucs on u.id  = ucs."userId"
+                  where u.id = ${logOptions.userId} limit 1`;
+        logger.info(`User ${logOptions.userId} credit status: ${JSON.stringify(creditStatus)}`);
+        if (!creditStatus?.hasCredits) {
+          logger.error(`User ${logOptions.userId} has no available credits`);
+          return false;
+        }
+      }
+      return true;
+    } catch (error) {
+      // 出错时默认允许使用，避免影响现有功能
+      logger.error(`Failed to check available credits for user ${logOptions?.userId}: ${error}`);
+      return true;
+    }
+  }
+
+  /**
    * 获取当前应该使用的服务实例
    */
   private async getCurrentService(): Promise<OpenAIService | AzureAIService> {
@@ -172,6 +217,12 @@ export class AIServiceManager {
       organizationId?: string;
     }
   ): Promise<any> {
+    // 检查是否有可用的 credits
+    const hasCredits = await this.hasAvailableCredits(logOptions);
+    if (!hasCredits) {
+      throw new InsufficientCreditsError('Insufficient credits to use AI service');
+    }
+    
     const service = await this.getCurrentService();
     return service.chatCompletion(business, config as any, logOptions);
   }
@@ -190,6 +241,16 @@ export class AIServiceManager {
       organizationId?: string;
     }
   ): Promise<string> {
+    // 检查是否有可用的 credits
+    const logOptions = {
+      userId: options?.userId,
+      organizationId: options?.organizationId
+    };
+    const hasCredits = await this.hasAvailableCredits(logOptions);
+    if (!hasCredits) {
+      throw new InsufficientCreditsError('Insufficient credits to use AI service');
+    }
+    
     const service = await this.getCurrentService();
     return service.generateText(business, prompt, options);
   }
@@ -198,6 +259,13 @@ export class AIServiceManager {
    * 生成查询文本的向量表示
    */
   async generateEmbedding(business: string, userId: string, text: string): Promise<number[]> {
+    // 检查是否有可用的 credits
+    const logOptions = { userId };
+    const hasCredits = await this.hasAvailableCredits(logOptions);
+    if (!hasCredits) {
+      throw new InsufficientCreditsError('Insufficient credits to use AI service');
+    }
+    
     const service = await this.getCurrentService();
     return service.generateEmbedding(business, userId, text);
   }
@@ -214,6 +282,14 @@ export class AIServiceManager {
       organizationId?: string;
     }
   ): Promise<void> {
+    // 检查是否有可用的 credits
+    const hasCredits = await this.hasAvailableCredits(logOptions);
+    if (!hasCredits) {
+      // 对于流式响应，调用 onChunk 通知客户端错误
+      onChunk('Insufficient credits to use AI service', true);
+      throw new InsufficientCreditsError('Insufficient credits to use AI service');
+    }
+    
     const service = await this.getCurrentService();
     return service.streamChatCompletion(business, config as any, onChunk, logOptions);
   }
