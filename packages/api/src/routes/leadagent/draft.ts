@@ -56,8 +56,6 @@ export const draftRouterRouter = new Hono()
 
 			console.log("draftPrompt", prompt);
 
-			// return c.json([]);
-
 			const analysisResult = await aiServiceManager.generateText(BUSINESS.DRAFT_GENERATE, prompt, {
 				model: draftPrompt.model,
 				temperature: 0.7,
