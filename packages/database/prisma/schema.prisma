@@ -49,6 +49,7 @@ model User {
   aiAnalyzeRecords   AiAnalyzeRecord[]
   userCreditSetting  UserCreditSetting? 
   userCreditUsage    UserCreditUsage? 
+  resourceFeedbacks  ResourceFeedback[]
 
   @@unique([email])
   @@unique([username])
@@ -316,21 +317,8 @@ model AgentSetting {
   @@map("agent_setting")
 }
 
-model AiAnalysisResult {
-  id        String   @id @default(uuid())
-  similarityScore    Float?
-  rerankerScore      Float?
-  mspAutomationInsight String?
-  llmResult          Json?
-  title              String?
-  selftext           String?
-  redditId           String?
-
-  @@map("ai_analysis_results")
-}
-
 model AiAnalyzeRecord {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   redditId  String?  @map("reddit_id")
@@ -345,8 +333,24 @@ model AiAnalyzeRecord {
   @@map("ai_analyze_record")
 }
 
+model ResourceFeedback {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resourceId    String
+  resourceType  String     
+  feedbackType  Int     // 1=ThumbsUp，2=ThumbsDown
+  content       String?    
+  createdAt     DateTime   @default(now())
+
+  @@index([resourceId, resourceType, feedbackType])
+  @@index([userId])
+
+  @@map("resource_feedback")
+}
+
 model integrationAuth {
-  id String   @id @default(uuid())
+  id String   @id @default(cuid())
   accessToken String?
   refreshToken String?
   tokenType String?

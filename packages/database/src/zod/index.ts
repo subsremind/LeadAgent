@@ -92,9 +92,9 @@ export const RedditPostScalarFieldEnumSchema = z.enum(['id','categoryId','reddit
 
 export const AgentSettingScalarFieldEnumSchema = z.enum(['id','userId','description','subreddit','query','createdAt','updatedAt']);
 
-export const AiAnalysisResultScalarFieldEnumSchema = z.enum(['id','similarityScore','rerankerScore','mspAutomationInsight','llmResult','title','selftext','redditId']);
-
 export const AiAnalyzeRecordScalarFieldEnumSchema = z.enum(['id','userId','redditId','categoryId','confidence','result','createdAt','updatedAt']);
+
+export const ResourceFeedbackScalarFieldEnumSchema = z.enum(['id','userId','resourceId','resourceType','feedbackType','content','createdAt']);
 
 export const IntegrationAuthScalarFieldEnumSchema = z.enum(['id','accessToken','refreshToken','tokenType','expiresAt','scope','type','createdAt','updatedAt']);
 
@@ -441,28 +441,11 @@ export const AgentSettingSchema = z.object({
 export type AgentSetting = z.infer<typeof AgentSettingSchema>
 
 /////////////////////////////////////////
-// AI ANALYSIS RESULT SCHEMA
-/////////////////////////////////////////
-
-export const AiAnalysisResultSchema = z.object({
-  id: z.string().uuid(),
-  similarityScore: z.number().nullable(),
-  rerankerScore: z.number().nullable(),
-  mspAutomationInsight: z.string().nullable(),
-  llmResult: JsonValueSchema.nullable(),
-  title: z.string().nullable(),
-  selftext: z.string().nullable(),
-  redditId: z.string().nullable(),
-})
-
-export type AiAnalysisResult = z.infer<typeof AiAnalysisResultSchema>
-
-/////////////////////////////////////////
 // AI ANALYZE RECORD SCHEMA
 /////////////////////////////////////////
 
 export const AiAnalyzeRecordSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().cuid(),
   userId: z.string(),
   redditId: z.string().nullable(),
   categoryId: z.string().nullable(),
@@ -475,11 +458,27 @@ export const AiAnalyzeRecordSchema = z.object({
 export type AiAnalyzeRecord = z.infer<typeof AiAnalyzeRecordSchema>
 
 /////////////////////////////////////////
+// RESOURCE FEEDBACK SCHEMA
+/////////////////////////////////////////
+
+export const ResourceFeedbackSchema = z.object({
+  id: z.string().cuid(),
+  userId: z.string(),
+  resourceId: z.string(),
+  resourceType: z.string(),
+  feedbackType: z.number().int(),
+  content: z.string().nullable(),
+  createdAt: z.coerce.date(),
+})
+
+export type ResourceFeedback = z.infer<typeof ResourceFeedbackSchema>
+
+/////////////////////////////////////////
 // INTEGRATION AUTH SCHEMA
 /////////////////////////////////////////
 
 export const integrationAuthSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().cuid(),
   accessToken: z.string().nullable(),
   refreshToken: z.string().nullable(),
   tokenType: z.string().nullable(),

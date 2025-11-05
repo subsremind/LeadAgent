@@ -21,6 +21,8 @@ import {
 	InfoIcon,
 	ShieldQuestionIcon,
 	Sparkles,
+	ThumbsUp,
+	ThumbsDown,
 	
 } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +41,7 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 	const [embeddingRate, setEmbeddingRate] = useState<number>(0.7);
 	const [displayEmbeddingRate, setDisplayEmbeddingRate] = useState<number>(0.7); // 用于显示的即时值
 	const debounceRef = useRef<NodeJS.Timeout | null>(null);
+	const queryClient = useQueryClient();
 
 	const { data: agentSetting, isLoading: isAgentSettingLoading } = useQuery({
 		queryKey: ["agent-setting"],
@@ -104,10 +107,32 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
         };
     }, []);
 
+	// 处理反馈（点赞/点踩）
+	const handleFeedback = async (resourceId: string, feedbackId?: string, feedbackType: number = 1) => {
+		try {
+			const response = await fetch('/api/leadagent/resource-feedback', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					id: feedbackId,
+					resourceId,
+					resourceType: 'reddit_post_suggestion',
+					feedbackType,
+				}),
+			});
 
+			const data = await response.json();
+			if (data.success) {
+				// 刷新数据
+				queryClient.invalidateQueries({ queryKey: ['leadagent-setting'] });
+			}
+		} catch (error) {
+			console.error('Failed to submit feedback:', error);
+		}
+	};
 
-	
-	
 	return (
 		<div className="p-6">
 			<div className="flex justify-between items-center mb-4">
@@ -232,10 +257,25 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 										</Badge>
 									</TooltipTrigger>
 									<TooltipContent className="w-[280px] max-h-96 overflow-auto">
-										<p className="whitespace-pre-wrap">{item.aiAnalyzeRecords[0]?.result?.reason || '暂无原因说明'}</p>
+										<p className="whitespace-pre-wrap">{item.aiAnalyzeRecords[0]?.result?.reason || ''}</p>
 									</TooltipContent>
 								</Tooltip>
 								</TooltipProvider>
+
+								<Badge
+								status="info" 
+								className={`flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums cursor-pointer transition-colors hover:bg-primary/10 ${item.userFeedback?.thumbsUp ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-800' : ''}`}
+								onClick={() => handleFeedback(item.id, item.userFeedback?.id, 1)}
+								>
+									<ThumbsUp  size={16}/>
+								</Badge>
+								<Badge
+								status="info" 
+								className={`flex h-5 min-w-5 items-center gap-1 rounded-full px-2 font-mono tabular-nums cursor-pointer transition-colors hover:bg-primary/10 ${item.userFeedback?.thumbsDown ? 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800' : ''}`}	
+								onClick={() => handleFeedback(item.id, item.userFeedback?.id, 2)}
+								>
+									<ThumbsDown  size={16}/>
+								</Badge>
 							</div>
 						</CardFooter>
 					</Card>
