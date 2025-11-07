@@ -123,7 +123,7 @@ export class AIServiceManager {
     try {
       
       if (logOptions?.userId) {
-        const creditStatus = await db.$queryRaw<{hasCredits: boolean}>`
+        const creditStatus = await db.$queryRaw<[{hasCredits: boolean}]>`
                   with de as (
                     select "value"::integer "default_credit" from admin_setting as2 where "key" = 'default_credit'
                   )
@@ -133,8 +133,7 @@ export class AIServiceManager {
                   left join user_credit_usage ucu on u.id = ucu."userId" 
                   left join user_credit_setting ucs on u.id  = ucs."userId"
                   where u.id = ${logOptions.userId} limit 1`;
-        logger.info(`User ${logOptions.userId} credit status: ${JSON.stringify(creditStatus)}`);
-        if (!creditStatus?.hasCredits) {
+        if (!creditStatus[0]?.hasCredits) {
           logger.error(`User ${logOptions.userId} has no available credits`);
           return false;
         }
