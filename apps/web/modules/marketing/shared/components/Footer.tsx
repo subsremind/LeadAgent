@@ -1,14 +1,17 @@
 import { LocaleLink } from "@i18n/routing";
 import { Logo } from "@shared/components/Logo";
 
+import { useTranslations } from "next-intl";
+
 export function Footer() {
+	const t = useTranslations();
 	return (
 		<footer className="border-t py-8 text-foreground/60 text-sm">
 			<div className="container grid grid-cols-1 gap-6 lg:grid-cols-3">
 				<div>
 					<Logo className="opacity-70 grayscale" />
 					<p className="mt-3 text-sm opacity-70">
-						© {new Date().getFullYear()} LeadAgent. All rights
+						© {new Date().getFullYear()} {t("app.name")}. All rights
 						reserved.
 					</p>
 				</div>
