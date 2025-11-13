@@ -1,4 +1,5 @@
 import { cn } from "@ui/lib";
+import { useTranslations } from "next-intl";
 
 export function Logo({
 	withLabel = true,
@@ -7,6 +8,7 @@ export function Logo({
 	className?: string;
 	withLabel?: boolean;
 }) {
+	const t = useTranslations();
 	return (
 		<span
 			className={cn(
@@ -15,7 +17,7 @@ export function Logo({
 			)}
 		>
 			<svg className="size-10 text-primary" viewBox="0 0 734 635">
-				<title>LeadsAgent</title>
+				<title>{t("app.name")}</title>
 				<path
 					opacity="0.2"
 					d="M282.102 232.435C328.904 205.42 404.785 205.42 451.588 232.435L697.946 374.634C744.748 401.648 744.748 445.447 697.946 472.462L451.588 614.661C404.785 641.676 328.904 641.676 282.102 614.661L35.7432 472.462C-11.059 445.447 -11.0589 401.648 35.7432 374.634L282.102 232.435Z"
@@ -34,7 +36,7 @@ export function Logo({
 				/>
 			</svg>
 			{withLabel && (
-				<span className="ml-3 hidden text-lg md:block">LeadsAgent</span>
+				<span className="ml-3 hidden text-lg md:block">{t("app.name")}</span>
 			)}
 		</span>
 	);
