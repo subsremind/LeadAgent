@@ -12,14 +12,14 @@ export const config = {
 				currency: "USD",
 				label: "English",
 			},
-			de: {
-				currency: "USD",
-				label: "Deutsch",
-			},
-			// zh: {
-			// 	currency: "ZHY",
-			// 	label: "中文",
+			// de: {
+			// 	currency: "USD",
+			// 	label: "Deutsch",
 			// },
+			zh: {
+				currency: "ZHY",
+				label: "中文",
+			},
 		},
 		// The default locale is used if no locale is provided
 		defaultLocale: "en",

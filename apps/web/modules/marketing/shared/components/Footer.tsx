@@ -35,9 +35,9 @@ export function Footer() {
 						Privacy policy
 					</LocaleLink>
 
-					<LocaleLink href="/legal/terms" className="block">
+					{/* <LocaleLink href="/legal/terms" className="block">
 						Terms and conditions
-					</LocaleLink>
+					</LocaleLink> */}
 				</div>
 			</div>
 		</footer>
