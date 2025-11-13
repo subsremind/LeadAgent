@@ -197,15 +197,19 @@ export function LeadAgentSuggestionList({ platform }: { platform: string }) {
 								<CardTitle className="text-base font-bold text-muted-foreground">
 											{item.title}
 								</CardTitle>
-								{item.aiSummary && (
-									<div className="bg-yellow-50 rounded-lg m-[0_0_0_0] p-[5px_5px] shadow-sm relative">
-										<span className="text-[15px] font-semibold text-sky-600 leading-tight">
-											<Sparkles className="size-4 text-[#FFC107] inline-block mr-2 align-text-bottom" /> {item.aiSummary}
-										</span>
-									</div>
-								)}
+								
 								
 								<CardDescription className="mb-2 overflow-hidden text-ellipsis text-sm text-muted-foreground opacity-80" style={{display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', lineHeight: '1.5'}}>{item.selftext}</CardDescription>
+								{item.aiSummary && (
+									<div className=" bg-blue-100 rounded-lg m-[0_0_0_0] p-[5px_5px] shadow-sm relative">
+										<span className="text-[15px]  leading-tight">
+											<Sparkles className="size-4 text-[#FFC107] inline-block mr-1 align-text-top" /> {item.aiSummary}
+										</span>
+										{/* <span className="text-[15px] font-semibold text-sky-600 leading-tight">
+											<Sparkles className="size-4 text-[#FFC107] inline-block mr-2 align-text-bottom" /> {item.aiSummary}
+										</span> */}
+									</div>
+								)}
 							</CardHeader>
 						</Link>
 						<CardFooter>
