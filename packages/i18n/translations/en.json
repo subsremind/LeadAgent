@@ -180,7 +180,7 @@
 			"home": "Home",
 			"logout": "Logout"
 		},
-		"name": "LeadsAgent"
+		"name": "Agent"
 	},
 	"auth": {
 		"errors": {
