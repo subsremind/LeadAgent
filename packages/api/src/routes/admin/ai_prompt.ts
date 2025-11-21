@@ -8,7 +8,7 @@ import { logger } from "@repo/logs";
 
 
 export const aiPromptRouter = new Hono()
-	.basePath("/aiPrompt")
+	.basePath("/ai_prompt")
 	.use(adminMiddleware) 
 	.get(
 		"/",
@@ -109,5 +109,27 @@ export const aiPromptRouter = new Hono()
 					500
 				);
 			}
+		}
+	).get(
+		"/draft",
+		describeRoute({
+			summary: "Get draft ai prompt list",
+			tags: ["AI Prompt"],
+		}),
+		async (c) => {
+			const promptList = await db.aiPrompt.findMany({
+				select: {
+					business: true,
+				},
+				where: {
+					business: {
+						startsWith: "draft-generate"
+					}
+				},
+				orderBy: {
+					business: "asc"
+				}
+			});
+			return c.json(promptList);
 		}
 	);

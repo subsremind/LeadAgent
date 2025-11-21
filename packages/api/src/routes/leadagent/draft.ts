@@ -12,12 +12,13 @@ export const draftRouterRouter = new Hono()
 	.use(authMiddleware)
 	.post(
 		"/generate",
-		// validator(
-		// 	"json",
-		// 	z.object({
-		// 		customPrompt: z.string().optional(),
-		// 	}),
-		// ),
+		validator(
+			"json",
+			z.object({
+				type: z.string().optional(),
+				customPrompt: z.string().optional(),
+			}),
+		),
 		describeRoute({
 			summary: "Generate draft using prompt",
 			tags: ["LeadAgent"],
@@ -25,7 +26,10 @@ export const draftRouterRouter = new Hono()
 		async (c) => {
 			// const { customPrompt } = c.req.valid("json");
 			const user = c.get("user");
-			// const draftPrompt = promptDraftGenerate(customPrompt ?? '');
+			const { type, customPrompt } = c.req.valid("json");
+			if (!type) {
+				return c.json({ error: "Type is required" }, 400);
+			}
 
 			const draftPrompt = await db.aiPrompt.findFirst({
 				select: {
@@ -33,7 +37,7 @@ export const draftRouterRouter = new Hono()
 					model: true,
 				},
 				where: {
-					business: BUSINESS.DRAFT_GENERATE,
+					business: type,
 				},
 			});
 
@@ -51,7 +55,9 @@ export const draftRouterRouter = new Hono()
 			}
 
 			const prompt = formatPrompt(draftPrompt.prompt, {
-				agent_setting_description: agentSetting.description ?? '',
+				company_info: agentSetting.description ?? '',
+				scenario_info: customPrompt ?? '',
+
 			});
 
 			console.log("draftPrompt", prompt);
