@@ -945,7 +945,9 @@
 		"draft": {
 			"generate": "Generate Draft",
 			"form_title": "Draft Generation",
-			"customPrompt": "Company Description & Business Introduction "
+			"type": "Please Select Draft Type",
+			"customPrompt": "Company Description & Business Introduction",
+			"customPromptPlaceholder": "Please describe the background of post generation briefly based on post categories, such as event information, new product/service launches, employee growth experiences, customer cooperation achievement demonstrations, and so on."
 		}
 	}
 }

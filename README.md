@@ -74,3 +74,7 @@ docker images leadagent:latest leadagent-task:latest
 docker logs -f -n 200 leadagent-task
 docker logs -f -n 200 leadagent
 `
+
+## 修改项目名称
+默认项目名称是 `LeadsAgent`，如果需要修改，需要在 `packages/i18n/translations/zh.json` 中修改 `app.name` 为新的项目名称。
+默认项目名称是 `Agent`，如果需要修改，需要在 `packages/i18n/translations/en.json` 中修改 `app.name` 为新的项目名称。

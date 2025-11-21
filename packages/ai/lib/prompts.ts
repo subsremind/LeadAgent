@@ -4,8 +4,13 @@ export const BUSINESS: Record<string, string> = {
 	REDDIT_POST_SUMMARY: 'reddit-post-summary',
 	SUGGESTION_SUBREDDIT_GENERATE: 'suggestion-subreddit-generate',
 	SUGGESTION_QUERY_GENERATE: 'suggestion-query-generate',
-	DRAFT_GENERATE: 'draft-generate',
-  }
+	DRAFT_GENERATE_COMPANY_NEWS: 'draft-generate-company-news',
+	DRAFT_GENERATE_CULTURE: 'draft-generate-culture',
+	DRAFT_GENERATE_RECRUITMENT: 'draft-generate-recruitment',
+	DRAFT_GENERATE_INSIGHTS: 'draft-generate-insights',
+	DRAFT_GENERATE_USE_CASES: 'draft-generate-use-cases',
+}
+
 
 export const formatPrompt = (prompt: string, params: Record<string, string>): string => {
 return prompt.replace(/{{(\w+)}}/g, (_, key) => params[key] || '');
