@@ -8,8 +8,10 @@ import heroImage from "../../../../public/images/hero-image.png";
 import homeImage from "../../../../public/images/home-image.png";
 import homeImageDark from "../../../../public/images/home-image-dark.png";
 
+import { useTranslations } from "next-intl";
 
 export function Hero() {
+	const t = useTranslations();
 	return (
 		<div className="relative max-w-full overflow-x-hidden bg-linear-to-b from-0% from-card to-[50vh] to-background">
 			<div className="absolute left-1/2 z-10 ml-[-500px] h-[500px] w-[1000px] rounded-full bg-linear-to-r from-primary to-bg opacity-20 blur-[150px]" />
@@ -27,7 +29,7 @@ export function Hero() {
 				</div> */}
 
 				<h1 className="mx-auto max-w-3xl text-balance font-bold text-5xl lg:text-5xl">
-					LeadsAgent – AI-Powered Reddit Marking Opportunity Finder
+					{t("app.name")} – AI-Powered Reddit Marking Opportunity Finder
 				</h1>
 
 

@@ -1,124 +1,589 @@
 {
 	"admin": {
 		"menu": {
-			"organizations": "组织管理",
-			"users": "用户管理"
+			"organizations": "组织",
+			"users": "用户设置",
+			"usage": "统计分析",
+			"setting": "设置",
+			"prompt": "提示词管理"
 		},
 		"organizations": {
 			"backToList": "返回组织列表",
 			"confirmDelete": {
 				"confirm": "删除",
-				"message": "确定要删除该组织吗？此操作不可撤销。",
+				"message": "您确定要删除此组织吗？此操作无法撤销。",
 				"title": "删除组织"
 			},
-			"membersCount": "{count} {count, plural, one {成员} other {成员}}"
+			"create": "创建",
+			"delete": "删除",
+			"deleteOrganization": {
+				"deleted": "组织已成功删除！",
+				"deleting": "正在删除组织...",
+				"notDeleted": "无法删除组织，请重试。"
+			},
+			"edit": "编辑",
+			"form": {
+				"createTitle": "创建组织",
+				"name": "组织名称",
+				"notifications": {
+					"error": "无法保存组织，请稍后重试。",
+					"success": "组织已保存。"
+				},
+				"save": "保存",
+				"updateTitle": "编辑组织"
+			},
+			"loading": "正在加载组织...",
+			"membersCount": "{count} {count, plural, one {成员} other {成员}}",
+			"search": "搜索组织...",
+			"title": "管理组织"
 		},
+		"title": "管理后台",
 		"users": {
+			"confirmDelete": {
+				"confirm": "删除",
+				"message": "您确定要删除此用户吗？此操作无法撤销。",
+				"title": "删除用户"
+			},
+			"action": {
+				"syncPost": "同步帖子",
+				"startAnalysis": "开始分析"
+			},
+			"credit": {
+				"creditSetting": "额度设置",
+				"creditTotal": "总额度",
+				"user": "用户",
+				"creditUsed": "已用额度"
+			},
+			"delete": "删除",
+			"deleteUser": {
+				"deleted": "用户已成功删除！",
+				"deleting": "正在删除用户...",
+				"notDeleted": "无法删除用户，请重试。"
+			},
 			"emailVerified": {
 				"verified": "邮箱已验证",
-				"waiting": "等待邮箱验证"
+				"waiting": "邮箱等待验证"
 			},
-			"impersonate": "身份切换",
-			"assignAdminRole": "授予管理员权限",
-			"removeAdminRole": "移除管理员权限"
+			"impersonate": "模拟登录",
+			"impersonation": {
+				"impersonating": "正在模拟 {name}..."
+			},
+			"loading": "正在加载用户...",
+			"resendVerificationMail": {
+				"error": "无法重新发送验证邮件，请重试。",
+				"submitting": "正在重新发送验证邮件...",
+				"success": "验证邮件已发送。",
+				"title": "重新发送验证邮件"
+			},
+			"search": "搜索姓名或邮箱...",
+			"title": "管理用户",
+			"assignAdminRole": "分配管理员角色",
+			"removeAdminRole": "移除管理员角色"
+		},
+		"description": "管理您的应用程序。",
+		"usage": {
+			"usageAnalysis": "使用分析",
+			"totalUsers": "总用户数",
+			"totalTokens": "总令牌数",
+			"totalCategorys": "总分类数",
+			"totalPosts": "总帖子数",
+			"noCreditUsersCount": "无额度用户数量",
+			"user": "用户",
+			"tokens": "令牌",
+			"posts": "帖子",
+			"date": "日期",
+			"viewDetails": "查看详情",
+			"usageDetails": "使用详情",
+			"tokenUsage": "令牌使用",
+			"postUsage": "帖子使用",
+			"creditUsage": "额度使用",
+			"userCreditUsage": "额度使用",
+			"creditUsageRate": "额度使用率",
+			"remainingCredits": "剩余额度",
+			"usageRate": "额度使用率",
+			"creditUsageDesc": "此表显示每个用户的额度使用情况，包括总额度、已用额度、剩余额度和额度使用率。"
+		},
+		"setting": {
+			"reddit": {
+				"title": "Reddit",
+				"description": "连接您的 Reddit 账户以启用对 Reddit API 的访问。",
+				"status": {
+					"checking": "正在检查授权状态...",
+					"connected": "已连接",
+					"disconnected": "未连接"
+				},
+				"actions": {
+					"authorize": "授权连接",
+					"disconnect": "断开连接",
+					"disconnecting": "正在断开连接...",
+					"gettingAuthUrl": "正在获取授权链接..."
+				},
+				"notifications": {
+					"authWindowOpened": "授权窗口已打开，请完成授权流程",
+					"popupBlocked": "弹窗被阻止，请允许弹窗后重试",
+					"disconnectSuccess": "Reddit 授权已断开",
+					"getAuthUrlFailed": "获取授权链接失败",
+					"disconnectFailed": "断开连接失败",
+					"getStatusFailed": "获取授权状态失败"
+				}
+			},
+			"credit_title": "令牌-额度设置",
+			"credit_description": "此值定义多少令牌对应一个额度。",
+			"defaultCredit_title": "默认额度设置",
+			"defaultCredit_title_description": "此值定义每个用户的默认额度。",
+			"ai_platform": {
+				"title": "AI 平台设置",
+				"description": "为您的应用程序配置 AI 平台（OpenAI 或 Azure OpenAI）",
+				"platforms": {
+					"openai": "OpenAI",
+					"azure": "Azure OpenAI"
+				},
+				"openai": {
+					"api_key": "OpenAI API 密钥",
+					"api_key_placeholder": "sk-...",
+					"api_key_help": "输入您的 OpenAI API 密钥。您可以从 OpenAI 仪表板获取此密钥。"
+				},
+				"azure": {
+					"api_key": "Azure OpenAI API 密钥",
+					"api_key_placeholder": "您的 Azure API 密钥",
+					"endpoint": "Azure OpenAI 端点",
+					"endpoint_placeholder": "https://your-resource.openai.azure.com/",
+					"api_version": "Azure API 版本",
+					"api_version_placeholder": "2023-12-01-preview",
+					"api_version_help": "默认值：2023-12-01-preview"
+				},
+				"actions": {
+					"save": "保存设置",
+					"saving": "正在保存..."
+				}
+			}
 		}
 	},
 	"app": {
 		"menu": {
 			"accountSettings": "账户设置",
 			"admin": "管理后台",
-			"aiChatbot": "AI聊天机器人",
+			"aiChatbot": "AI 聊天机器人",
 			"organizationSettings": "组织设置",
 			"start": "开始",
-			"subscription": "订阅"
-		}
+			"leadAgent": {
+				"reddit": "Reddit Agent",
+				"x": "X Agent",
+				"linkedin": "LinkedIn Agent",
+				"facebook": "Facebook Agent"
+			}
+		},
+		"userMenu": {
+			"accountSettings": "账户设置",
+			"colorMode": "颜色模式",
+			"documentation": "文档",
+			"home": "首页",
+			"logout": "退出"
+		},
+		"name": "LeadsAgent"
 	},
 	"auth": {
 		"errors": {
-			"invalidEmailOrPassword": "邮箱或密码错误，请检查后重试",
-			"userNotFound": "用户不存在"
+			"invalidEmailOrPassword": "您输入的凭据无效，请检查并重试。",
+			"unknown": "出错了，请重试。",
+			"userNotFound": "此用户不存在",
+			"failedToCreateUser": "无法创建用户，请重试。",
+			"failedToCreateSession": "无法创建会话，请重试。",
+			"failedToUpdateUser": "无法更新用户，请重试。",
+			"failedToGetSession": "无法获取会话。",
+			"invalidPassword": "输入的密码不正确。",
+			"invalidEmail": "输入的邮箱无效。",
+			"invalidToken": "您输入的令牌无效或已过期。",
+			"credentialAccountNotFound": "未找到账户。",
+			"emailCanNotBeUpdated": "邮箱无法更新，请重试。",
+			"emailNotVerified": "请在登录前先验证您的邮箱。",
+			"failedToGetUserInfo": "无法加载用户信息。",
+			"idTokenNotSupported": "不支持 ID 令牌。",
+			"passwordTooLong": "密码太长。",
+			"passwordTooShort": "密码太短。",
+			"providerNotFound": "不支持此提供商。",
+			"socialAccountAlreadyLinked": "此账户已关联到用户。",
+			"userEmailNotFound": "未找到邮箱。",
+			"userAlreadyExists": "此用户已存在。",
+			"invalidInvitation": "邀请无效或已过期。",
+			"sessionExpired": "会话已过期。",
+			"failedToUnlinkLastAccount": "解除账户关联失败",
+			"accountNotFound": "未找到账户"
+		},
+		"forgotPassword": {
+			"backToSignin": "返回登录",
+			"email": "邮箱",
+			"hints": {
+				"linkNotSent": {
+					"message": "抱歉，我们无法发送重置密码链接，请稍后重试。",
+					"title": "链接未发送"
+				},
+				"linkSent": {
+					"message": "我们已发送链接，请查看您的收件箱。",
+					"title": "链接已发送"
+				}
+			},
+			"message": "请输入您的邮箱地址，我们将发送重置密码链接。",
+			"submit": "发送链接",
+			"title": "忘记密码？"
+		},
+		"callback": {
+			"title": "回调"
 		},
 		"login": {
-			"continueWith": "其他登录方式",
+			"continueWith": "或使用以下方式继续",
+			"createAnAccount": "创建账户",
+			"dontHaveAnAccount": "还没有账户？",
+			"forgotPassword": "忘记密码？",
+			"hints": {
+				"invalidCredentials": "您输入的邮箱或密码无效，请重试。",
+				"linkSent": {
+					"message": "我们已发送链接，请查看您的收件箱。",
+					"title": "链接已发送"
+				}
+			},
 			"loginWithPasskey": "使用通行密钥登录",
 			"modes": {
 				"magicLink": "魔法链接",
-				"password": "密码登录"
-			}
+				"password": "密码"
+			},
+			"submit": "登录",
+			"subtitle": "请输入您的凭据以登录。",
+			"title": "欢迎回来",
+			"sendMagicLink": "发送魔法链接"
+		},
+		"resetPassword": {
+			"backToSignin": "返回登录",
+			"hints": {
+				"error": "抱歉，我们无法重置您的密码，请重试。",
+				"success": "您的密码已成功重置。"
+			},
+			"message": "请输入新密码。",
+			"newPassword": "新密码",
+			"submit": "重置密码",
+			"title": "重置您的密码"
+		},
+		"signup": {
+			"alreadyHaveAccount": "已有账户？",
+			"email": "邮箱",
+			"hints": {
+				"signupFailed": "抱歉，我们无法创建您的账户，请稍后重试。",
+				"verifyEmail": "我们已发送验证邮箱的链接，请查看您的收件箱。"
+			},
+			"message": "很高兴您想加入我们，请填写以下表单创建账户。",
+			"name": "姓名",
+			"password": "密码",
+			"signIn": "登录",
+			"submit": "创建账户",
+			"title": "创建账户"
 		}
 	},
 	"blog": {
-		"description": "阅读我们公司的最新动态",
+		"description": "阅读我们公司的最新资讯",
 		"title": "我的博客"
 	},
 	"changelog": {
-		"description": "了解我们产品的最新变化",
+		"description": "及时了解我们产品的最新更改。",
 		"title": "更新日志"
 	},
 	"common": {
 		"confirmation": {
 			"cancel": "取消",
-			"confirm": "确认"
+			"confirm": "确认",
+			"delete": "删除",
+			"save": "保存",
+			"submitting": "提交中"
 		},
 		"actions": {
-			"new": "New",
-			"edit": "Edit",
-			"delete": "Delete",
-			"copy": "Copy",
-			"save": "Save",
-			"cancel": "Cancel",
-			"close": "Close",
-			"confirm": "Confirm",
-			"create": "Create",
-			"update": "Update"
+			"new": "新建",
+			"edit": "编辑",
+			"delete": "删除",
+			"copy": "复制",
+			"save": "保存",
+			"cancel": "取消",
+			"close": "关闭",
+			"confirm": "确认",
+			"create": "创建",
+			"update": "更新"
 		},
 		"menu": {
 			"blog": "博客",
 			"changelog": "更新日志",
-			"contact": "联系我们",
-			"dashboard": "仪表盘",
+			"contact": "联系",
+			"dashboard": "仪表板",
 			"docs": "文档",
 			"faq": "常见问题",
 			"login": "登录",
 			"pricing": "定价"
 		},
 		"tableOfContents": {
-			"title": "本页内容"
+			"title": "在本页"
 		},
-		"loading": "Loading...",
+		"loading": "加载中...",
 		"status": {
-			"success": "Success",
-			"failure": "Failure",
-			"error": "Error",
-			"warning": "Warning"
+			"saving": "保存中",
+			"success": "成功",
+			"failure": "失败",
+			"error": "错误",
+			"warning": "警告"
+		},
+		"table": {
+			"empty": "暂无数据",
+			"loading": "加载中...",
+			"noResults": "未找到结果",
+			"page": "页",
+			"rowsPerPage": "每页行数",
+			"selectPage": "选择页码",
+			"selectRowsPerPage": "选择每页行数"
 		}
 	},
 	"contact": {
-		"description": "我们随时为您提供帮助。请使用下面的表格与我们联系。",
+		"description": "我们随时为您提供帮助，请使用以下表单联系我们。",
 		"form": {
 			"email": "邮箱",
 			"message": "消息",
 			"name": "姓名",
 			"notifications": {
-				"error": "抱歉，我们无法发送您的消息。请稍后再试。",
-				"success": "您的消息已成功发送。我们将尽快回复您。"
+				"error": "抱歉，我们无法发送您的消息，请稍后重试。",
+				"success": "您的消息已成功发送，我们将尽快回复您。"
 			},
 			"submit": "发送消息"
-		}
+		},
+		"title": "联系我们"
 	},
 	"documentation": {
 		"title": "文档"
+	},
+	"faq": {
+		"description": "您有任何问题吗？我们为您提供了答案。",
+		"title": "常见问题"
+	},
+	"mail": {
+		"common": {
+			"openLinkInBrowser": "如果您想在非默认浏览器中打开链接，请复制并粘贴此链接：",
+			"otp": "一次性密码",
+			"useLink": "或使用以下链接："
+		},
+		"emailVerification": {
+			"body": "嘿，\n请点击以下链接验证此新邮箱地址。",
+			"confirmEmail": "验证邮箱",
+			"subject": "验证您的邮箱"
+		},
+		"forgotPassword": {
+			"body": "嘿，\n您请求重置密码。\n\n点击下方按钮重置密码。",
+			"resetPassword": "重置密码",
+			"subject": "重置您的密码"
+		},
+		"magicLink": {
+			"body": "嘿，\n您请求了登录邮件。\n\n点击下方链接登录。",
+			"login": "登录",
+			"subject": "登录"
+		},
+		"newUser": {
+			"body": "嘿，\n感谢您注册。\n\n要开始使用我们的应用，请点击以下链接确认您的邮箱地址。",
+			"confirmEmail": "确认邮箱",
+			"subject": "确认您的邮箱"
+		},
+		"newsletterSignup": {
+			"body": "感谢您订阅简报，我们将随时向您推送最新资讯和更新。",
+			"subject": "欢迎订阅我们的简报"
+		},
+		"organizationInvitation": {
+			"body": "您已被邀请加入组织 {organizationName}。点击下方按钮或复制并粘贴链接到您选择的浏览器中，以接受邀请并加入组织。",
+			"headline": "加入组织 {organizationName}",
+			"join": "加入组织",
+			"subject": "您已被邀请加入组织"
+		}
+	},
+	"newsletter": {
+		"email": "邮箱",
+		"hints": {
+			"error": {
+				"message": "无法订阅简报，请稍后重试。"
+			},
+			"success": {
+				"message": "感谢您订阅我们的简报，我们将随时向您推送最新资讯。",
+				"title": "已订阅"
+			}
+		},
+		"submit": "订阅",
+		"subtitle": "成为首批获取简报的人。",
+		"title": "抢先体验"
+	},
+	"onboarding": {
+		"account": {
+			"avatar": "头像",
+			"avatarDescription": "点击圆圈或将图像拖拽到此处以上传头像。",
+			"name": "姓名",
+			"timezone": "时区",
+			"timezonePlaceholder": "选择您的时区"
+		},
+		"continue": "继续",
+		"message": "只需几个快速步骤即可开始。",
+		"notifications": {
+			"accountSetupFailed": "抱歉，我们无法设置您的账户，请稍后重试。"
+		},
+		"step": "步骤 {step} / {total}",
+		"title": "设置您的账户"
+	},
+	"organizations": {
+		"createForm": {
+			"name": "组织名称",
+			"notifications": {
+				"error": "抱歉，我们无法创建您的组织，请稍后重试。",
+				"success": "您的组织已创建，现在可以邀请成员。"
+			},
+			"submit": "创建组织",
+			"subtitle": "输入组织名称以开始，稍后可在组织设置中更改名称。",
+			"title": "创建组织"
+		},
+		"invitationAlert": {
+			"description": "您需要登录或创建账户才能加入组织。",
+			"title": "您已被邀请加入组织。"
+		},
+		"invitationModal": {
+			"accept": "接受",
+			"decline": "拒绝",
+			"description": "您已被邀请加入组织 {organizationName}。您是否接受邀请并加入组织？",
+			"title": "加入组织"
+		},
+		"organizationSelect": {
+			"createNewOrganization": "创建新组织",
+			"organizations": "组织",
+			"personalAccount": "个人账户"
+		},
+		"organizationsGrid": {
+			"createNewOrganization": "创建新组织",
+			"title": "您的组织"
+		},
+		"roles": {
+			"admin": "管理员",
+			"member": "成员",
+			"owner": "所有者"
+		},
+		"settings": {
+			"changeName": {
+				"title": "组织名称"
+			},
+			"deleteOrganization": {
+				"confirmation": "您确定要删除您的组织吗？",
+				"description": "永久删除您的组织。一旦删除，将无法恢复。要确认，请在下方输入您的密码：",
+				"submit": "删除组织",
+				"title": "删除组织"
+			},
+			"logo": {
+				"description": "上传组织徽标。",
+				"title": "组织徽标"
+			},
+			"members": {
+				"activeMembers": "活跃成员",
+				"description": "查看所有活跃成员和待定邀请。",
+				"invitations": {
+					"empty": "您尚未邀请任何成员。",
+					"expiresAt": "到期时间：{date}",
+					"invitationStatus": {
+						"accepted": "已接受",
+						"canceled": "已取消",
+						"pending": "待处理",
+						"rejected": "已拒绝"
+					},
+					"revoke": "撤销邀请",
+					"resend": "重新发送邀请"
+				},
+				"inviteMember": {
+					"description": "要邀请新成员，请发送邀请。",
+					"email": "邮箱",
+					"notifications": {
+						"error": {
+							"description": "无法邀请成员，请稍后重试。",
+							"title": "无法邀请成员"
+						},
+						"success": {
+							"description": "成员已邀请。",
+							"title": "成员已邀请"
+						}
+					},
+					"role": "角色",
+					"submit": "邀请",
+					"title": "邀请成员"
+				},
+				"leaveOrganization": "离开组织",
+				"notifications": {
+					"removeMember": {
+						"error": {
+							"description": "无法从您的组织中移除成员，请重试。"
+						},
+						"loading": {
+							"description": "正在从组织中移除成员..."
+						},
+						"success": {
+							"description": "成员已成功从您的组织中移除。"
+						}
+					},
+					"revokeInvitation": {
+						"error": {
+							"description": "无法撤销邀请，请稍后重试。"
+						},
+						"loading": {
+							"description": "正在撤销邀请..."
+						},
+						"success": {
+							"description": "邀请已撤销。"
+						}
+					},
+					"updateMembership": {
+						"error": {
+							"description": "无法更新组织成员身份，请重试。"
+						},
+						"loading": {
+							"description": "正在更新成员身份..."
+						},
+						"success": {
+							"description": "成员身份更新成功"
+						}
+					},
+					"resendInvitation": {
+						"loading": {
+							"description": "正在重新发送邀请..."
+						},
+						"success": {
+							"description": "邀请已发送"
+						},
+						"error": {
+							"description": "无法发送邀请，请重试。"
+						}
+					}
+				},
+				"pendingInvitations": "待处理邀请",
+				"removeMember": "移除成员",
+				"title": "成员"
+			},
+			"notifications": {
+				"organizationDeleted": "您的组织已删除。",
+				"organizationNameNotUpdated": "无法更新您的组织名称，请稍后重试。",
+				"organizationNameUpdated": "您的组织名称已更新。",
+				"organizationNotDeleted": "无法删除您的组织，请稍后重试。"
+			},
+			"subtitle": "管理组织设置。",
+			"title": "组织",
+			"dangerZone": {
+				"title": "危险区域"
+			}
+		},
+		"start": {
+			"subtitle": "欢迎访问此组织的开始页面！"
+		}
 	},
 	"pricing": {
 		"choosePlan": "选择计划",
 		"contactSales": "联系销售",
 		"description": "选择最适合您的计划。",
 		"getStarted": "开始使用",
-		"month": "{count, plural, one {个月} other {{count}个月}}",
-		"monthly": "每月",
+		"month": "{count, plural, one {个月} other {{count} 个月}}",
+		"monthly": "按月",
 		"products": {
 			"basic": {
-				"description": "适合小型团队",
+				"description": "适合小团队。",
 				"features": {
 					"anotherFeature": "另一个很棒的功能",
 					"limitedSupport": "有限支持"
@@ -126,9 +591,9 @@
 				"title": "基础版"
 			},
 			"enterprise": {
-				"description": "根据您的需求量身定制的计划",
+				"description": "根据您的需求定制的计划",
 				"features": {
-					"enterpriseSupport": "企业支持",
+					"enterpriseSupport": "企业级支持",
 					"unlimitedProjects": "无限项目"
 				},
 				"title": "企业版"
@@ -142,10 +607,10 @@
 				"title": "免费版"
 			},
 			"lifetime": {
-				"description": "一次购买，永久使用",
+				"description": "一次购买，永久使用。",
 				"features": {
 					"extendSupport": "扩展支持",
-					"noRecurringCosts": "无经常性费用"
+					"noRecurringCosts": "无重复费用"
 				},
 				"title": "终身版"
 			},
@@ -153,104 +618,334 @@
 				"description": "最适合团队",
 				"features": {
 					"anotherFeature": "另一个很棒的功能",
-					"fiveMembers": "最多5名成员"
+					"fiveMembers": "最多 5 名成员",
+					"fullSupport": "全面支持"
 				},
 				"title": "专业版"
 			}
-		}
+		},
+		"purchase": "购买",
+		"recommended": "推荐",
+		"subscribe": "订阅",
+		"title": "定价",
+		"trialPeriod": "{days} {days, plural, one {天} other {天}}免费试用",
+		"year": "{count, plural, one {年} other {{count} 年}}",
+		"yearly": "按年",
+		"perSeat": "席位"
 	},
 	"settings": {
-		"security": {
-			"passkeys": {
-				"description": "使用通行密钥作为密码的安全替代方案",
-				"title": "通行密钥"
+		"account": {
+			"avatar": {
+				"description": "要更改头像，请点击此块中的图片，然后从您的计算机中选择文件上传。",
+				"notifications": {
+					"error": "无法更新头像",
+					"success": "头像更新成功"
+				},
+				"title": "您的头像"
+			},
+			"changeEmail": {
+				"description": "要更改邮箱，请输入新邮箱并点击保存。您需要确认新邮箱才能生效。",
+				"notifications": {
+					"error": "无法更新邮箱",
+					"success": "邮箱更新成功"
+				},
+				"title": "您的邮箱"
+			},
+			"changeName": {
+				"notifications": {
+					"error": "无法更新姓名",
+					"success": "姓名更新成功"
+				},
+				"title": "您的姓名"
+			},
+			"deleteAccount": {
+				"confirmation": "您确定要删除您的账户吗？",
+				"description": "永久删除您的账户。一旦删除，将无法恢复。要确认，请在下方输入您的密码：",
+				"notifications": {
+					"error": "无法删除账户",
+					"success": "账户删除成功"
+				},
+				"submit": "删除账户",
+				"title": "删除账户"
+			},
+			"language": {
+				"description": "要更改应用语言，请从列表中选择语言并点击保存。",
+				"notifications": {
+					"error": "无法更新语言",
+					"success": "语言更新成功"
+				},
+				"title": "您的语言"
+			},
+			"timezone": {
+				"description": "要更改应用时区，请从列表中选择时区并点击保存。",
+				"notifications": {
+					"error": "无法更新时区",
+					"success": "时区更新成功"
+				},
+				"title": "您的时区"
+			},
+			"security": {
+				"activeSessions": {
+					"description": "这些是您的所有活跃会话。点击 X 结束特定会话。",
+					"title": "活跃会话",
+					"notifications": {
+						"revokeSession": {
+							"success": "会话已撤销"
+						}
+					}
+				},
+				"changePassword": {
+					"currentPassword": "当前密码",
+					"newPassword": "新密码",
+					"notifications": {
+						"error": "无法更新密码",
+						"success": "密码更新成功"
+					},
+					"title": "您的密码"
+				},
+				"connectedAccounts": {
+					"connect": "连接",
+					"disconnect": "断开",
+					"title": "关联账户"
+				},
+				"passkeys": {
+					"description": "使用通行密钥作为密码的安全替代方案。",
+					"notifications": {
+						"addPasskey": {
+							"error": {
+								"title": "无法添加通行密钥"
+							},
+							"success": {
+								"title": "通行密钥已添加"
+							}
+						},
+						"deletePasskey": {
+							"error": {
+								"title": "无法删除通行密钥"
+							},
+							"loading": {
+								"title": "正在删除通行密钥..."
+							},
+							"success": {
+								"title": "通行密钥已删除"
+							}
+						}
+					},
+					"title": "通行密钥"
+				},
+				"setPassword": {
+					"description": "您尚未设置密码。要设置密码，您需要完成密码重置流程。点击下方按钮发送重置密码邮件，然后按照邮件中的说明操作。",
+					"notifications": {
+						"error": "无法设置密码",
+						"success": "密码设置成功"
+					},
+					"submit": "设置密码",
+					"title": "您的密码"
+				},
+				"title": "安全"
+			},
+			"subtitle": "管理您的个人账户设置。",
+			"title": "账户设置"
+		},
+		"billing": {
+			"createCustomerPortal": {
+				"label": "管理账单",
+				"notifications": {
+					"error": {
+						"title": "无法创建客户门户会话，请重试。"
+					}
+				}
+			},
+			"activePlan": {
+				"status": {
+					"active": "有效",
+					"canceled": "已取消",
+					"expired": "已过期",
+					"incomplete": "不完整",
+					"past_due": "逾期",
+					"paused": "已暂停",
+					"trialing": "试用中",
+					"unpaid": "未支付"
+				},
+				"title": "您的计划"
+			},
+			"changePlan": {
+				"description": "选择要订阅的计划。",
+				"title": "更改您的计划"
+			},
+			"title": "账单"
+		},
+		"menu": {
+			"account": {
+				"billing": "账单",
+				"dangerZone": "危险区域",
+				"general": "常规",
+				"security": "安全",
+				"title": "账户"
+			},
+			"organization": {
+				"billing": "账单",
+				"general": "常规",
+				"members": "成员",
+				"title": "组织",
+				"dangerZone": "危险区域"
 			}
-		}
+		},
+		"save": "保存"
 	},
 	"start": {
-		"subtitle": "查看您业务的最新统计数据",
-		"welcome": "欢迎 {name}!"
+		"subtitle": "查看您优秀业务的最新统计数据。",
+		"welcome": "欢迎 {name}！"
 	},
 	"zod": {
 		"errors": {
 			"invalid_arguments": "无效的函数参数",
-			"invalid_date": "无效日期",
-			"invalid_enum_value": "无效的枚举值。预期 {- options}，收到 '{received}'",
+			"invalid_date": "无效的日期",
+			"invalid_enum_value": "无效的枚举值。期望 {- options}，收到 '{received}'",
 			"invalid_intersection_types": "交集结果无法合并",
-			"invalid_literal": "无效的字面值，预期 {expected}",
+			"invalid_literal": "无效的字面值，期望 {expected}",
 			"invalid_return_type": "无效的函数返回类型",
 			"invalid_string": {
 				"cuid": "无效的 {validation}",
 				"datetime": "无效的 {validation}",
 				"email": "无效的 {validation}",
-				"endsWith": "无效输入：必须以 \"{endsWith}\" 结尾",
+				"endsWith": "无效的输入：必须以 \"{endsWith}\" 结尾",
 				"regex": "无效",
-				"startsWith": "无效输入：必须以 \"{startsWith}\" 开头",
+				"startsWith": "无效的输入：必须以 \"{startsWith}\" 开头",
 				"url": "无效的 {validation}",
 				"uuid": "无效的 {validation}"
 			},
-			"invalid_type": "预期 {expected}，收到 {received}",
-			"invalid_type_received_undefined": "必填项",
-			"invalid_union": "无效输入",
-			"invalid_union_discriminator": "无效的鉴别器值。预期 {- options}",
+			"invalid_type": "期望 {expected}，收到 {received}",
+			"invalid_type_received_undefined": "必填",
+			"invalid_union": "无效的输入",
+			"invalid_union_discriminator": "无效的判别值。期望 {- options}",
 			"not_finite": "数字必须是有限的",
 			"not_multiple_of": "数字必须是 {multipleOf} 的倍数",
 			"too_big": {
-				"array": "数组最多包含 {maximum} 个元素",
-				"date": "日期必须小于或等于 {- maximum, datetime}",
-				"number": "数字必须小于或等于 {maximum}",
-				"set": "无效输入",
-				"string": "字符串最多包含 {maximum} 个字符"
+				"array": {
+					"exact": "数组必须包含恰好 {maximum} 个元素",
+					"inclusive": "数组最多可包含 {maximum} 个元素",
+					"not_inclusive": "数组必须包含少于 {maximum} 个元素"
+				},
+				"date": {
+					"exact": "日期必须恰好是 {- maximum, datetime}",
+					"inclusive": "日期必须小于或等于 {- maximum, datetime}",
+					"not_inclusive": "日期必须小于 {- maximum, datetime}"
+				},
+				"number": {
+					"exact": "数字必须恰好是 {maximum}",
+					"inclusive": "数字必须小于或等于 {maximum}",
+					"not_inclusive": "数字必须小于 {maximum}"
+				},
+				"set": {
+					"exact": "无效的输入",
+					"inclusive": "无效的输入",
+					"not_inclusive": "无效的输入"
+				},
+				"string": {
+					"exact": "字符串必须包含恰好 {maximum} 个字符",
+					"inclusive": "字符串最多可包含 {maximum} 个字符",
+					"not_inclusive": "字符串必须包含少于 {maximum} 个字符"
+				}
 			},
 			"too_small": {
-				"array": "数组至少包含 {minimum} 个元素",
-				"date": "日期必须大于或等于 {- minimum, datetime}",
-				"number": "数字必须大于或等于 {minimum}",
-				"set": "无效输入",
-				"string": "字符串至少包含 {minimum} 个字符"
+				"array": {
+					"exact": "数组必须包含恰好 {minimum} 个元素",
+					"inclusive": "数组必须包含至少 {minimum} 个元素",
+					"not_inclusive": "数组必须包含多于 {minimum} 个元素"
+				},
+				"date": {
+					"exact": "日期必须恰好是 {- minimum, datetime}",
+					"inclusive": "日期必须大于或等于 {- minimum, datetime}",
+					"not_inclusive": "日期必须大于 {- minimum, datetime}"
+				},
+				"number": {
+					"exact": "数字必须恰好是 {minimum}",
+					"inclusive": "数字必须大于或等于 {minimum}",
+					"not_inclusive": "数字必须大于 {minimum}"
+				},
+				"set": {
+					"exact": "无效的输入",
+					"inclusive": "无效的输入",
+					"not_inclusive": "无效的输入"
+				},
+				"string": {
+					"exact": "字符串必须包含恰好 {minimum} 个字符",
+					"inclusive": "字符串必须包含至少 {minimum} 个字符",
+					"not_inclusive": "字符串必须包含多于 {minimum} 个字符"
+				}
 			},
-			"unrecognized_keys": "对象中包含无法识别的键: {- keys}"
+			"unrecognized_keys": "对象中存在无法识别的键：{- keys}"
 		},
 		"types": {
 			"array": "数组",
-			"bigint": "大整数",
+			"bigint": "bigint",
 			"boolean": "布尔值",
 			"date": "日期",
 			"float": "浮点数",
 			"function": "函数",
 			"integer": "整数",
 			"map": "映射",
-			"nan": "非数字",
-			"never": "从不",
-			"null": "空值",
+			"nan": "nan",
+			"never": "never",
+			"null": "null",
 			"number": "数字",
 			"object": "对象",
-			"promise": "承诺",
+			"promise": "promise",
 			"set": "集合",
 			"string": "字符串",
-			"symbol": "符号",
-			"undefined": "未定义",
-			"unknown": "未知",
-			"void": "无返回值"
+			"symbol": "symbol",
+			"undefined": "undefined",
+			"unknown": "unknown",
+			"void": "void"
 		},
 		"validations": {
 			"cuid": "cuid",
 			"cuid2": "cuid2",
 			"datetime": "日期时间",
 			"email": "邮箱",
-			"emoji": "表情符号",
-			"ip": "IP地址",
+			"emoji": "emoji",
+			"ip": "ip",
 			"regex": "正则表达式",
 			"ulid": "ulid",
-			"url": "网址",
+			"url": "url",
 			"uuid": "uuid"
 		}
 	},
-	"subscription": {
-		"title": "订阅",
-		"description": "管理您的订阅。",
-		"categories": {
-			"title": "订阅分类"
-			}
+	"leadAgent": {
+		"title": "Reddit Agent",
+		"descriptionLabel": "AI 驱动的 Reddit 营销机会查找器",
+		"menu": {
+			"suggestion": "AI 建议",
+			"draft": "AI 草稿",
+			"title": "任务"
+		},
+		"agentSetting": "Agent设置",
+		"suggestion": {
+			"title": "资源列表",
+			"actions": {
+				"alert": "提醒",
+				"edit": "编辑",
+				"delete": "删除"
+			},
+			"empty": "暂无数据",
+			"setQuery": "设置查询",
+			"noDataPrompt": "暂无数据",
+			"embeddingRate": "相关性",
+			"embeddingRateTooltip": "调整结果与您的需求的匹配程度。较高的相关性仅显示最相关的资源。"
+		},
+		"form": {
+			"description": "产品或服务描述",
+			"setup": "Agent设置",
+			"generate": "生成关键词",
+			"generateFailed": "生成提示词失败",
+			"query": "查询关键词",
+			"subreddit": "主题"
+		},
+		"draft": {
+			"generate": "生成草稿",
+			"form_title": "草稿生成",
+			"customPrompt": "公司描述与业务介绍"
+		}
 	}
 }

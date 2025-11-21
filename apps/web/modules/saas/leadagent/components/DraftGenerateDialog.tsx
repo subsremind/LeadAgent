@@ -11,11 +11,11 @@ import { DraftForm } from "./DraftForm";
 
 export function DraftGenerateDialog({
 	open,
-	agentSetting,
+	// agentSetting,
 	onGenerateSuccess,
 }: {
 	open: boolean;
-	agentSetting?: any;
+	// agentSetting?: any;
 	onGenerateSuccess: (open: boolean, isReload: boolean, draftList: any[]) => void;
 }) {
 	const t = useTranslations();
@@ -37,7 +37,7 @@ export function DraftGenerateDialog({
 					</DialogTitle>
 				</DialogHeader>
 				<DraftForm
-					agentSetting={agentSetting}
+					// agentSetting={agentSetting}
 					onGenerateSuccess={onGenerateSuccess}
 				/>
 			</DialogContent>

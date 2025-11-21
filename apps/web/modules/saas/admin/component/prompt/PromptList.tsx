@@ -46,7 +46,7 @@ export function PromptList() {
 		queryFn: async () => {
 			try {
 				// 尝试使用apiClient
-				const res = await apiClient.admin.aiPrompt.$get("/aiPrompt");
+				const res = await apiClient.admin.ai_prompt.$get("/");
 				if (!res.ok) throw new Error("Failed to fetch prompts");
 				return await res.json();
 			} catch (error) {
@@ -59,7 +59,7 @@ export function PromptList() {
 	const savePromptMutation = useMutation({
 		mutationFn: async (promptData: any) => {
 			try {
-				const url = editingPrompt ? `/api/admin/aiPrompt/${editingPrompt.id}` : "/api/admin/aiPrompt";
+				const url = editingPrompt ? `/api/admin/ai_prompt/${editingPrompt.id}` : "/api/admin/ai_prompt";
 				const method = editingPrompt ? "PUT" : "POST";
 				
 				const response = await fetch(url, {

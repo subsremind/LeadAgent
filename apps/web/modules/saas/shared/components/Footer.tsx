@@ -1,7 +1,10 @@
 import { LocaleLink } from "@i18n/routing";
 import { cn } from "@ui/lib";
 
+import { useTranslations } from "next-intl";
+
 export function Footer() {
+	const t = useTranslations();
 	return (
 		<footer
 			className={cn(
@@ -9,7 +12,7 @@ export function Footer() {
 			)}
 		>
 			<span>
-				© {new Date().getFullYear()} LeadAgent. All rights reserved.
+				© {new Date().getFullYear()} {t("app.name")}. All rights reserved.
 			</span>
 			<span className="opacity-50"> | </span>
 			<LocaleLink href="/legal/privacy-policy">Privacy policy</LocaleLink>
